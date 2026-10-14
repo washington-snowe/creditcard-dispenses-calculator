@@ -11,13 +11,13 @@ import {
   Wallet,
 } from "lucide-react";
 import {
+  currentMonth,
   money,
-  monthLabel,
   parseMoney,
   type CashEntry,
   type Data,
 } from "../domain";
-import { monthlyBudget } from "../finance";
+import { localDate, incomeMonth, monthlyBudget } from "../finance";
 import { Dialog, Empty, Panel } from "./ui";
 export function CashForm({
   entry,
@@ -41,6 +41,9 @@ export function CashForm({
   const [amount, setAmount] = useState(
     entry ? (entry.amountCents / 100).toFixed(2).replace(".", ",") : "",
   );
+  const [status, setStatus] = useState<"received" | "planned">(
+    entry?.status ?? (month > currentMonth() ? "planned" : "received"),
+  );
   const [error, setError] = useState("");
   return (
     <Dialog
@@ -61,6 +64,12 @@ export function CashForm({
           setError("");
           try {
             const cents = parseMoney(amount);
+            if (
+              type === "income" &&
+              status === "received" &&
+              date > localDate()
+            )
+              throw new Error("Para datas futuras, escolha entrada prevista.");
             if (!cents || !description.trim() || !source.trim())
               throw new Error(
                 "Informe descrição, origem e um valor maior que zero.",
@@ -73,6 +82,7 @@ export function CashForm({
                 date,
                 amountCents: cents,
                 kind: type,
+                ...(type === "income" ? { status } : {}),
               })
             )
               onClose();
@@ -158,6 +168,21 @@ export function CashForm({
             />
           </div>
         </label>
+        {type === "income" && (
+          <label>
+            Situação da entrada
+            <select
+              aria-label="Situação da entrada"
+              value={status}
+              onChange={(e) =>
+                setStatus(e.target.value as "received" | "planned")
+              }
+            >
+              <option value="received">Já recebida</option>
+              <option value="planned">Prevista</option>
+            </select>
+          </label>
+        )}
         <p className="field-hint">
           Entradas aumentam o dinheiro do mês. Reduções registram outros gastos
           ou ajustes. Não registre as faturas novamente aqui: elas são
@@ -193,6 +218,7 @@ export function CashPage({
   onEdit,
   onDelete,
   onCards,
+  onReceive,
 }: {
   data: Data;
   month: string;
@@ -201,6 +227,7 @@ export function CashPage({
   onEdit: (entry: CashEntry) => void;
   onDelete: (entry: CashEntry) => void;
   onCards: () => void;
+  onReceive: (entry: CashEntry) => void;
 }) {
   const [search, setSearch] = useState(""),
     [source, setSource] = useState("all"),
@@ -223,6 +250,12 @@ export function CashPage({
       (grouped.get(entry.source) ?? 0) +
         (entry.kind === "income" ? entry.amountCents : -entry.amountCents),
     );
+  for (const r of data.incomeReceipts ?? [])
+    if (r.date.slice(0, 7) === month)
+      grouped.set(r.source, (grouped.get(r.source) ?? 0) + r.amountCents);
+  for (const r of incomeMonth(data, month))
+    if (!r.receipt)
+      grouped.set(r.rule.source, (grouped.get(r.rule.source) ?? 0) + r.amount);
   const largest = Math.max(1, ...[...grouped.values()].map(Math.abs));
   return (
     <>
@@ -236,7 +269,7 @@ export function CashPage({
           </div>
           <strong data-testid="cash-income">{money(budget.income)}</strong>
           <div className="stat-foot">
-            Todas as origens de {monthLabel(month, true)}
+            Recebidas · previstas: {money(budget.expectedIncome)}
           </div>
         </div>
         <div className="stat-card">
@@ -248,12 +281,12 @@ export function CashPage({
           </div>
           <strong>{money(budget.deductions)}</strong>
           <div className="stat-foot">
-            Entradas líquidas: {money(budget.net)}
+            Disponível: {money(budget.net + budget.opening)}
           </div>
         </div>
         <div className="stat-card">
           <div className="stat-title">
-            Faturas e assinaturas
+            Faturas, assinaturas e despesas
             <span className="stat-icon">
               <Wallet size={18} />
             </span>
@@ -294,7 +327,7 @@ export function CashPage({
       </div>
       <div className="planning-grid cash-grid">
         <Panel
-          title="Movimentos do mês"
+          title="Movimentos pontuais do mês"
           subtitle="Entradas, origens e ajustes para cada mês."
           action={
             <button
@@ -359,7 +392,11 @@ export function CashPage({
                       <td>
                         <strong>{e.description}</strong>
                         <small className="cell-small">
-                          {e.kind === "income" ? "Entrada" : "Redução"}
+                          {e.kind === "income"
+                            ? e.status === "planned"
+                              ? "Prevista"
+                              : "Recebida"
+                            : "Redução"}
                         </small>
                       </td>
                       <td>{e.source}</td>
@@ -376,6 +413,16 @@ export function CashPage({
                       </td>
                       <td>
                         <div className="row-actions">
+                          {e.status === "planned" && (
+                            <button
+                              className="icon-button pay"
+                              disabled={saving}
+                              aria-label={`Receber entrada ${e.description}`}
+                              onClick={() => onReceive(e)}
+                            >
+                              <Check size={15} />
+                            </button>
+                          )}
                           <button
                             className="icon-button"
                             disabled={saving}
@@ -421,7 +468,7 @@ export function CashPage({
         </Panel>
         <Panel
           title="De onde vem o dinheiro?"
-          subtitle="Saldo das entradas e reduções por origem."
+          subtitle="Entradas e previsões por origem, menos reduções."
         >
           {grouped.size ? (
             <div className="comparison-rows">
@@ -455,8 +502,16 @@ export function CashPage({
           )}
           <div className="budget-breakdown">
             <div>
+              <span>Saldo de abertura</span>
+              <strong>{money(budget.opening)}</strong>
+            </div>
+            <div>
               <span>Entradas líquidas</span>
               <strong>{money(budget.net)}</strong>
+            </div>
+            <div>
+              <span>Entradas ainda previstas</span>
+              <strong>+ {money(budget.expectedIncome)}</strong>
             </div>
             <div>
               <span>Pagamentos registrados</span>

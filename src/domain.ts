@@ -31,10 +31,50 @@ export type Data = {
   cards: Card[];
   purchases: Purchase[];
   payments?: Payment[];
-  settings?: { theme: "light" | "dark" };
+  settings?: Settings;
+  recurringIncomes?: RecurringIncome[];
+  incomeReceipts?: IncomeReceipt[];
+  expenses?: Expense[];
   cashEntries?: CashEntry[];
   subscriptions?: Subscription[];
   subscriptionPayments?: SubscriptionPayment[];
+};
+export type Settings = {
+  theme: "light" | "dark" | "ultra";
+  accent?: string;
+  glow?: boolean;
+  motion?: boolean;
+  font?: "dm" | "inter";
+  carryover?: { startMonth: string; openingCents: number };
+};
+export type RecurringIncome = {
+  id: string;
+  description: string;
+  source: string;
+  amountCents: number;
+  dueDay: number;
+  frequency: "monthly" | "quarterly" | "yearly";
+  startMonth: string;
+  endMonth: string | null;
+};
+export type IncomeReceipt = {
+  id: string;
+  recurringId: string;
+  month: string;
+  date: string;
+  amountCents: number;
+  source: string;
+  description: string;
+};
+export type Expense = {
+  id: string;
+  description: string;
+  payee: string;
+  category: string;
+  amountCents: number;
+  dueDate: string;
+  method: "pix" | "boleto" | "cash" | "debit" | "transfer" | "other";
+  paidDate: string | null;
 };
 export type CashEntry = {
   id: string;
@@ -43,6 +83,7 @@ export type CashEntry = {
   date: string;
   amountCents: number;
   kind: "income" | "deduction";
+  status?: "received" | "planned";
 };
 export type Subscription = {
   id: string;
@@ -483,7 +524,23 @@ export function validateData(input: unknown): Data {
     typeof v === "string" && /^(20\d{2}|21\d{2})-(0[1-9]|1[0-2])$/.test(v);
   if (
     x.settings !== undefined &&
-    (!x.settings || !["light", "dark"].includes(x.settings.theme))
+    (!x.settings ||
+      !["light", "dark", "ultra"].includes(x.settings.theme) ||
+      (x.settings.accent !== undefined &&
+        !/^#[a-f\d]{6}$/i.test(x.settings.accent)) ||
+      (x.settings.glow !== undefined && typeof x.settings.glow !== "boolean") ||
+      (x.settings.motion !== undefined &&
+        typeof x.settings.motion !== "boolean") ||
+      (x.settings.font !== undefined &&
+        !["dm", "inter"].includes(x.settings.font)) ||
+      (x.settings.carryover !== undefined &&
+        (!x.settings.carryover ||
+          !month(x.settings.carryover.startMonth) ||
+          !number(
+            x.settings.carryover.openingCents,
+            -100_000_000_000,
+            100_000_000_000,
+          ))))
   )
     return fail();
   if (x.payments !== undefined) {
@@ -538,7 +595,10 @@ export function validateData(input: unknown): Data {
         !text(entry.source, 80) ||
         !validDate(entry.date) ||
         !number(entry.amountCents, 1, 100_000_000_000) ||
-        !["income", "deduction"].includes(entry.kind)
+        !["income", "deduction"].includes(entry.kind) ||
+        (entry.status !== undefined &&
+          (entry.kind !== "income" ||
+            !["received", "planned"].includes(entry.status)))
       )
         return fail();
       entries.add(entry.id);
@@ -596,6 +656,76 @@ export function validateData(input: unknown): Data {
       periods.add(key);
     }
   }
+  const incomeIds = new Set<string>();
+  if (x.recurringIncomes !== undefined) {
+    if (!Array.isArray(x.recurringIncomes) || x.recurringIncomes.length > 1000)
+      return fail();
+    for (const r of x.recurringIncomes) {
+      if (
+        !r ||
+        !text(r.id) ||
+        incomeIds.has(r.id) ||
+        !text(r.description) ||
+        !text(r.source, 80) ||
+        !number(r.amountCents, 1, 100_000_000_000) ||
+        !number(r.dueDay, 1, 31) ||
+        !["monthly", "quarterly", "yearly"].includes(r.frequency) ||
+        !month(r.startMonth) ||
+        !(
+          r.endMonth === null ||
+          (month(r.endMonth) && r.endMonth >= r.startMonth)
+        )
+      )
+        return fail();
+      incomeIds.add(r.id);
+    }
+  }
+  if (x.incomeReceipts !== undefined) {
+    if (!Array.isArray(x.incomeReceipts) || x.incomeReceipts.length > 30000)
+      return fail();
+    const receiptIds = new Set<string>(),
+      periods = new Set<string>();
+    for (const r of x.incomeReceipts) {
+      const key = `${r?.recurringId}:${r?.month}`;
+      if (
+        !r ||
+        !text(r.id) ||
+        receiptIds.has(r.id) ||
+        periods.has(key) ||
+        !incomeIds.has(r.recurringId) ||
+        !month(r.month) ||
+        !validDate(r.date) ||
+        !number(r.amountCents, 1, 100_000_000_000) ||
+        !text(r.description) ||
+        !text(r.source, 80)
+      )
+        return fail();
+      receiptIds.add(r.id);
+      periods.add(key);
+    }
+  }
+  if (x.expenses !== undefined) {
+    if (!Array.isArray(x.expenses) || x.expenses.length > 10000) return fail();
+    const expenseIds = new Set<string>();
+    for (const e of x.expenses) {
+      if (
+        !e ||
+        !text(e.id) ||
+        expenseIds.has(e.id) ||
+        !text(e.description) ||
+        !text(e.payee, 80) ||
+        !CATEGORIES.includes(e.category) ||
+        !number(e.amountCents, 1, 100_000_000_000) ||
+        !validDate(e.dueDate) ||
+        !["pix", "boleto", "cash", "debit", "transfer", "other"].includes(
+          e.method,
+        ) ||
+        !(e.paidDate === null || validDate(e.paidDate))
+      )
+        return fail();
+      expenseIds.add(e.id);
+    }
+  }
   // Keep only supported fields when importing untrusted backups.
   return {
     version: 1,
@@ -618,7 +748,29 @@ export function validateData(input: unknown): Data {
       paid: p.paid,
       nextMonth: p.nextMonth,
     })),
-    ...(x.settings ? { settings: { theme: x.settings.theme } } : {}),
+    ...(x.settings
+      ? {
+          settings: {
+            theme: x.settings.theme,
+            ...(x.settings.accent !== undefined
+              ? { accent: x.settings.accent }
+              : {}),
+            ...(x.settings.glow !== undefined ? { glow: x.settings.glow } : {}),
+            ...(x.settings.motion !== undefined
+              ? { motion: x.settings.motion }
+              : {}),
+            ...(x.settings.font !== undefined ? { font: x.settings.font } : {}),
+            ...(x.settings.carryover
+              ? {
+                  carryover: {
+                    startMonth: x.settings.carryover.startMonth,
+                    openingCents: x.settings.carryover.openingCents,
+                  },
+                }
+              : {}),
+          },
+        }
+      : {}),
     ...(x.payments
       ? {
           payments: x.payments.map((payment) => ({
@@ -641,6 +793,7 @@ export function validateData(input: unknown): Data {
             date: e.date,
             amountCents: e.amountCents,
             kind: e.kind,
+            ...(e.status ? { status: e.status } : {}),
           })),
         }
       : {}),
@@ -669,6 +822,47 @@ export function validateData(input: unknown): Data {
             paidMonth: p.paidMonth,
             amountCents: p.amountCents,
             cardId: p.cardId,
+          })),
+        }
+      : {}),
+    ...(x.recurringIncomes
+      ? {
+          recurringIncomes: x.recurringIncomes.map((r) => ({
+            id: r.id,
+            description: r.description,
+            source: r.source,
+            amountCents: r.amountCents,
+            dueDay: r.dueDay,
+            frequency: r.frequency,
+            startMonth: r.startMonth,
+            endMonth: r.endMonth,
+          })),
+        }
+      : {}),
+    ...(x.incomeReceipts
+      ? {
+          incomeReceipts: x.incomeReceipts.map((r) => ({
+            id: r.id,
+            recurringId: r.recurringId,
+            month: r.month,
+            date: r.date,
+            amountCents: r.amountCents,
+            source: r.source,
+            description: r.description,
+          })),
+        }
+      : {}),
+    ...(x.expenses
+      ? {
+          expenses: x.expenses.map((e) => ({
+            id: e.id,
+            description: e.description,
+            payee: e.payee,
+            category: e.category,
+            amountCents: e.amountCents,
+            dueDate: e.dueDate,
+            method: e.method,
+            paidDate: e.paidDate,
           })),
         }
       : {}),

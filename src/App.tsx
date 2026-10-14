@@ -4,6 +4,8 @@ import {
   ArrowRight,
   ArrowUpRight,
   Banknote,
+  ReceiptText,
+  Palette,
   Repeat,
   RefreshCw,
   CalendarDays,
@@ -56,6 +58,9 @@ import {
   type Purchase,
   type CashEntry,
   type Subscription,
+  type RecurringIncome,
+  type Expense,
+  type Settings,
 } from "./domain";
 import { loadData, saveData } from "./storage";
 import { CardForm, PurchaseForm } from "./components/forms";
@@ -71,6 +76,15 @@ import {
   SubscriptionForm,
   SubscriptionsPage,
 } from "./components/subscriptions";
+import {
+  IncomePlanning,
+  RecurringForm,
+  ExpenseForm,
+  ExpensesPage,
+  Settlement,
+} from "./components/planning";
+import { AppearancePage, applyAppearance } from "./components/appearance";
+import { receiveIncome } from "./finance";
 import { UpdatesPage } from "./components/updates";
 import {
   payEntireCardMonth,
@@ -87,7 +101,9 @@ type Tab =
   | "anticipation"
   | "income"
   | "subscriptions"
-  | "updates";
+  | "updates"
+  | "expenses"
+  | "appearance";
 type Filters = {
   search: string;
   bank: string;
@@ -109,6 +125,13 @@ type Modal =
   | { type: "advance"; purchase: Purchase }
   | { type: "income"; entry?: CashEntry; kind?: CashEntry["kind"] }
   | { type: "subscription"; subscription?: Subscription }
+  | { type: "recurring"; rule?: RecurringIncome }
+  | { type: "expense"; expense?: Expense }
+  | {
+      type: "settlement";
+      title: string;
+      action: (date: string) => Promise<boolean>;
+    }
   | null;
 const CLEAR: Filters = {
   search: "",
@@ -125,9 +148,19 @@ const nav = [
   { id: "anticipation" as const, title: "Antecipações", icon: Zap },
   { id: "income" as const, title: "Entradas do mês", icon: Banknote },
   { id: "subscriptions" as const, title: "Assinaturas", icon: Repeat },
+  { id: "expenses" as const, title: "Despesas", icon: ReceiptText },
+  { id: "appearance" as const, title: "Aparência", icon: Palette },
   { id: "updates" as const, title: "Atualizações", icon: RefreshCw },
 ];
 const titles: Record<Tab, [string, string]> = {
+  expenses: [
+    "Cada conta, no seu tempo.",
+    "Organize Pix, boletos, dinheiro e débito, com vencimento e pagamento.",
+  ],
+  appearance: [
+    "Um espaço que é seu.",
+    "Ultra Dark, cores e movimento. Escolha como suas finanças se apresentam.",
+  ],
   income: [
     "Seu dinheiro, com destino.",
     "Registre as entradas, ajuste os valores e saiba quanto vai sobrar.",
@@ -161,7 +194,7 @@ const titles: Record<Tab, [string, string]> = {
     "Compare os valores, simule quitações e alivie os próximos meses.",
   ],
 };
-function demoData(theme: "light" | "dark"): Data {
+function demoData(theme: Settings["theme"]): Data {
   const cards: Card[] = [
     {
       id: crypto.randomUUID(),
@@ -336,8 +369,8 @@ export default function App() {
   const today = currentMonth(),
     theme = data.settings?.theme ?? "light";
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
+    applyAppearance(data.settings ?? { theme: "light" });
+  }, [data.settings]);
   async function initialize() {
     setLoadError("");
     try {
@@ -435,9 +468,13 @@ export default function App() {
       baseSnapshot.paid +
       recurring.filter((i) => i.paid).reduce((s, i) => s + i.amount, 0),
   };
-  const hasPurchaseFilters = !["income", "subscriptions", "updates"].includes(
-    tab,
-  );
+  const hasPurchaseFilters = ![
+    "income",
+    "subscriptions",
+    "updates",
+    "expenses",
+    "appearance",
+  ].includes(tab);
   const months = forecast(purchases, today);
   const debt = purchases.reduce((s, p) => s + remaining(p), 0);
   const total = purchases.reduce((s, p) => s + p.totalCents, 0);
@@ -644,7 +681,7 @@ export default function App() {
       const imported = validateData(JSON.parse(await file.text()));
       confirm(
         "Restaurar backup?",
-        `Restaurar ${imported.cards.length} cartões, ${imported.purchases.length} compras, ${imported.cashEntries?.length ?? 0} movimentos de dinheiro e ${imported.subscriptions?.length ?? 0} assinaturas? Isso substituirá os dados atuais. Exporte uma cópia antes para preservá-los.`,
+        `Restaurar ${imported.cards.length} cartões, ${imported.purchases.length} compras, ${imported.cashEntries?.length ?? 0} movimentos de dinheiro e ${imported.subscriptions?.length ?? 0} assinaturas, ${imported.recurringIncomes?.length ?? 0} rendas recorrentes e ${imported.expenses?.length ?? 0} despesas? Isso substituirá os dados atuais. Exporte uma cópia antes para preservá-los.`,
         async () => {
           const ok = await commit(imported, "Backup restaurado.");
           if (ok) {
@@ -969,7 +1006,10 @@ export default function App() {
               void commit(
                 {
                   ...data,
-                  settings: { theme: theme === "light" ? "dark" : "light" },
+                  settings: {
+                    ...data.settings,
+                    theme: theme === "light" ? "dark" : "light",
+                  },
                 },
                 `Tema ${theme === "light" ? "escuro" : "claro"} ativado.`,
                 false,
@@ -1054,32 +1094,36 @@ export default function App() {
               <h1>{titles[tab][0]}</h1>
               <p>{titles[tab][1]}</p>
             </div>
-            {tab !== "updates" && (
+            {tab !== "updates" && tab !== "appearance" && (
               <button
                 className="button primary"
                 disabled={saving}
                 onClick={() =>
-                  tab === "income"
-                    ? setModal({ type: "income" })
-                    : tab === "subscriptions"
-                      ? setModal({ type: "subscription" })
-                      : tab === "cards"
-                        ? setModal({ type: "card" })
-                        : addPurchase()
+                  tab === "expenses"
+                    ? setModal({ type: "expense" })
+                    : tab === "income"
+                      ? setModal({ type: "income" })
+                      : tab === "subscriptions"
+                        ? setModal({ type: "subscription" })
+                        : tab === "cards"
+                          ? setModal({ type: "card" })
+                          : addPurchase()
                 }
               >
                 <Plus size={17} />
-                {tab === "income"
-                  ? "Nova entrada"
-                  : tab === "subscriptions"
-                    ? "Nova assinatura"
-                    : tab === "cards" || !data.cards.length
-                      ? "Novo cartão"
-                      : "Nova compra"}
+                {tab === "expenses"
+                  ? "Nova despesa"
+                  : tab === "income"
+                    ? "Nova entrada"
+                    : tab === "subscriptions"
+                      ? "Nova assinatura"
+                      : tab === "cards" || !data.cards.length
+                        ? "Novo cartão"
+                        : "Nova compra"}
               </button>
             )}
           </div>
-          {tab !== "updates" && (
+          {tab !== "updates" && tab !== "appearance" && (
             <div className="month-toolbar">
               <div className="month-navigation">
                 <button
@@ -1287,7 +1331,9 @@ export default function App() {
             <>
               {!data.purchases.length &&
                 !data.cashEntries?.length &&
-                !data.subscriptions?.length && (
+                !data.subscriptions?.length &&
+                !data.recurringIncomes?.length &&
+                !data.expenses?.length && (
                   <div className="welcome-banner">
                     <span>
                       <Sparkles size={23} />
@@ -1304,7 +1350,7 @@ export default function App() {
                       onClick={() =>
                         confirm(
                           "Carregar exemplo?",
-                          "Os dados fictícios substituirão todos os seus registros atuais, incluindo entradas e assinaturas. Você pode desfazer a alteração.",
+                          "Os dados fictícios substituirão todos os seus registros atuais, incluindo entradas, rendas, despesas e assinaturas. Você pode desfazer a alteração.",
                           () =>
                             commit(
                               demoData(theme),
@@ -2043,34 +2089,118 @@ export default function App() {
             </>
           )}
           {tab === "income" && (
-            <CashPage
-              data={data}
-              month={month}
-              saving={saving}
-              onCreate={(kind) => setModal({ type: "income", kind })}
-              onEdit={(entry) => setModal({ type: "income", entry })}
-              onDelete={(entry) =>
-                confirm(
-                  "Excluir movimento?",
-                  `Remover “${entry.description}” do orçamento?`,
-                  () =>
-                    commit(
-                      {
-                        ...data,
-                        cashEntries: (data.cashEntries ?? []).filter(
-                          (e) => e.id !== entry.id,
-                        ),
-                      },
-                      "Movimento excluído.",
-                    ),
-                  true,
-                )
-              }
-              onCards={() => {
-                setFilters(CLEAR);
-                setTab("cards");
-              }}
-            />
+            <>
+              <CashPage
+                data={data}
+                month={month}
+                saving={saving}
+                onCreate={(kind) => setModal({ type: "income", kind })}
+                onEdit={(entry) => setModal({ type: "income", entry })}
+                onDelete={(entry) =>
+                  confirm(
+                    "Excluir movimento?",
+                    `Remover “${entry.description}” do orçamento?`,
+                    () =>
+                      commit(
+                        {
+                          ...data,
+                          cashEntries: (data.cashEntries ?? []).filter(
+                            (e) => e.id !== entry.id,
+                          ),
+                        },
+                        "Movimento excluído.",
+                      ),
+                    true,
+                  )
+                }
+                onReceive={(entry) =>
+                  setModal({
+                    type: "settlement",
+                    title: "Confirmar entrada recebida",
+                    action: (date) =>
+                      commit(
+                        {
+                          ...data,
+                          cashEntries: (data.cashEntries ?? []).map((e) =>
+                            e.id === entry.id
+                              ? { ...e, status: "received", date }
+                              : e,
+                          ),
+                        },
+                        "Entrada recebida.",
+                      ),
+                  })
+                }
+                onCards={() => {
+                  setFilters(CLEAR);
+                  setTab("cards");
+                }}
+              />
+              <IncomePlanning
+                key={`${data.settings?.carryover?.startMonth}-${data.settings?.carryover?.openingCents}`}
+                data={data}
+                month={month}
+                saving={saving}
+                onSettings={(settings) =>
+                  commit(
+                    { ...data, settings },
+                    "Saldo entre meses configurado.",
+                    false,
+                  )
+                }
+                onCreate={() => setModal({ type: "recurring" })}
+                onEdit={(rule) => setModal({ type: "recurring", rule })}
+                onReceive={(rule) =>
+                  setModal({
+                    type: "settlement",
+                    title: "Confirmar renda recebida",
+                    action: (date) =>
+                      commit(
+                        receiveIncome(data, rule.id, month, date),
+                        "Recebimento registrado.",
+                      ),
+                  })
+                }
+                onUnreceive={(rule) =>
+                  confirm(
+                    "Corrigir recebimento?",
+                    "A renda voltará a ser prevista para o mês da regra.",
+                    () =>
+                      commit(
+                        {
+                          ...data,
+                          incomeReceipts: (data.incomeReceipts ?? []).filter(
+                            (r) =>
+                              !(r.recurringId === rule.id && r.month === month),
+                          ),
+                        },
+                        "Recebimento corrigido.",
+                      ),
+                    true,
+                  )
+                }
+                onDelete={(rule) =>
+                  confirm(
+                    "Excluir renda recorrente?",
+                    "Serão removidos a regra e seus recebimentos. Para manter o histórico, edite o mês final.",
+                    () =>
+                      commit(
+                        {
+                          ...data,
+                          recurringIncomes: (
+                            data.recurringIncomes ?? []
+                          ).filter((r) => r.id !== rule.id),
+                          incomeReceipts: (data.incomeReceipts ?? []).filter(
+                            (r) => r.recurringId !== rule.id,
+                          ),
+                        },
+                        "Renda excluída.",
+                      ),
+                    true,
+                  )
+                }
+              />
+            </>
           )}
           {tab === "subscriptions" && (
             <SubscriptionsPage
@@ -2126,6 +2256,73 @@ export default function App() {
               }
             />
           )}
+          {tab === "expenses" && (
+            <ExpensesPage
+              data={data}
+              month={month}
+              saving={saving}
+              onEdit={(expense) => setModal({ type: "expense", expense })}
+              onPay={(expense) =>
+                setModal({
+                  type: "settlement",
+                  title: "Registrar despesa paga",
+                  action: (date) =>
+                    commit(
+                      {
+                        ...data,
+                        expenses: (data.expenses ?? []).map((e) =>
+                          e.id === expense.id ? { ...e, paidDate: date } : e,
+                        ),
+                      },
+                      "Despesa paga.",
+                    ),
+                })
+              }
+              onUnpay={(expense) =>
+                confirm(
+                  "Corrigir pagamento?",
+                  "A despesa voltará a ficar pendente.",
+                  () =>
+                    commit(
+                      {
+                        ...data,
+                        expenses: (data.expenses ?? []).map((e) =>
+                          e.id === expense.id ? { ...e, paidDate: null } : e,
+                        ),
+                      },
+                      "Pagamento corrigido.",
+                    ),
+                  true,
+                )
+              }
+              onDelete={(expense) =>
+                confirm(
+                  "Excluir despesa?",
+                  "Remover esta despesa e recalcular o saldo dos meses envolvidos?",
+                  () =>
+                    commit(
+                      {
+                        ...data,
+                        expenses: (data.expenses ?? []).filter(
+                          (e) => e.id !== expense.id,
+                        ),
+                      },
+                      "Despesa excluída.",
+                    ),
+                  true,
+                )
+              }
+            />
+          )}
+          {tab === "appearance" && (
+            <AppearancePage
+              settings={data.settings ?? { theme: "light" }}
+              saving={saving}
+              onSave={(settings) =>
+                commit({ ...data, settings }, "Aparência personalizada.", false)
+              }
+            />
+          )}
           {tab === "updates" && <UpdatesPage />}
           <footer className="page-footer">
             <LocalNote />
@@ -2136,6 +2333,59 @@ export default function App() {
           </footer>
         </main>
       </div>
+      {modal?.type === "settlement" && (
+        <Settlement
+          title={modal.title}
+          onSave={modal.action}
+          onClose={() => setModal(null)}
+        />
+      )}
+      {modal?.type === "recurring" && (
+        <RecurringForm
+          rule={modal.rule}
+          month={month}
+          saving={saving}
+          onClose={() => {
+            if (!saving) setModal(null);
+          }}
+          onSave={(rule) =>
+            commit(
+              {
+                ...data,
+                recurringIncomes: modal.rule
+                  ? (data.recurringIncomes ?? []).map((r) =>
+                      r.id === rule.id ? rule : r,
+                    )
+                  : [...(data.recurringIncomes ?? []), rule],
+              },
+              "Renda recorrente salva.",
+            )
+          }
+        />
+      )}
+      {modal?.type === "expense" && (
+        <ExpenseForm
+          expense={modal.expense}
+          month={month}
+          saving={saving}
+          onClose={() => {
+            if (!saving) setModal(null);
+          }}
+          onSave={(expense) =>
+            commit(
+              {
+                ...data,
+                expenses: modal.expense
+                  ? (data.expenses ?? []).map((e) =>
+                      e.id === expense.id ? expense : e,
+                    )
+                  : [...(data.expenses ?? []), expense],
+              },
+              "Despesa salva.",
+            )
+          }
+        />
+      )}
       {modal?.type === "income" && (
         <CashForm
           entry={modal.entry}

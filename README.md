@@ -4,11 +4,11 @@ Aplicativo desktop de finanças pessoais em **Node.js + Electron**, com interfac
 
 ## Baixar para Windows
 
-[**Baixar Saldo 3.0.1 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v3.0.1/Saldo-Windows-x64.zip)
+[**Baixar Saldo 4.0.0 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.0.0/Saldo-Windows-x64.zip)
 
 Extraia a pasta inteira e abra **saldo.exe**. Não é necessário instalar Node.js. A versão foi compilada e testada no Windows, incluindo os cálculos financeiros e a persistência dos dados após reiniciar o aplicativo.
 
-A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v3.0.1) também contém o checksum do ZIP.
+A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.0.0) também contém o checksum do ZIP.
 
 ## Executar no computador
 
@@ -41,12 +41,15 @@ A interface no navegador usa um armazenamento local separado do aplicativo deskt
 - Abrir cada mês do planejamento para ver **todas as parcelas individuais** e os totais por cartão, até a quitação. Use as setas, o seletor de mês ou as barras dos gráficos para navegar por meses passados e futuros.
 - Exportar e restaurar backups JSON. A restauração substitui os dados atuais após confirmação; um arquivo inválido é rejeitado.
 
-- Alternar entre tema claro e escuro, com preferência salva no desktop e no backup.
+- Escolher tema claro, escuro ou **Ultra Dark**, paletas prontas ou uma cor personalizada; selecionar fontes e ativar/desativar glow e animações suaves. As fontes vêm no aplicativo e as preferências são salvas no desktop e no backup.
 - Marcar todas as parcelas pendentes de um cartão no mês atual como pagas, com confirmação e opção de desfazer.
 - Comparar parcelas no gerenciador de antecipações por valor mensal, custo para quitar e alívio por real; sugerir uma seleção dentro do orçamento e simular o antes/depois.
 - Registrar a antecipação de uma ou mais parcelas, ou a quitação de compras inteiras.
 - Registrar entradas e reduções de dinheiro por data, descrição e origem; editar, excluir e filtrar por origem, tipo ou busca.
-- Ver quanto sobrará no mês depois das faturas e assinaturas, incluindo pagamentos já registrados e os ainda pendentes.
+- Cadastrar **rendas recorrentes** mensais, trimestrais ou anuais; distinguir valores previstos dos recebidos e confirmar cada recebimento com sua data real.
+- Transportar automaticamente sobras e déficits entre meses após configurar o saldo inicial.
+- Cadastrar **despesas fora do cartão** por Pix, boleto, dinheiro, débito ou transferência, com categoria, favorecido, vencimento, filtros e registro de pagamento.
+- Ver quanto sobrará no mês depois das faturas, assinaturas e despesas, incluindo pagamentos já registrados e os ainda pendentes.
 - Cadastrar assinaturas mensais, trimestrais ou anuais, no cartão ou fora dele; definir início/fim e marcar cobranças como pagas.
 - Verificar, baixar e aplicar novas versões publicadas no GitHub pela aba **Atualizações** no Windows x64.
 
@@ -54,17 +57,21 @@ A primeira execução começa vazia. O botão **Experimentar exemplo** carrega d
 
 ## Atualizar das versões anteriores
 
-Feche o aplicativo antigo, extraia a pasta da versão 3 inteira e execute o novo `saldo.exe`. A pasta de dados permanece a mesma; cartões e compras das versões 1 e 2 são aceitos sem recadastro. Backups antigos também continuam válidos.
+Feche o aplicativo antigo, extraia a pasta da versão 4 inteira e execute o novo `saldo.exe`. A pasta de dados permanece a mesma; os registros das versões 1, 2 e 3 são aceitos sem recadastro. Backups antigos também continuam válidos.
 
 A partir da versão 3, abra **Atualizações → Verificar atualizações → Baixar atualização → Reiniciar e atualizar**. O aplicativo consulta as releases estáveis de `washington-snowe/creditcard-dispenses-calculator`, baixa o ZIP por HTTPS e confere SHA-256, caminhos do arquivo e a versão interna do pacote. Não é necessário instalar Node.js ou Git. Alterações no código entram no aplicativo quando uma nova versão é publicada, com seu ZIP e checksum; um commit na branch principal sozinho não gera atualização.
 
 A nova versão é preparada em `%APPDATA%/saldo-desktop/updates/versions/`, preservando a pasta anterior. Antes da troca, o aplicativo espera as gravações terminarem e cria uma cópia de `finances.json` em `updates/finances-before-...json`. A troca é confirmada após a nova versão abrir e validar os dados. Se isso falhar, o processo retorna à versão anterior. O executável original da versão 3 continua funcionando como entrada para a versão atualizada; mantenha sua pasta e os demais arquivos. No navegador e em outros sistemas, a aba permite abrir a página de versões para download manual.
 
-## Entradas e assinaturas
+## Entradas, saldo entre meses e despesas
 
-Em **Entradas do mês**, registre dinheiro recebido, com descrição, origem e data. **Registrar redução** adiciona outros gastos ou ajustes que diminuem a disponibilidade. Você também pode corrigir valores pelo botão de edição ou remover um movimento. Os filtros alteram a listagem; os totais e a comparação por origem continuam mostrando o mês inteiro.
+Em **Entradas do mês**, registre dinheiro recebido ou previsto, com descrição, origem e data. Uma entrada prevista participa da projeção, mas só entra no saldo real ao confirmar o recebimento. Em **Rendas recorrentes**, configure descrição, origem, valor, frequência, dia, início e fim opcional. Confirme cada recebimento separadamente; a data real define o mês em que o dinheiro entrou. Editar uma recorrência preserva os valores e origens já recebidos. Para interrompê-la mantendo o histórico, informe o último mês. **Registrar redução** adiciona outros gastos ou ajustes que diminuem a disponibilidade. Você também pode corrigir valores pelo botão de edição ou remover um movimento. Os filtros alteram a listagem; os totais e a comparação por origem continuam mostrando o mês inteiro.
 
-O cálculo de **Quanto sobrará no mês** é: **entradas − reduções − pagamentos registrados no mês − valores ainda pendentes**. Assim, pagar uma fatura apenas transfere seu valor de pendente para pago, sem aumentar artificialmente a sobra. Antecipações são descontadas no mês real do pagamento, sem repetir o desconto no futuro. O saldo previsto considera somente os registros cadastrados e pode ficar negativo. Não há transferência automática do saldo de um mês para outro; registre o saldo inicial como uma entrada se quiser incluí-lo.
+O cálculo de **Quanto sobrará no mês** é: **saldo inicial do mês + entradas recebidas + entradas previstas − reduções − pagamentos registrados no mês − valores ainda pendentes**. Assim, pagar uma fatura apenas transfere seu valor de pendente para pago, sem aumentar artificialmente a sobra. Antecipações são descontadas no mês real do pagamento, sem repetir o desconto no futuro. O saldo previsto considera somente os registros cadastrados e pode ficar negativo. Em **Saldo entre meses**, ative **Transportar saldo automaticamente**, escolha o mês inicial e informe seu saldo disponível, positivo ou negativo. O transporte começa nesse ponto: usa os movimentos reais dos meses anteriores e as projeções dos meses futuros. O valor projetado é identificado separadamente do saldo com pagamentos e recebimentos efetivos. Alterações e exclusões recalculam o transporte automaticamente. Não registre esse mesmo saldo inicial também como entrada. Sem ativar essa configuração, cada mês continua independente.
+
+Em **Despesas**, registre gastos fora do cartão com descrição, favorecido, categoria, forma de pagamento e vencimento. Filtre por busca, categoria, método e situação. Marque o pagamento com a data real: uma despesa paga sai dos pendentes e entra no desembolso desse mês. Despesas vencidas ainda abertas aparecem no mês atual. Não duplique a mesma despesa como redução, assinatura ou compra no cartão.
+
+## Assinaturas
 
 Em **Assinaturas**, defina fornecedor, valor, categoria, frequência, dia de cobrança, mês inicial e último mês opcional. Uma assinatura no cartão integra sua fatura cadastrada e é marcada como paga junto dela; uma assinatura fora dos cartões também é descontada no orçamento. Não cadastre o mesmo serviço como compra e assinatura, nem repita a fatura como uma redução. Renovações anuais e trimestrais aparecem apenas nos meses de cobrança. Datas como dia 31 são ajustadas ao último dia de meses menores.
 
@@ -89,6 +96,10 @@ O mês informado é o da **próxima parcela não paga**. Registrar um pagamento 
 O calendário agrupa parcelas vencidas e não pagas no mês atual e mantém as demais no mês previsto. Um mês sem parcelas tem total zero. Compras quitadas permanecem no histórico e saem da previsão. O vencimento do cartão é informativo; o planejamento é mensal.
 
 O saldo por cartão considera somente as compras cadastradas, não a fatura real do banco. Não há integração bancária nem marcação automática de pagamentos. O limite cadastrado serve para comparar o saldo pendente com o limite informado.
+
+## Aparência
+
+Em **Aparência**, escolha Claro, Escuro ou Ultra Dark, selecione uma paleta ou use o seletor de cor personalizada. O texto ajusta o contraste à cor escolhida. Manrope aparece nos títulos; DM Sans e Inter são opções para o corpo. As fontes estão incluídas para uso offline. Controle glow e movimento separadamente e clique em **Aplicar aparência** para salvar. O aplicativo também respeita a preferência do sistema por movimento reduzido.
 
 ## Dados e privacidade
 

@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { runFlow } from "./flow.mjs";
 import { runEnhancements } from "./enhancements.mjs";
+import { runNewPlanning } from "./new-planning.mjs";
 import { runMoney } from "./money.mjs";
 const directory = await mkdtemp(join(tmpdir(), "saldo-desktop-test-"));
 let app;
@@ -37,6 +38,14 @@ try {
   expect(withMoney.cashEntries).toHaveLength(2);
   expect(withMoney.subscriptions).toHaveLength(2);
   expect(withMoney.subscriptionPayments).toHaveLength(2);
+  await runNewPlanning(page);
+  const expanded = JSON.parse(
+    await readFile(join(directory, "finances.json"), "utf8"),
+  );
+  expect(expanded.recurringIncomes).toHaveLength(1);
+  expect(expanded.incomeReceipts).toHaveLength(1);
+  expect(expanded.expenses).toHaveLength(1);
+  expect(expanded.settings.accent).toBe("#20c7a0");
   expect(await page.evaluate(() => typeof window.saldo?.save)).toBe("function");
   expect(await page.evaluate(() => typeof window.require)).toBe("undefined");
   await app.close();
@@ -50,12 +59,15 @@ try {
   await expect(
     restarted.getByRole("heading", { name: "Tudo sob controle." }),
   ).toBeVisible();
-  await expect(restarted.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect(restarted.locator("html")).toHaveAttribute(
+    "data-theme",
+    "ultra",
+  );
   await expect(restarted.getByTestId("total-debt")).toHaveText(/1\.900,00/);
   await restarted
     .getByRole("button", { name: "Entradas do mês", exact: true })
     .click();
-  await expect(restarted.getByTestId("cash-remaining")).toHaveText(/4\.050,00/);
+  await expect(restarted.getByTestId("cash-remaining")).toHaveText(/5\.450,00/);
   await restarted
     .getByRole("button", { name: "Minhas compras", exact: true })
     .click();

@@ -1,0 +1,937 @@
+import { useState } from "react";
+import {
+  Banknote,
+  Check,
+  Pencil,
+  Plus,
+  Repeat,
+  Trash2,
+  Wallet,
+  Search,
+} from "lucide-react";
+import {
+  CATEGORIES,
+  currentMonth,
+  money,
+  parseMoney,
+  type Data,
+  type RecurringIncome,
+  type Expense,
+  type Settings,
+} from "../domain";
+import {
+  expenseMonth,
+  FREQUENCIES,
+  incomeMonth,
+  localDate,
+  METHODS,
+  monthlyBudget,
+} from "../finance";
+import { Dialog, Empty, Panel } from "./ui";
+type Save<T> = (value: T) => Promise<boolean>;
+export function Settlement({
+  title,
+  onClose,
+  onSave,
+}: {
+  title: string;
+  onClose: () => void;
+  onSave: Save<string>;
+}) {
+  const [date, setDate] = useState(localDate()),
+    [busy, setBusy] = useState(false);
+  return (
+    <Dialog
+      title={title}
+      onClose={() => {
+        if (!busy) onClose();
+      }}
+    >
+      <form
+        className="simple-form"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          setBusy(true);
+          try {
+            if (await onSave(date)) onClose();
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        <label>
+          Data efetiva
+          <input
+            aria-label="Data efetiva"
+            type="date"
+            required
+            min="2000-01-01"
+            max={localDate()}
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+        </label>
+        <p className="field-hint">
+          O dinheiro entra ou sai no mês desta data. O registro não movimenta
+          sua conta bancária.
+        </p>
+        <div className="dialog-footer">
+          <button
+            type="button"
+            className="button secondary"
+            disabled={busy}
+            onClick={onClose}
+          >
+            Cancelar
+          </button>
+          <button className="button primary" disabled={busy}>
+            Confirmar registro
+          </button>
+        </div>
+      </form>
+    </Dialog>
+  );
+}
+export function RecurringForm({
+  rule,
+  month,
+  saving,
+  onSave,
+  onClose,
+}: {
+  rule?: RecurringIncome;
+  month: string;
+  saving: boolean;
+  onSave: Save<RecurringIncome>;
+  onClose: () => void;
+}) {
+  const [description, setDescription] = useState(rule?.description ?? ""),
+    [source, setSource] = useState(rule?.source ?? ""),
+    [amount, setAmount] = useState(
+      rule ? (rule.amountCents / 100).toFixed(2) : "",
+    ),
+    [day, setDay] = useState(rule?.dueDay ?? 5),
+    [frequency, setFrequency] = useState<RecurringIncome["frequency"]>(
+      rule?.frequency ?? "monthly",
+    ),
+    [start, setStart] = useState(rule?.startMonth ?? month),
+    [end, setEnd] = useState(rule?.endMonth ?? ""),
+    [error, setError] = useState("");
+  return (
+    <Dialog
+      title={rule ? "Editar renda recorrente" : "Nova renda recorrente"}
+      subtitle="Planeje as próximas entradas. Confirme cada recebimento."
+      onClose={onClose}
+    >
+      <form
+        className="simple-form"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          try {
+            const cents = parseMoney(amount);
+            if (!cents || (end && end < start))
+              throw Error("Confira o valor e o período.");
+            if (
+              await onSave({
+                id: rule?.id ?? crypto.randomUUID(),
+                description: description.trim(),
+                source: source.trim(),
+                amountCents: cents,
+                dueDay: day,
+                frequency,
+                startMonth: start,
+                endMonth: end || null,
+              })
+            )
+              onClose();
+          } catch (err) {
+            setError((err as Error).message);
+          }
+        }}
+      >
+        <label>
+          Descrição da renda
+          <input
+            required
+            autoFocus
+            maxLength={100}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Salário, aluguel recebido…"
+          />
+        </label>
+        <label>
+          Origem da renda
+          <input
+            required
+            maxLength={80}
+            value={source}
+            onChange={(e) => setSource(e.target.value)}
+            placeholder="Empresa, cliente, imóvel…"
+          />
+        </label>
+        <div className="form-row">
+          <label>
+            Valor previsto
+            <input
+              aria-label="Valor previsto da renda"
+              required
+              inputMode="decimal"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+          </label>
+          <label>
+            Dia previsto
+            <input
+              type="number"
+              min={1}
+              max={31}
+              required
+              value={day}
+              onChange={(e) => setDay(Number(e.target.value))}
+            />
+          </label>
+        </div>
+        <label>
+          Frequência da renda
+          <select
+            value={frequency}
+            onChange={(e) =>
+              setFrequency(e.target.value as RecurringIncome["frequency"])
+            }
+          >
+            {Object.entries(FREQUENCIES).map(([v, l]) => (
+              <option key={v} value={v}>
+                {l}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="form-row">
+          <label>
+            Início da renda
+            <input
+              required
+              type="month"
+              min="2000-01"
+              max="2199-12"
+              value={start}
+              onChange={(e) => setStart(e.target.value)}
+            />
+          </label>
+          <label>
+            Fim da renda (opcional)
+            <input
+              type="month"
+              min={start}
+              max="2199-12"
+              value={end}
+              onChange={(e) => setEnd(e.target.value)}
+            />
+          </label>
+        </div>
+        <p className="field-hint">
+          A previsão se repete automaticamente. Recebimentos já registrados
+          mantêm o valor e a origem ao editar esta regra. Para encerrar mantendo
+          o histórico, preencha o mês final.
+        </p>
+        {error && (
+          <p role="alert" className="form-error">
+            {error}
+          </p>
+        )}
+        <div className="dialog-footer">
+          <button
+            className="button secondary"
+            type="button"
+            onClick={onClose}
+            disabled={saving}
+          >
+            Cancelar
+          </button>
+          <button className="button primary" disabled={saving}>
+            Salvar renda recorrente
+          </button>
+        </div>
+      </form>
+    </Dialog>
+  );
+}
+export function IncomePlanning({
+  data,
+  month,
+  saving,
+  onSettings,
+  onCreate,
+  onEdit,
+  onDelete,
+  onReceive,
+  onUnreceive,
+}: {
+  data: Data;
+  month: string;
+  saving: boolean;
+  onSettings: Save<Settings>;
+  onCreate: () => void;
+  onEdit: (r: RecurringIncome) => void;
+  onDelete: (r: RecurringIncome) => void;
+  onReceive: (r: RecurringIncome) => void;
+  onUnreceive: (r: RecurringIncome) => void;
+}) {
+  const config = data.settings?.carryover;
+  const [enabled, setEnabled] = useState(!!config),
+    [start, setStart] = useState(config?.startMonth ?? month),
+    [amount, setAmount] = useState(
+      (Math.abs(config?.openingCents ?? 0) / 100).toFixed(2),
+    ),
+    [negative, setNegative] = useState((config?.openingCents ?? 0) < 0),
+    [error, setError] = useState("");
+  const [search, setSearch] = useState(""),
+    [source, setSource] = useState("all"),
+    [status, setStatus] = useState("all");
+  const occurrences = incomeMonth(data, month),
+    rows = (data.recurringIncomes ?? []).filter(
+      (r) =>
+        `${r.description} ${r.source}`
+          .toLocaleLowerCase("pt-BR")
+          .includes(search.toLocaleLowerCase("pt-BR")) &&
+        (source === "all" || source === r.source) &&
+        (status === "all" ||
+          (status === "received"
+            ? occurrences.some((o) => o.rule.id === r.id && o.receipt)
+            : occurrences.some((o) => o.rule.id === r.id && !o.receipt))),
+    );
+  const budget = monthlyBudget(data, month);
+  return (
+    <div className="planning-stack">
+      <div className="balance-ribbon">
+        <div>
+          <Wallet size={22} />
+          <span>
+            Saldo de abertura{" "}
+            <strong data-testid="opening-balance">
+              {money(budget.opening)}
+            </strong>
+            <small>
+              {budget.projectedOpening
+                ? "Projeção dos meses anteriores"
+                : "Movimentações efetivas dos meses anteriores"}
+            </small>
+          </span>
+        </div>
+        <div>
+          <Banknote size={22} />
+          <span>
+            Saldo efetivo{" "}
+            <strong data-testid="actual-balance">
+              {money(budget.actualBalance)}
+            </strong>
+            <small>Somente dinheiro recebido e pagamentos registrados</small>
+          </span>
+        </div>
+      </div>
+      <Panel
+        title="Rendas que se repetem"
+        subtitle="Previsões por mês, com confirmação individual de recebimento."
+        action={
+          <button
+            className="button secondary"
+            disabled={saving}
+            onClick={onCreate}
+          >
+            <Plus size={15} />
+            Renda recorrente
+          </button>
+        }
+      >
+        <div className="ledger-filters">
+          <label className="search">
+            <Search size={16} />
+            <input
+              aria-label="Buscar rendas recorrentes"
+              placeholder="Buscar renda ou origem…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </label>
+          <select
+            aria-label="Filtrar origem das rendas"
+            value={source}
+            onChange={(e) => setSource(e.target.value)}
+          >
+            <option value="all">Todas as origens</option>
+            {[
+              ...new Set((data.recurringIncomes ?? []).map((r) => r.source)),
+            ].map((s) => (
+              <option key={s}>{s}</option>
+            ))}
+          </select>
+          <select
+            aria-label="Filtrar situação das rendas"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+          >
+            <option value="all">Todas as situações</option>
+            <option value="received">Recebidas</option>
+            <option value="planned">Previstas no mês</option>
+          </select>
+        </div>
+        {rows.length ? (
+          <div className="table-scroll">
+            <table className="recurring-table">
+              <thead>
+                <tr>
+                  <th>Renda / origem</th>
+                  <th>Valor</th>
+                  <th>Situação no mês</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => {
+                  const o = occurrences.find((o) => o.rule.id === r.id);
+                  return (
+                    <tr key={r.id}>
+                      <td>
+                        <strong>{r.description}</strong>
+                        <small className="cell-small">
+                          {r.source} · {FREQUENCIES[r.frequency]}
+                        </small>
+                      </td>
+                      <td>
+                        <strong>{money(o?.amount ?? r.amountCents)}</strong>
+                        <small className="cell-small">Dia {r.dueDay}</small>
+                      </td>
+                      <td>
+                        <span
+                          className={`badge ${o?.receipt ? "green" : "accent-badge"}`}
+                        >
+                          {o?.receipt
+                            ? "Recebida"
+                            : o
+                              ? "Prevista"
+                              : "Sem previsão"}
+                        </span>
+                        {o && (
+                          <small className="cell-small">
+                            {(o.receipt?.date ?? o.date)
+                              .split("-")
+                              .reverse()
+                              .join("/")}
+                          </small>
+                        )}
+                      </td>
+                      <td>
+                        <div className="row-actions">
+                          {o && (
+                            <button
+                              className="icon-button pay"
+                              disabled={saving || month > currentMonth()}
+                              aria-label={`${o.receipt ? "Desmarcar recebimento" : "Receber renda"} ${r.description}`}
+                              onClick={() =>
+                                o.receipt ? onUnreceive(r) : onReceive(r)
+                              }
+                            >
+                              <Check size={16} />
+                            </button>
+                          )}
+                          <button
+                            className="icon-button"
+                            aria-label={`Editar renda ${r.description}`}
+                            disabled={saving}
+                            onClick={() => onEdit(r)}
+                          >
+                            <Pencil size={15} />
+                          </button>
+                          <button
+                            className="icon-button danger-text"
+                            aria-label={`Excluir renda ${r.description}`}
+                            disabled={saving}
+                            onClick={() => onDelete(r)}
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <Empty
+            icon={<Repeat size={26} />}
+            title="Uma previsão para cada mês"
+            text="Cadastre seu salário ou outra renda recorrente."
+          />
+        )}
+      </Panel>
+      <Panel
+        title="Saldo entre meses"
+        subtitle="Escolha de onde começa o acompanhamento. O restante é calculado automaticamente."
+      >
+        <form
+          className="simple-form carry-form"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            setError("");
+            try {
+              const settings: Settings = {
+                ...(data.settings ?? { theme: "light" }),
+              };
+              if (enabled)
+                settings.carryover = {
+                  startMonth: start,
+                  openingCents: parseMoney(amount) * (negative ? -1 : 1),
+                };
+              else delete settings.carryover;
+              await onSettings(settings);
+            } catch (err) {
+              setError((err as Error).message);
+            }
+          }}
+        >
+          <label className="check-line">
+            <input
+              type="checkbox"
+              checked={enabled}
+              onChange={(e) => setEnabled(e.target.checked)}
+            />
+            Transportar saldo automaticamente
+          </label>
+          <div className="carry-fields">
+            <label>
+              Mês inicial do saldo
+              <input
+                required
+                disabled={!enabled}
+                type="month"
+                min="2000-01"
+                max="2199-12"
+                value={start}
+                onChange={(e) => setStart(e.target.value)}
+              />
+            </label>
+            <label>
+              Saldo inicial
+              <input
+                aria-label="Valor do saldo inicial"
+                required
+                disabled={!enabled}
+                inputMode="decimal"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
+            </label>
+            <label>
+              Tipo de saldo
+              <select
+                disabled={!enabled}
+                value={negative ? "negative" : "positive"}
+                onChange={(e) => setNegative(e.target.value === "negative")}
+              >
+                <option value="positive">Dinheiro disponível</option>
+                <option value="negative">Déficit / negativo</option>
+              </select>
+            </label>
+          </div>
+          <p className="field-hint">
+            Informe o dinheiro disponível antes dos movimentos do mês inicial.
+            Meses passados usam entradas recebidas e pagamentos efetivos. Meses
+            futuros projetam as rendas previstas e contas pendentes. As reduções
+            antigas continuam consideradas; evite cadastrar o mesmo gasto
+            novamente em Despesas.
+          </p>
+          {error && <p role="alert">{error}</p>}
+          <button className="button primary" disabled={saving}>
+            Salvar saldo inicial
+          </button>
+        </form>
+      </Panel>
+    </div>
+  );
+}
+export function ExpenseForm({
+  expense,
+  month,
+  saving,
+  onSave,
+  onClose,
+}: {
+  expense?: Expense;
+  month: string;
+  saving: boolean;
+  onSave: Save<Expense>;
+  onClose: () => void;
+}) {
+  const [description, setDescription] = useState(expense?.description ?? ""),
+    [payee, setPayee] = useState(expense?.payee ?? ""),
+    [amount, setAmount] = useState(
+      expense ? (expense.amountCents / 100).toFixed(2) : "",
+    ),
+    [category, setCategory] = useState(expense?.category ?? "Outros"),
+    [method, setMethod] = useState<Expense["method"]>(expense?.method ?? "pix"),
+    [due, setDue] = useState(expense?.dueDate ?? `${month}-01`),
+    [paid, setPaid] = useState(!!expense?.paidDate),
+    [paidDate, setPaidDate] = useState(expense?.paidDate ?? localDate()),
+    [error, setError] = useState("");
+  return (
+    <Dialog
+      title={expense ? "Editar despesa" : "Nova despesa"}
+      subtitle="Contas e gastos fora dos cartões, sem duplicar a fatura."
+      onClose={onClose}
+    >
+      <form
+        className="simple-form"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          try {
+            const cents = parseMoney(amount);
+            if (!cents) throw Error("Informe um valor maior que zero.");
+            if (
+              await onSave({
+                id: expense?.id ?? crypto.randomUUID(),
+                description: description.trim(),
+                payee: payee.trim(),
+                category,
+                method,
+                amountCents: cents,
+                dueDate: due,
+                paidDate: paid ? paidDate : null,
+              })
+            )
+              onClose();
+          } catch (err) {
+            setError((err as Error).message);
+          }
+        }}
+      >
+        <label>
+          Descrição da despesa
+          <input
+            required
+            autoFocus
+            maxLength={100}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Aluguel, mercado, conta de luz…"
+          />
+        </label>
+        <label>
+          Destino / favorecido
+          <input
+            required
+            maxLength={80}
+            value={payee}
+            onChange={(e) => setPayee(e.target.value)}
+          />
+        </label>
+        <div className="form-row">
+          <label>
+            Valor da despesa
+            <input
+              required
+              inputMode="decimal"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+          </label>
+          <label>
+            Vencimento da despesa
+            <input
+              required
+              type="date"
+              min="2000-01-01"
+              max="2199-12-31"
+              value={due}
+              onChange={(e) => setDue(e.target.value)}
+            />
+          </label>
+        </div>
+        <div className="form-row">
+          <label>
+            Categoria da despesa
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              {CATEGORIES.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Forma de pagamento
+            <select
+              aria-label="Forma de pagamento"
+              value={method}
+              onChange={(e) => setMethod(e.target.value as Expense["method"])}
+            >
+              {Object.entries(METHODS).map(([v, l]) => (
+                <option key={v} value={v}>
+                  {l}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <label className="check-line">
+          <input
+            type="checkbox"
+            checked={paid}
+            onChange={(e) => setPaid(e.target.checked)}
+          />
+          Já foi paga
+        </label>
+        {paid && (
+          <label>
+            Data do pagamento
+            <input
+              required
+              type="date"
+              min="2000-01-01"
+              max={localDate()}
+              value={paidDate}
+              onChange={(e) => setPaidDate(e.target.value)}
+            />
+          </label>
+        )}
+        <p className="field-hint">
+          Despesas pendentes entram na previsão. Ao pagar, o desembolso entra na
+          data efetiva, sem descontar duas vezes.
+        </p>
+        {error && (
+          <p className="form-error" role="alert">
+            {error}
+          </p>
+        )}
+        <div className="dialog-footer">
+          <button
+            type="button"
+            className="button secondary"
+            disabled={saving}
+            onClick={onClose}
+          >
+            Cancelar
+          </button>
+          <button className="button primary" disabled={saving}>
+            Salvar despesa
+          </button>
+        </div>
+      </form>
+    </Dialog>
+  );
+}
+export function ExpensesPage({
+  data,
+  month,
+  saving,
+  onEdit,
+  onDelete,
+  onPay,
+  onUnpay,
+}: {
+  data: Data;
+  month: string;
+  saving: boolean;
+  onEdit: (e: Expense) => void;
+  onDelete: (e: Expense) => void;
+  onPay: (e: Expense) => void;
+  onUnpay: (e: Expense) => void;
+}) {
+  const [search, setSearch] = useState(""),
+    [category, setCategory] = useState("all"),
+    [method, setMethod] = useState("all"),
+    [status, setStatus] = useState("all");
+  const period = expenseMonth(data, month),
+    late = (e: Expense) => !e.paidDate && e.dueDate < localDate(),
+    rows = period
+      .filter(
+        (e) =>
+          `${e.description} ${e.payee}`
+            .toLocaleLowerCase("pt-BR")
+            .includes(search.toLocaleLowerCase("pt-BR")) &&
+          (category === "all" || category === e.category) &&
+          (method === "all" || method === e.method) &&
+          (status === "all" ||
+            (status === "paid"
+              ? !!e.paidDate
+              : status === "late"
+                ? late(e)
+                : !e.paidDate)),
+      )
+      .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+  const sum = (list: Expense[]) => list.reduce((s, e) => s + e.amountCents, 0),
+    pending = sum(period.filter((e) => !e.paidDate));
+  return (
+    <>
+      <div className="stats-grid">
+        <div className="stat-card debt">
+          <div className="stat-title">Despesas no período</div>
+          <strong>{money(sum(period))}</strong>
+          <div className="stat-foot">Inclui atrasadas no mês atual</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-title">Ainda falta pagar</div>
+          <strong data-testid="expense-pending">{money(pending)}</strong>
+          <div className="stat-foot">Contas fora dos cartões</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-title">Atrasadas</div>
+          <strong className="danger-text">
+            {money(sum(period.filter(late)))}
+          </strong>
+          <div className="stat-foot">Vencimento anterior a hoje</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-title">Pagamentos neste mês</div>
+          <strong>
+            {money(
+              sum(
+                (data.expenses ?? []).filter(
+                  (e) => e.paidDate?.slice(0, 7) === month,
+                ),
+              ),
+            )}
+          </strong>
+          <div className="stat-foot">Pela data efetiva do pagamento</div>
+        </div>
+      </div>
+      <Panel
+        title="Suas contas, organizadas"
+        subtitle="Pix, boletos, dinheiro e débito com vencimento e situação."
+      >
+        <div className="ledger-filters">
+          <label className="search">
+            <Search size={16} />
+            <input
+              aria-label="Buscar despesas"
+              value={search}
+              placeholder="Buscar conta ou favorecido…"
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </label>
+          <select
+            aria-label="Filtrar categoria das despesas"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            <option value="all">Todas as categorias</option>
+            {CATEGORIES.map((c) => (
+              <option key={c}>{c}</option>
+            ))}
+          </select>
+          <select
+            aria-label="Filtrar forma de pagamento"
+            value={method}
+            onChange={(e) => setMethod(e.target.value)}
+          >
+            <option value="all">Todas as formas</option>
+            {Object.entries(METHODS).map(([v, l]) => (
+              <option key={v} value={v}>
+                {l}
+              </option>
+            ))}
+          </select>
+          <select
+            aria-label="Filtrar situação das despesas"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+          >
+            <option value="all">Todas as situações</option>
+            <option value="paid">Pagas</option>
+            <option value="pending">Pendentes</option>
+            <option value="late">Atrasadas</option>
+          </select>
+        </div>
+        {rows.length ? (
+          <div className="table-scroll">
+            <table className="expense-table">
+              <thead>
+                <tr>
+                  <th>Despesa / destino</th>
+                  <th>Valor / forma</th>
+                  <th>Vencimento</th>
+                  <th>Situação</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((e) => (
+                  <tr key={e.id}>
+                    <td>
+                      <strong>{e.description}</strong>
+                      <small className="cell-small">
+                        {e.payee} · {e.category}
+                      </small>
+                    </td>
+                    <td>
+                      <strong>{money(e.amountCents)}</strong>
+                      <small className="cell-small">{METHODS[e.method]}</small>
+                    </td>
+                    <td>{e.dueDate.split("-").reverse().join("/")}</td>
+                    <td>
+                      <span
+                        className={`badge ${e.paidDate ? "green" : late(e) ? "expense-late" : "accent-badge"}`}
+                      >
+                        {e.paidDate
+                          ? "Paga"
+                          : late(e)
+                            ? "Atrasada"
+                            : "Pendente"}
+                      </span>
+                      {e.paidDate && (
+                        <small className="cell-small">
+                          Paga em {e.paidDate.split("-").reverse().join("/")}
+                        </small>
+                      )}
+                    </td>
+                    <td>
+                      <div className="row-actions">
+                        <button
+                          className="icon-button pay"
+                          disabled={saving}
+                          aria-label={`${e.paidDate ? "Desmarcar pagamento" : "Pagar despesa"} ${e.description}`}
+                          onClick={() => (e.paidDate ? onUnpay(e) : onPay(e))}
+                        >
+                          <Check size={16} />
+                        </button>
+                        <button
+                          className="icon-button"
+                          disabled={saving}
+                          aria-label={`Editar despesa ${e.description}`}
+                          onClick={() => onEdit(e)}
+                        >
+                          <Pencil size={15} />
+                        </button>
+                        <button
+                          className="icon-button danger-text"
+                          disabled={saving}
+                          aria-label={`Excluir despesa ${e.description}`}
+                          onClick={() => onDelete(e)}
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <Empty
+            title="Tudo em seu lugar"
+            text="Cadastre uma despesa ou ajuste os filtros."
+          />
+        )}
+        <div className="table-footer">
+          {rows.length} despesas nos filtros · o orçamento considera todos os
+          registros
+        </div>
+      </Panel>
+    </>
+  );
+}

@@ -197,6 +197,49 @@ try {
     version: 1,
     cards: [],
     purchases: [],
+    settings: {
+      theme: "ultra",
+      accent: "#20c7a0",
+      font: "inter",
+      motion: false,
+      glow: true,
+      carryover: { startMonth: month, openingCents: -12000 },
+    },
+    recurringIncomes: [
+      {
+        id: "salary",
+        description: "Renda recorrente preservada",
+        source: "Trabalho",
+        amountCents: 100000,
+        dueDay: 1,
+        frequency: "monthly",
+        startMonth: month,
+        endMonth: null,
+      },
+    ],
+    incomeReceipts: [
+      {
+        id: "receipt",
+        recurringId: "salary",
+        month,
+        date: month + "-01",
+        amountCents: 100000,
+        source: "Trabalho",
+        description: "Renda recorrente preservada",
+      },
+    ],
+    expenses: [
+      {
+        id: "expense",
+        description: "Despesa preservada",
+        payee: "Mercado",
+        category: "Casa",
+        amountCents: 3000,
+        dueDate: month + "-01",
+        method: "pix",
+        paidDate: month + "-01",
+      },
+    ],
     cashEntries: [
       {
         id: "e",

@@ -3,6 +3,7 @@ import { spawn } from "node:child_process";
 import { mkdir } from "node:fs/promises";
 import { runFlow } from "./flow.mjs";
 import { runEnhancements } from "./enhancements.mjs";
+import { runNewPlanning } from "./new-planning.mjs";
 import { runMoney } from "./money.mjs";
 const server = spawn(
   process.execPath,
@@ -42,12 +43,17 @@ try {
   await runFlow(page);
   await runEnhancements(page);
   await runMoney(page);
+  await runNewPlanning(page);
   await mkdir(".runtime", { recursive: true });
   await page.screenshot({ path: ".runtime/income.png", fullPage: true });
   await page.getByRole("button", { name: "Assinaturas", exact: true }).click();
   await page.screenshot({ path: ".runtime/subscriptions.png", fullPage: true });
   await page.getByRole("button", { name: "Atualizações", exact: true }).click();
   await page.screenshot({ path: ".runtime/updates.png", fullPage: true });
+  await page.getByRole("button", { name: "Aparência", exact: true }).click();
+  await page.screenshot({ path: ".runtime/appearance.png", fullPage: true });
+  await page.getByRole("button", { name: "Despesas", exact: true }).click();
+  await page.screenshot({ path: ".runtime/expenses.png", fullPage: true });
   const backup = await page.evaluate(() =>
     localStorage.getItem("saldo-data-v1"),
   );
@@ -89,6 +95,7 @@ try {
   await page.screenshot({ path: ".runtime/overview.png", fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.getByTestId("total-debt")).toBeVisible();
+  await page.screenshot({ path: ".runtime/mobile.png", fullPage: true });
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,

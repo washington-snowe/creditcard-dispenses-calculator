@@ -2,6 +2,14 @@
 
 Aplicativo desktop de finanças pessoais em **Node.js + Electron**, com interface React e TypeScript. Funciona offline após a instalação, sem conta ou servidor externo.
 
+## Baixar para Windows
+
+[**Baixar Saldo 1.0.0 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v1.0.0/Saldo-Windows-x64.zip)
+
+Extraia a pasta inteira e abra **saldo.exe**. Não é necessário instalar Node.js. A versão foi compilada e testada no Windows, incluindo os cálculos financeiros e a persistência dos dados após reiniciar o aplicativo.
+
+A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v1.0.0) também contém o checksum do ZIP.
+
 ## Executar no computador
 
 Instale **Node.js 22.12 ou superior** (recomendado: Node.js 24 LTS), abra um terminal nesta pasta e execute:

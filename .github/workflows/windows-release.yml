@@ -66,10 +66,39 @@ jobs:
           npm run test:updater
 
       - name: Publicar a versão e os arquivos para download
-        if: ${{ !contains(github.ref_name, '-') }}
+        if: ${{ !contains(github.ref_name, '-') || contains(github.ref_name, '-publish.') }}
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
           RELEASE_REPO: ${{ github.repository }}
         run: |
-          gh release create "$env:RELEASE_TAG" downloads/Saldo-Windows-x64.zip downloads/SHA256SUMS.txt --repo "$env:RELEASE_REPO" --verify-tag --title "Saldo $env:RELEASE_TAG - Windows 64 bits" --notes-file .github/release-notes.md
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $releaseTag = "v$version"
+          if ($env:RELEASE_TAG -ne $releaseTag -and $env:RELEASE_TAG -notlike "$releaseTag-publish.*") {
+            throw 'A tag de publicação não corresponde à versão do aplicativo.'
+          }
+
+          function Invoke-ReleaseCommand {
+            param([string[]]$ReleaseArguments)
+            for ($attempt = 1; $attempt -le 3; $attempt++) {
+              $output = & gh @ReleaseArguments 2>&1
+              if ($LASTEXITCODE -eq 0) {
+                $output | Write-Output
+                return
+              }
+              $message = ($output | Out-String).Trim().Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+              Write-Output "::warning title=Publicação GitHub::$message"
+              if ($attempt -lt 3) { Start-Sleep -Seconds 10 }
+            }
+            throw 'Falha ao publicar os arquivos após três tentativas; consulte as anotações acima.'
+          }
+
+          # Keep the release in draft until both verified files have been uploaded.
+          $existing = & gh release view "$releaseTag" --repo "$env:RELEASE_REPO" --json tagName 2>&1
+          if ($LASTEXITCODE -eq 0) {
+            Invoke-ReleaseCommand -ReleaseArguments @('release', 'edit', $releaseTag, '--repo', $env:RELEASE_REPO, '--draft=true')
+          } else {
+            Invoke-ReleaseCommand -ReleaseArguments @('release', 'create', $releaseTag, '--repo', $env:RELEASE_REPO, '--verify-tag', '--draft', '--title', "Saldo $releaseTag - Windows 64 bits", '--notes-file', '.github/release-notes.md')
+          }
+          Invoke-ReleaseCommand -ReleaseArguments @('release', 'upload', $releaseTag, 'downloads/Saldo-Windows-x64.zip', 'downloads/SHA256SUMS.txt', '--repo', $env:RELEASE_REPO, '--clobber')
+          Invoke-ReleaseCommand -ReleaseArguments @('release', 'edit', $releaseTag, '--repo', $env:RELEASE_REPO, '--draft=false', '--latest', '--title', "Saldo $releaseTag - Windows 64 bits", '--notes-file', '.github/release-notes.md')

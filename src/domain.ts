@@ -32,6 +32,37 @@ export type Data = {
   purchases: Purchase[];
   payments?: Payment[];
   settings?: { theme: "light" | "dark" };
+  cashEntries?: CashEntry[];
+  subscriptions?: Subscription[];
+  subscriptionPayments?: SubscriptionPayment[];
+};
+export type CashEntry = {
+  id: string;
+  description: string;
+  source: string;
+  date: string;
+  amountCents: number;
+  kind: "income" | "deduction";
+};
+export type Subscription = {
+  id: string;
+  name: string;
+  provider: string;
+  category: string;
+  amountCents: number;
+  cardId: string | null;
+  frequency: "monthly" | "quarterly" | "yearly";
+  dueDay: number;
+  startMonth: string;
+  endMonth: string | null;
+};
+export type SubscriptionPayment = {
+  id: string;
+  subscriptionId: string;
+  month: string;
+  paidMonth: string;
+  amountCents: number;
+  cardId: string | null;
 };
 export type MonthItem = {
   purchase: Purchase;
@@ -480,6 +511,91 @@ export function validateData(input: unknown): Data {
       installments.add(key);
     }
   }
+  const validDate = (value: unknown) => {
+    if (
+      typeof value !== "string" ||
+      !/^(20\d{2}|21\d{2})-(0[1-9]|1[0-2])-([0-2]\d|3[01])$/.test(value)
+    )
+      return false;
+    const [year, m, day] = value.split("-").map(Number);
+    const date = new Date(Date.UTC(year, m - 1, day));
+    return (
+      date.getUTCFullYear() === year &&
+      date.getUTCMonth() === m - 1 &&
+      date.getUTCDate() === day
+    );
+  };
+  if (x.cashEntries !== undefined) {
+    if (!Array.isArray(x.cashEntries) || x.cashEntries.length > 10000)
+      return fail();
+    const entries = new Set<string>();
+    for (const entry of x.cashEntries) {
+      if (
+        !entry ||
+        !text(entry.id) ||
+        entries.has(entry.id) ||
+        !text(entry.description) ||
+        !text(entry.source, 80) ||
+        !validDate(entry.date) ||
+        !number(entry.amountCents, 1, 100_000_000_000) ||
+        !["income", "deduction"].includes(entry.kind)
+      )
+        return fail();
+      entries.add(entry.id);
+    }
+  }
+  const subscriptionIds = new Set<string>();
+  if (x.subscriptions !== undefined) {
+    if (!Array.isArray(x.subscriptions) || x.subscriptions.length > 1000)
+      return fail();
+    for (const sub of x.subscriptions) {
+      if (
+        !sub ||
+        !text(sub.id) ||
+        subscriptionIds.has(sub.id) ||
+        !text(sub.name) ||
+        !text(sub.provider, 80) ||
+        !CATEGORIES.includes(sub.category) ||
+        !number(sub.amountCents, 1, 100_000_000_000) ||
+        !(sub.cardId === null || ids.has(sub.cardId)) ||
+        !["monthly", "quarterly", "yearly"].includes(sub.frequency) ||
+        !number(sub.dueDay, 1, 31) ||
+        !month(sub.startMonth) ||
+        !(
+          sub.endMonth === null ||
+          (month(sub.endMonth) && sub.endMonth >= sub.startMonth)
+        )
+      )
+        return fail();
+      subscriptionIds.add(sub.id);
+    }
+  }
+  if (x.subscriptionPayments !== undefined) {
+    if (
+      !Array.isArray(x.subscriptionPayments) ||
+      x.subscriptionPayments.length > 30000
+    )
+      return fail();
+    const paymentIds = new Set<string>(),
+      periods = new Set<string>();
+    for (const payment of x.subscriptionPayments) {
+      const key = `${payment?.subscriptionId}:${payment?.month}`;
+      if (
+        !payment ||
+        !text(payment.id) ||
+        paymentIds.has(payment.id) ||
+        periods.has(key) ||
+        !subscriptionIds.has(payment.subscriptionId) ||
+        !month(payment.month) ||
+        !month(payment.paidMonth) ||
+        !number(payment.amountCents, 1, 100_000_000_000) ||
+        !(payment.cardId === null || ids.has(payment.cardId))
+      )
+        return fail();
+      paymentIds.add(payment.id);
+      periods.add(key);
+    }
+  }
   // Keep only supported fields when importing untrusted backups.
   return {
     version: 1,
@@ -513,6 +629,46 @@ export function validateData(input: unknown): Data {
             paidMonth: payment.paidMonth,
             scheduledMonth: payment.scheduledMonth,
             kind: payment.kind,
+          })),
+        }
+      : {}),
+    ...(x.cashEntries
+      ? {
+          cashEntries: x.cashEntries.map((e) => ({
+            id: e.id,
+            description: e.description,
+            source: e.source,
+            date: e.date,
+            amountCents: e.amountCents,
+            kind: e.kind,
+          })),
+        }
+      : {}),
+    ...(x.subscriptions
+      ? {
+          subscriptions: x.subscriptions.map((s) => ({
+            id: s.id,
+            name: s.name,
+            provider: s.provider,
+            category: s.category,
+            amountCents: s.amountCents,
+            cardId: s.cardId,
+            frequency: s.frequency,
+            dueDay: s.dueDay,
+            startMonth: s.startMonth,
+            endMonth: s.endMonth,
+          })),
+        }
+      : {}),
+    ...(x.subscriptionPayments
+      ? {
+          subscriptionPayments: x.subscriptionPayments.map((p) => ({
+            id: p.id,
+            subscriptionId: p.subscriptionId,
+            month: p.month,
+            paidMonth: p.paidMonth,
+            amountCents: p.amountCents,
+            cardId: p.cardId,
           })),
         }
       : {}),

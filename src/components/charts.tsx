@@ -21,7 +21,10 @@ import {
   type Card,
   type Payment,
   type Purchase,
+  type Subscription,
+  type SubscriptionPayment,
 } from "../domain";
+import { subscriptionMonth } from "../finance";
 import { Empty } from "./ui";
 const axis = { fill: "var(--muted)", fontSize: 11 };
 const tooltip = {
@@ -42,17 +45,36 @@ export function MonthlyChart({
   start,
   count = 6,
   onMonth,
+  subscriptions = [],
+  subscriptionPayments = [],
 }: {
   purchases: Purchase[];
   payments: Payment[];
   start: string;
   count?: number;
   onMonth?: (month: string) => void;
+  subscriptions?: Subscription[];
+  subscriptionPayments?: SubscriptionPayment[];
 }) {
-  const rows = Array.from({ length: count }, (_, i) =>
-    monthSnapshot(purchases, payments, addMonths(start, i)),
-  );
-  if (!purchases.length)
+  const rows = Array.from({ length: count }, (_, i) => {
+    const month = addMonths(start, i),
+      base = monthSnapshot(purchases, payments, month);
+    const recurring = subscriptionMonth(
+      subscriptions,
+      subscriptionPayments,
+      month,
+    );
+    return {
+      ...base,
+      outstanding:
+        base.outstanding +
+        recurring.filter((i) => !i.paid).reduce((sum, i) => sum + i.amount, 0),
+      paid:
+        base.paid +
+        recurring.filter((i) => i.paid).reduce((sum, i) => sum + i.amount, 0),
+    };
+  });
+  if (!purchases.length && !subscriptions.length)
     return (
       <Empty
         title="Seu futuro começa aqui"
@@ -93,7 +115,7 @@ export function MonthlyChart({
               labelFormatter={(label) => monthLabel(String(label))}
               formatter={(value, name) => [
                 money(Number(value)),
-                name === "paid" ? "Parcelas pagas" : "Ainda a pagar",
+                name === "paid" ? "Valores pagos" : "Ainda a pagar",
               ]}
             />
             <Bar
@@ -125,7 +147,7 @@ export function MonthlyChart({
         </span>
         <span>
           <i className="dot mint" />
-          Parcelas pagas
+          Valores pagos
         </span>
         <small>Valores em R$ · clique para abrir um mês</small>
       </div>

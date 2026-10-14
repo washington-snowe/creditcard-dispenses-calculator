@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { runFlow } from "./flow.mjs";
 import { runEnhancements } from "./enhancements.mjs";
+import { runMoney } from "./money.mjs";
 const directory = await mkdtemp(join(tmpdir(), "saldo-desktop-test-"));
 let app;
 const executablePath = process.env.SALDO_EXECUTABLE;
@@ -29,6 +30,13 @@ try {
   expect(saved.purchases[0].paid).toBe(3);
   expect(saved.payments).toHaveLength(2);
   expect(saved.settings.theme).toBe("dark");
+  await runMoney(page);
+  const withMoney = JSON.parse(
+    await readFile(join(directory, "finances.json"), "utf8"),
+  );
+  expect(withMoney.cashEntries).toHaveLength(2);
+  expect(withMoney.subscriptions).toHaveLength(2);
+  expect(withMoney.subscriptionPayments).toHaveLength(2);
   expect(await page.evaluate(() => typeof window.saldo?.save)).toBe("function");
   expect(await page.evaluate(() => typeof window.require)).toBe("undefined");
   await app.close();
@@ -44,6 +52,10 @@ try {
   ).toBeVisible();
   await expect(restarted.locator("html")).toHaveAttribute("data-theme", "dark");
   await expect(restarted.getByTestId("total-debt")).toHaveText(/1\.900,00/);
+  await restarted
+    .getByRole("button", { name: "Entradas do mês", exact: true })
+    .click();
+  await expect(restarted.getByTestId("cash-remaining")).toHaveText(/4\.050,00/);
   await restarted
     .getByRole("button", { name: "Minhas compras", exact: true })
     .click();

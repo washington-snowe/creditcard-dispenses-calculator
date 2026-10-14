@@ -3223,3 +3223,334 @@ dd {
     transform: none;
   }
 }
+.simple-form {
+  padding: 24px 28px 0;
+}
+.simple-form > label,
+.simple-form .form-row > label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--secondary);
+  margin-bottom: 16px;
+}
+.simple-form > .dialog-footer {
+  margin: 23px -28px 0;
+}
+.simple-form > .form-error {
+  padding: 12px 0 0;
+}
+.simple-form > label > small,
+.simple-form .form-row > label > small {
+  font-size: 9px;
+  color: var(--muted);
+}
+.cash-explanation {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  background: var(--mint-soft);
+  border: 1px solid color-mix(in srgb, var(--mint) 20%, var(--border));
+  padding: 15px 18px;
+  border-radius: 10px;
+  color: var(--secondary);
+  font-size: 10px;
+  line-height: 1.8;
+  margin: 0 0 22px;
+}
+.cash-explanation > svg {
+  color: var(--mint);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.negative-balance > strong,
+.danger-text {
+  color: var(--danger) !important;
+}
+.cash-grid {
+  grid-template-columns: minmax(0, 1.7fr) minmax(265px, 1fr);
+}
+.ledger-filters {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 15px 22px;
+  border-bottom: 1px solid var(--border);
+}
+.ledger-filters select {
+  max-width: 190px;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  color: var(--secondary);
+  font-size: 10px;
+}
+.ledger-filters .search {
+  min-width: 150px;
+  flex: 1 1 180px;
+}
+.budget-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 19px 24px;
+  border-top: 1px solid var(--border);
+  font-size: 10px;
+  color: var(--secondary);
+}
+.budget-breakdown > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 13px;
+}
+.budget-breakdown > div:nth-child(4) {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  color: var(--accent);
+  font-weight: 600;
+}
+.padded {
+  padding: 0 22px 18px;
+}
+.cash-table td:first-child strong,
+.cash-table td:nth-child(2) {
+  display: inline-block;
+  max-width: 210px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+.updates-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(260px, 1fr);
+  gap: 23px;
+}
+.update-body {
+  padding: 15px 24px 25px;
+}
+.update-version {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  padding: 16px 0 25px;
+}
+.update-version > .summary-icon {
+  margin: 0;
+  height: 54px;
+  width: 54px;
+}
+.update-version > div > small {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  margin-bottom: 9px;
+}
+.update-version strong {
+  font-size: 26px;
+  letter-spacing: -0.8px;
+}
+.update-version p {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 7px;
+}
+.update-version > .badge {
+  margin-left: auto;
+}
+.update-available {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px;
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--border));
+  border-radius: 12px;
+  margin: 0 0 21px;
+}
+.update-available small {
+  color: var(--secondary);
+  font-size: 10px;
+}
+.update-available h3 {
+  font-size: 22px;
+  margin-top: 9px;
+  letter-spacing: -0.7px;
+}
+.update-available p {
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.8;
+  margin-top: 10px;
+}
+.update-available > svg {
+  color: var(--accent);
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+.update-progress {
+  padding: 17px 0 21px;
+}
+.update-progress > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--secondary);
+  margin-bottom: 12px;
+}
+.update-progress .progress {
+  width: 100%;
+  height: 6px;
+}
+.update-progress > small {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  margin-top: 10px;
+}
+.update-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+.update-error {
+  font-size: 11px;
+  color: var(--danger);
+  line-height: 1.8;
+  margin: 16px 0;
+}
+.update-note {
+  margin-top: 17px;
+  padding-top: 17px;
+  border-top: 1px solid var(--border);
+}
+.update-last {
+  padding: 17px 0;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+}
+.update-last > p {
+  color: var(--muted);
+  font-size: 10px;
+  margin-top: 7px;
+  line-height: 1.8;
+}
+.update-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 19px 24px 27px;
+}
+.update-steps > div {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--secondary);
+}
+.update-steps > div > span {
+  display: grid;
+  place-items: center;
+  width: 29px;
+  height: 29px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 8px;
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 600;
+}
+.sidebar nav {
+  min-height: 0;
+  overflow-y: auto;
+  flex-shrink: 1;
+}
+.sidebar-bottom {
+  flex-shrink: 0;
+}
+.sidebar-tip {
+  flex-shrink: 0;
+}
+@media (max-height: 900px) {
+  .sidebar-tip {
+    display: none;
+  }
+  .sidebar-bottom {
+    padding-top: 16px;
+  }
+}
+@media (max-width: 900px) {
+  .cash-grid,
+  .updates-layout {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 580px) {
+  .simple-form {
+    padding: 20px 18px 0;
+  }
+  .simple-form > .dialog-footer {
+    margin-inline: -18px;
+  }
+  .simple-form > label,
+  .simple-form .form-row > label {
+    font-size: 10px;
+  }
+  .cash-explanation {
+    padding: 13px 14px;
+    font-size: 9px;
+  }
+  .ledger-filters {
+    padding: 12px 16px;
+    gap: 8px;
+  }
+  .ledger-filters .search {
+    flex-basis: 100%;
+  }
+  .ledger-filters select {
+    max-width: 100%;
+    flex: 1 1 110px;
+    font-size: 9px;
+  }
+  .update-body {
+    padding: 10px 17px 22px;
+  }
+  .update-version {
+    gap: 11px;
+    flex-wrap: wrap;
+  }
+  .update-version > div {
+    flex: 1;
+  }
+  .update-version > div > strong {
+    font-size: 23px;
+  }
+  .update-version p {
+    font-size: 9px;
+    line-height: 1.8;
+  }
+  .update-version > .badge {
+    margin-left: 65px;
+  }
+  .update-available {
+    padding: 18px 16px;
+  }
+  .update-actions > .button {
+    width: 100%;
+  }
+  .update-steps {
+    padding: 15px 20px 23px;
+  }
+  .update-steps > div {
+    font-size: 10px;
+  }
+  .subscription-table .purchase-name strong {
+    max-width: 160px;
+  }
+}

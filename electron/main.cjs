@@ -1,4 +1,6 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, net, shell } = require("electron");
+const { spawn } = require("node:child_process");
+const { createUpdater, REPOSITORY } = require("./updater.cjs");
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
@@ -9,6 +11,16 @@ if (process.env.SALDO_DATA_DIR)
   app.setPath("userData", path.resolve(process.env.SALDO_DATA_DIR));
 const dataPath = () => path.join(app.getPath("userData"), "finances.json");
 const index = pathToFileURL(path.join(__dirname, "../dist/index.html")).href;
+const updater = createUpdater({
+  currentVersion: app.getVersion(),
+  userData: app.getPath("userData"),
+  packaged: app.isPackaged,
+  fetch: (url, options) => net.fetch(url, options),
+  onProgress: (progress) => {
+    if (window && !window.isDestroyed())
+      window.webContents.send("saldo:update:progress", progress);
+  },
+});
 function checkSender(event) {
   if (
     !window ||
@@ -25,8 +37,59 @@ app.on("second-instance", () => {
     window.focus();
   }
 });
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   if (!hasLock) return;
+  const redirect = await updater.activeLaunch();
+  if (redirect) {
+    app.releaseSingleInstanceLock();
+    const launched = await new Promise((resolve) => {
+      const child = spawn(redirect, [], {
+        detached: true,
+        stdio: "ignore",
+        cwd: path.dirname(redirect),
+      });
+      child.once("error", () => resolve(false));
+      child.once("spawn", () => {
+        child.unref();
+        resolve(true);
+      });
+    });
+    if (launched || !app.requestSingleInstanceLock()) {
+      app.exit(0);
+      return;
+    }
+  }
+  ipcMain.handle("saldo:update:releases", (event) => {
+    checkSender(event);
+    return shell.openExternal(`${REPOSITORY}/releases/latest`);
+  });
+  ipcMain.handle("saldo:update:info", (event) => {
+    checkSender(event);
+    return updater.info();
+  });
+  ipcMain.handle("saldo:update:check", (event) => {
+    checkSender(event);
+    return updater.check();
+  });
+  ipcMain.handle("saldo:update:download", (event) => {
+    checkSender(event);
+    return updater.download();
+  });
+  ipcMain.handle("saldo:update:cancel", (event) => {
+    checkSender(event);
+    updater.cancel();
+  });
+  ipcMain.handle("saldo:update:ready", (event) => {
+    checkSender(event);
+    return updater.ready();
+  });
+  ipcMain.handle("saldo:update:apply", async (event) => {
+    checkSender(event);
+    await writes;
+    const result = await updater.apply();
+    setTimeout(() => app.quit(), 200);
+    return result;
+  });
   ipcMain.handle("saldo:load", async (event) => {
     checkSender(event);
     try {
@@ -100,6 +163,7 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
 app.on("before-quit", (event) => {
+  updater.cancel();
   if (writes) {
     event.preventDefault();
     const pending = writes;

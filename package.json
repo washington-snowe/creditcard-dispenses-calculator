@@ -1,6 +1,6 @@
 {
   "name": "saldo-desktop",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "private": true,
   "description": "Gestão local de cartões, compras parceladas e planejamento financeiro.",
   "type": "module",
@@ -12,6 +12,7 @@
     "test": "tsx --test tests/*.test.ts",
     "test:ui": "node tests/ui.mjs",
     "test:desktop": "node tests/desktop.mjs",
+    "test:updater": "node tests/updater-windows.mjs",
     "package": "npm run build && node scripts/package.mjs"
   },
   "engines": {

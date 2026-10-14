@@ -3,6 +3,7 @@ import { spawn } from "node:child_process";
 import { mkdir } from "node:fs/promises";
 import { runFlow } from "./flow.mjs";
 import { runEnhancements } from "./enhancements.mjs";
+import { runMoney } from "./money.mjs";
 const server = spawn(
   process.execPath,
   [
@@ -40,6 +41,13 @@ try {
   await page.goto("http://127.0.0.1:4173");
   await runFlow(page);
   await runEnhancements(page);
+  await runMoney(page);
+  await mkdir(".runtime", { recursive: true });
+  await page.screenshot({ path: ".runtime/income.png", fullPage: true });
+  await page.getByRole("button", { name: "Assinaturas", exact: true }).click();
+  await page.screenshot({ path: ".runtime/subscriptions.png", fullPage: true });
+  await page.getByRole("button", { name: "Atualizações", exact: true }).click();
+  await page.screenshot({ path: ".runtime/updates.png", fullPage: true });
   const backup = await page.evaluate(() =>
     localStorage.getItem("saldo-data-v1"),
   );

@@ -60,6 +60,11 @@ jobs:
           $hash = (Get-FileHash downloads/Saldo-Windows-x64.zip -Algorithm SHA256).Hash.ToLowerInvariant()
           "$hash  Saldo-Windows-x64.zip" | Set-Content -Path downloads/SHA256SUMS.txt -Encoding utf8
 
+      - name: Testar atualização, retorno e preservação de dados no Windows
+        run: |
+          $env:SALDO_EXECUTABLE = Join-Path $PWD 'release/Saldo-win32-x64/saldo.exe'
+          npm run test:updater
+
       - name: Publicar a versão e os arquivos para download
         env:
           GH_TOKEN: ${{ github.token }}

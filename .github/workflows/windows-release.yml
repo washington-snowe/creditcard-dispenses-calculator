@@ -1,0 +1,69 @@
+name: Publicar Saldo para Windows
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: windows-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Compilar, testar e publicar Windows x64
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - name: Obter o código da versão
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Preparar Node.js 24
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Instalar dependências verificadas
+        run: |
+          npm ci
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node node_modules/electron/install.js
+
+      - name: Validar os cálculos financeiros
+        run: npm test
+
+      - name: Compilar e gerar o aplicativo portátil
+        run: npm run package
+
+      - name: Testar o aplicativo Windows e a persistência
+        run: |
+          $env:SALDO_EXECUTABLE = Join-Path $PWD 'release/Saldo-win32-x64/saldo.exe'
+          npm run test:desktop
+
+      - name: Preparar ZIP e checksum
+        run: |
+          New-Item -ItemType Directory -Force downloads | Out-Null
+          @'
+          SALDO - Windows de 64 bits
+
+          Extraia a pasta inteira e execute saldo.exe. Não é necessário instalar Node.js.
+          Não mova apenas saldo.exe: os demais arquivos também são necessários.
+
+          Seus dados ficam em %APPDATA%\saldo-desktop\finances.json.
+          Exporte backups pelo botão de download do aplicativo para preservar uma cópia.
+          '@ | Set-Content -Path release/Saldo-win32-x64/LEIA-ME.txt -Encoding utf8
+          Compress-Archive -Path release/Saldo-win32-x64 -DestinationPath downloads/Saldo-Windows-x64.zip
+          $hash = (Get-FileHash downloads/Saldo-Windows-x64.zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  Saldo-Windows-x64.zip" | Set-Content -Path downloads/SHA256SUMS.txt -Encoding utf8
+
+      - name: Publicar a versão e os arquivos para download
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_REPO: ${{ github.repository }}
+        run: |
+          gh release create "$env:RELEASE_TAG" downloads/Saldo-Windows-x64.zip downloads/SHA256SUMS.txt --repo "$env:RELEASE_REPO" --verify-tag --title "Saldo $env:RELEASE_TAG - Windows 64 bits" --notes-file .github/release-notes.md

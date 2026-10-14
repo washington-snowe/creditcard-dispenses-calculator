@@ -38,6 +38,13 @@ process.env.SALDO_DATA_DIR = userData;
 let app,
   scriptCounter = 0;
 const quote = (value) => "'" + String(value).replaceAll("'", "''") + "'";
+function annotation(kind, title, message) {
+  const escaped = String(message)
+    .replaceAll("%", "%25")
+    .replaceAll("\r", "%0D")
+    .replaceAll("\n", "%0A");
+  console.log(`::${kind} title=${title}::${escaped}`);
+}
 async function ps(code) {
   const file = join(root, `test-${++scriptCounter}.ps1`);
   await writeFile(file, "\uFEFF$ErrorActionPreference = 'Stop'\n" + code);
@@ -204,9 +211,24 @@ try {
   });
   await writeFile(join(userData, "finances.json"), finances);
   const good = await candidate(goodVersion);
+  annotation(
+    "notice",
+    "Atualizador Windows",
+    "Pacote local de teste criado; iniciando o aplicativo original.",
+  );
   const pid = await launchOriginal();
+  annotation(
+    "notice",
+    "Atualizador Windows",
+    "Aplicativo original aberto; preparando download e extração real.",
+  );
   const updater = await controller(goodVersion, good, pid);
   await updater.download(); // Real PowerShell extraction, ZIP checks and ASAR/version validation.
+  annotation(
+    "notice",
+    "Atualizador Windows",
+    "Download, checksum e extração concluídos; aplicando a atualização.",
+  );
   assert.equal((await updater.info()).readyVersion, goodVersion);
   await updater.apply();
   await app.close();
@@ -216,6 +238,11 @@ try {
     return value?.version === goodVersion ? value : null;
   }, "A atualização nativa não concluiu.");
   assert.equal(success.success, true, success.message);
+  annotation(
+    "notice",
+    "Atualizador Windows",
+    "Nova versão abriu e validou os dados; verificando o atalho original.",
+  );
   assert.equal(
     await readFile(join(userData, "finances.json"), "utf8"),
     finances,
@@ -315,6 +342,13 @@ try { $null = $archive.CreateEntry('../../outside.txt') } finally { $archive.Dis
   console.log(
     "Windows: pacote de versão diferente e ZIP com tentativa de sair da pasta foram rejeitados.",
   );
+} catch (error) {
+  annotation(
+    "error",
+    "Falha no teste de atualização Windows",
+    error.stack ?? error.message ?? error,
+  );
+  throw error;
 } finally {
   await app?.close().catch(() => {});
   await stopOwnedProcesses().catch(() => {});
@@ -325,5 +359,12 @@ try { $null = $archive.CreateEntry('../../outside.txt') } finally { $archive.Dis
     force: true,
     maxRetries: 10,
     retryDelay: 500,
+  }).catch((error) => {
+    annotation(
+      "error",
+      "Falha na limpeza do teste Windows",
+      error.stack ?? error.message,
+    );
+    throw error;
   });
 }

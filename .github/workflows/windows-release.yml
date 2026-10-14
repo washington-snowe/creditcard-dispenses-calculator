@@ -66,6 +66,7 @@ jobs:
           npm run test:updater
 
       - name: Publicar a versão e os arquivos para download
+        if: ${{ !contains(github.ref_name, '-') }}
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}

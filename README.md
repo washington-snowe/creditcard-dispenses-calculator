@@ -4,11 +4,11 @@ Aplicativo desktop de finanças pessoais em **Node.js + Electron**, com interfac
 
 ## Baixar para Windows
 
-[**Baixar Saldo 1.0.0 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v1.0.0/Saldo-Windows-x64.zip)
+[**Baixar Saldo 2.0.0 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v2.0.0/Saldo-Windows-x64.zip)
 
 Extraia a pasta inteira e abra **saldo.exe**. Não é necessário instalar Node.js. A versão foi compilada e testada no Windows, incluindo os cálculos financeiros e a persistência dos dados após reiniciar o aplicativo.
 
-A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v1.0.0) também contém o checksum do ZIP.
+A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v2.0.0) também contém o checksum do ZIP.
 
 ## Executar no computador
 
@@ -35,13 +35,32 @@ A interface no navegador usa um armazenamento local separado do aplicativo deskt
 - Cadastrar compras escolhendo banco e cartão; informar **valor total ou valor de cada parcela**, número de parcelas, parcelas já pagas, categoria e mês da próxima parcela.
 - Consultar saldo devedor, pagamentos do mês, total já pago e última parcela prevista.
 - Editar ou excluir compras, registrar um pagamento e corrigir pagamentos pelo formulário de edição.
-- Filtrar por cartão, pesquisar compras e separar compras quitadas e em andamento.
+- Filtrar globalmente por descrição, banco, cartão, categoria e status; totais, gráficos e planejamento seguem os mesmos filtros.
 - Consultar o histórico de compras, saldo e parcelas mensais de cada cartão e o total de todos.
 - Explorar gráficos de distribuição por cartão, previsão mensal e comparação de saldos.
-- Abrir cada mês do planejamento para ver **todas as parcelas individuais** e os totais por cartão, até a quitação. Gráficos longos podem ser navegados em blocos de 12 meses.
+- Abrir cada mês do planejamento para ver **todas as parcelas individuais** e os totais por cartão, até a quitação. Use as setas, o seletor de mês ou as barras dos gráficos para navegar por meses passados e futuros.
 - Exportar e restaurar backups JSON. A restauração substitui os dados atuais após confirmação; um arquivo inválido é rejeitado.
 
+- Alternar entre tema claro e escuro, com preferência salva no desktop e no backup.
+- Marcar todas as parcelas pendentes de um cartão no mês atual como pagas, com confirmação e opção de desfazer.
+- Comparar parcelas no gerenciador de antecipações por valor mensal, custo para quitar e alívio por real; sugerir uma seleção dentro do orçamento e simular o antes/depois.
+- Registrar a antecipação de uma ou mais parcelas, ou a quitação de compras inteiras.
+
 A primeira execução começa vazia. O botão **Experimentar exemplo** carrega dados fictícios somente após confirmação.
+
+## Atualizar da versão 1.0
+
+Feche o aplicativo antigo, extraia a nova pasta inteira e execute o novo `saldo.exe`. A pasta de dados permanece a mesma; cartões e compras da versão anterior são aceitos sem precisar cadastrar tudo novamente. Backups antigos também continuam válidos. Exporte uma cópia antes de atualizar se quiser guardar um histórico independente.
+
+## Pagamentos, meses e antecipações
+
+O seletor de mês altera as parcelas do período, o calendário, a situação da fatura cadastrada e os gráficos. O saldo devedor total continua sendo o saldo atualmente pendente. Os meses antigos usam as parcelas já pagas e o mês informado para estimar o histórico; os novos pagamentos registram o mês real em que foram anotados.
+
+**Marcar mês como pago** registra todas as parcelas vencidas e do mês atual daquele cartão, inclusive as compras ocultas por filtros. A confirmação lista os itens e o valor integral. O botão fica desabilitado fora do mês atual. Pagamentos não são enviados ao banco.
+
+Em **Antecipações**, a classificação por maior parcela mostra o maior valor mensal; a classificação por alívio por real compara a parcela com o custo total para quitar a compra. A sugestão de orçamento seleciona compras por essa eficiência sem exceder o valor informado; ela pode ser ajustada e não promete uma combinação matematicamente ótima. A simulação mostra as parcelas futuras antes/depois; o custo integral à vista aparece separadamente. Não há estimativa de desconto ou juros do banco.
+
+Você também pode antecipar as próximas N parcelas em Minhas compras. A próxima cobrança avança N meses; quitar a compra elimina todos os compromissos futuros dela. O botão Desfazer reverte a última alteração de dados na sessão. Alterar o valor ou o total de parcelas no formulário de edição recalcula o histórico da compra.
 
 ## Como os cálculos funcionam
 

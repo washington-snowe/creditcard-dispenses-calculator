@@ -2,6 +2,7 @@ import { chromium, expect } from "playwright/test";
 import { spawn } from "node:child_process";
 import { mkdir } from "node:fs/promises";
 import { runFlow } from "./flow.mjs";
+import { runEnhancements } from "./enhancements.mjs";
 const server = spawn(
   process.execPath,
   [
@@ -38,6 +39,7 @@ try {
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("http://127.0.0.1:4173");
   await runFlow(page);
+  await runEnhancements(page);
   const backup = await page.evaluate(() =>
     localStorage.getItem("saldo-data-v1"),
   );

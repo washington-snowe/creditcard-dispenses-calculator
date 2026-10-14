@@ -78,7 +78,7 @@ export async function runFlow(page) {
   await page.getByLabel("Filtrar por cartão").selectOption(id);
   await expect(page.getByTestId("total-debt")).toHaveText(/66,66/);
   await page.getByRole("button", { name: "Meus cartões" }).click();
-  await expect(page.locator(".card-summary tfoot")).toContainText("666,66");
+  await expect(page.locator(".card-summary tfoot")).toContainText("66,66");
   await page.getByRole("button", { name: "Excluir cartão Principal" }).click();
   await expect(page.getByRole("status")).toContainText("compras vinculadas");
   await expect(page.getByRole("dialog")).not.toBeVisible();
@@ -91,10 +91,12 @@ export async function runFlow(page) {
     .getByRole("button")
     .first()
     .click();
-  await expect(page.locator(".month-details")).toContainText(
+  await expect(page.locator(".forecast-table .month-details")).toContainText(
     "Teste de centavos",
   );
-  await expect(page.locator(".month-details")).toContainText("Passagem");
+  await expect(page.locator(".forecast-table .month-details")).toContainText(
+    "Passagem",
+  );
   await page.reload();
   await expect(page.getByTestId("total-debt")).toHaveText(/666,66/);
   await page
@@ -112,8 +114,9 @@ export async function runFlow(page) {
     .click();
   await page.getByRole("button", { name: "Confirmar", exact: true }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible();
-  await expect(page.getByTestId("total-debt")).toHaveText(/66,66/);
+  await expect(page.getByTestId("total-debt")).toHaveText(/0,00/);
   await page.getByLabel("Buscar compras").fill("");
+  await expect(page.getByTestId("total-debt")).toHaveText(/66,66/);
   await page
     .getByRole("button", { name: "Editar Teste de centavos", exact: true })
     .click();
@@ -127,7 +130,7 @@ export async function runFlow(page) {
   await expect(page.locator(".purchase-table tbody")).toContainText("Quitada");
   await page.getByRole("button", { name: "Planejamento", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "Seu futuro começa aqui" }),
+    page.getByRole("heading", { name: "Um mês livre de parcelas" }),
   ).toBeVisible();
   console.log(
     "Fluxos verificados: cartões, seleção de banco, compras, centavos, pagamentos, edição, filtros, resumo global, previsão individual, persistência, exclusão e quitação.",

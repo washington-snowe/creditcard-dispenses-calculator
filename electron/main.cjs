@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, net, shell } = require("electron");
 const { spawn } = require("node:child_process");
 const { createUpdater, REPOSITORY } = require("./updater.cjs");
+const { createGitHubFetch } = require("./github-fetch.cjs");
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
@@ -15,7 +16,7 @@ const updater = createUpdater({
   currentVersion: app.getVersion(),
   userData: app.getPath("userData"),
   packaged: app.isPackaged,
-  fetch: (url, options) => net.fetch(url, options),
+  fetch: createGitHubFetch(net),
   onProgress: (progress) => {
     if (window && !window.isDestroyed())
       window.webContents.send("saldo:update:progress", progress);

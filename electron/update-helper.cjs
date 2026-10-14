@@ -47,7 +47,8 @@ async function main() {
     ),
   );
   let previous = null,
-    child;
+    child,
+    exited = false;
   try {
     previous = await fs.readFile(config.active, "utf8");
   } catch (error) {
@@ -69,7 +70,6 @@ async function main() {
       ["--saldo-update-ack=" + config.nonce],
       env,
     );
-    let exited = false;
     child.once("exit", () => {
       exited = true;
     });
@@ -96,7 +96,7 @@ async function main() {
       processId: child.pid,
     });
   } catch (error) {
-    if (child && alive(child.pid)) {
+    if (child && !exited && child.exitCode === null && alive(child.pid)) {
       await new Promise((resolve) => {
         const kill = spawn(
           "taskkill.exe",

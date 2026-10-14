@@ -348,8 +348,9 @@ try {
   await assert.rejects(invalid.download(), /vers.o do pacote/);
   assert.equal((await invalid.info()).readyVersion, null);
   const maliciousZip = join(root, "unsafe.zip"),
-    outside = join(userData, "outside.txt");
-  await ps(`Add-Type -AssemblyName System.IO.Compression.FileSystem
+    outside = join(updates, "outside.txt");
+  await ps(`Add-Type -AssemblyName System.IO.Compression
+Add-Type -AssemblyName System.IO.Compression.FileSystem
 $archive = [IO.Compression.ZipFile]::Open(${quote(maliciousZip)}, [IO.Compression.ZipArchiveMode]::Create)
 try { $null = $archive.CreateEntry('../../outside.txt') } finally { $archive.Dispose() }`);
   const unsafe = await controller(badVersion, await readFile(maliciousZip));

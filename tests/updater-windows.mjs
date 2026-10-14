@@ -50,7 +50,13 @@ async function ps(code) {
   await writeFile(file, "\uFEFF$ErrorActionPreference = 'Stop'\n" + code);
   return new Promise((resolve, reject) => {
     const child = spawn(
-      "powershell.exe",
+      join(
+        process.env.SystemRoot || "C:\\Windows",
+        "System32",
+        "WindowsPowerShell",
+        "v1.0",
+        "powershell.exe",
+      ),
       [
         "-NoProfile",
         "-NonInteractive",
@@ -59,7 +65,14 @@ async function ps(code) {
         "-File",
         file,
       ],
-      { windowsHide: true },
+      {
+        windowsHide: true,
+        env: Object.fromEntries(
+          Object.entries(process.env).filter(
+            ([key]) => key.toUpperCase() !== "PSMODULEPATH",
+          ),
+        ),
+      },
     );
     let output = "";
     child.stdout.on("data", (chunk) => {

@@ -6,7 +6,11 @@ $zip = ${quote(config.zip)}
 $stage = ${quote(config.stage)}
 $destination = ${quote(config.destination)}
 $expected = ${quote(config.version)}
-if ((Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant() -ne ${quote(config.hash)}) { throw 'Checksum da atualização divergente.' }
+$hashStream = [IO.File]::OpenRead($zip)
+$sha = [Security.Cryptography.SHA256]::Create()
+try { $actualHash = [BitConverter]::ToString($sha.ComputeHash($hashStream)).Replace('-', '').ToLowerInvariant() }
+finally { $hashStream.Dispose(); $sha.Dispose() }
+if ($actualHash -ne ${quote(config.hash)}) { throw 'Checksum da atualização divergente.' }
 New-Item -ItemType Directory -Force $stage | Out-Null
 $archive = [IO.Compression.ZipFile]::OpenRead($zip)
 try {

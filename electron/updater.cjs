@@ -48,8 +48,24 @@ function checksum(text) {
 }
 function runPowerShell(file, detached = false) {
   return new Promise((resolve, reject) => {
+    // A PowerShell 7 launcher can pass module paths incompatible with Windows PowerShell 5.1.
+    const env = Object.fromEntries(
+      Object.entries(process.env).filter(
+        ([key]) => key.toUpperCase() !== "PSMODULEPATH",
+      ),
+    );
+    const executable =
+      process.platform === "win32"
+        ? path.join(
+            process.env.SystemRoot || "C:\\Windows",
+            "System32",
+            "WindowsPowerShell",
+            "v1.0",
+            "powershell.exe",
+          )
+        : "powershell.exe";
     const child = spawn(
-      "powershell.exe",
+      executable,
       [
         "-NoProfile",
         "-NonInteractive",
@@ -62,6 +78,7 @@ function runPowerShell(file, detached = false) {
         cwd: path.dirname(file),
         windowsHide: true,
         detached,
+        env,
         stdio: detached ? "ignore" : ["ignore", "pipe", "pipe"],
       },
     );

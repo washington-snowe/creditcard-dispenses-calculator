@@ -2,7 +2,7 @@ const fs = require("node:fs/promises");
 const path = require("node:path");
 const { createHash, randomUUID } = require("node:crypto");
 const { spawn } = require("node:child_process");
-const { prepareScript, applyScript } = require("./update-scripts.cjs");
+const { prepareScript } = require("./update-scripts.cjs");
 const REPOSITORY =
   "https://github.com/washington-snowe/creditcard-dispenses-calculator";
 const ASSET = "Saldo-Windows-x64.zip";
@@ -46,74 +46,58 @@ function checksum(text) {
   if (!line) throw new Error("Checksum da versão indisponível.");
   return line.trim().split(/\s+/)[0].toLowerCase();
 }
-async function runPowerShell(file, detached = false) {
-  const diagnostic = detached ? await fs.open(file + ".log", "a", 0o600) : null;
-  try {
-    return await new Promise((resolve, reject) => {
-      // A PowerShell 7 launcher can pass module paths incompatible with Windows PowerShell 5.1.
-      const env = Object.fromEntries(
-        Object.entries(process.env).filter(
-          ([key]) => key.toUpperCase() !== "PSMODULEPATH",
-        ),
-      );
-      const executable =
-        process.platform === "win32"
-          ? path.join(
-              process.env.SystemRoot || "C:\\Windows",
-              "System32",
-              "WindowsPowerShell",
-              "v1.0",
-              "powershell.exe",
-            )
-          : "powershell.exe";
-      const child = spawn(
-        executable,
-        [
-          "-NoProfile",
-          "-NonInteractive",
-          "-ExecutionPolicy",
-          "Bypass",
-          "-File",
-          file,
-        ],
-        {
-          cwd: path.dirname(file),
-          windowsHide: true,
-          detached,
-          env,
-          stdio: detached
-            ? ["ignore", diagnostic.fd, diagnostic.fd]
-            : ["ignore", "pipe", "pipe"],
-        },
-      );
-      child.on("error", reject);
-      if (detached) {
-        child.once("spawn", () => {
-          child.unref();
-          resolve();
-        });
-        return;
-      }
-      let output = "";
-      child.stdout.on("data", (chunk) => {
-        output = (output + chunk).slice(-6000);
-      });
-      child.stderr.on("data", (chunk) => {
-        output = (output + chunk).slice(-6000);
-      });
-      child.on("exit", (code) =>
-        code === 0
-          ? resolve()
-          : reject(
-              new Error(
-                `Não foi possível preparar a atualização: ${output.trim()}`,
-              ),
-            ),
-      );
+function runPowerShell(file) {
+  return new Promise((resolve, reject) => {
+    const env = Object.fromEntries(
+      Object.entries(process.env).filter(
+        ([key]) => key.toUpperCase() !== "PSMODULEPATH",
+      ),
+    );
+    const executable =
+      process.platform === "win32"
+        ? path.join(
+            process.env.SystemRoot || "C:\\Windows",
+            "System32",
+            "WindowsPowerShell",
+            "v1.0",
+            "powershell.exe",
+          )
+        : "powershell.exe";
+    const child = spawn(
+      executable,
+      [
+        "-NoProfile",
+        "-NonInteractive",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        file,
+      ],
+      {
+        cwd: path.dirname(file),
+        windowsHide: true,
+        env,
+        stdio: ["ignore", "pipe", "pipe"],
+      },
+    );
+    child.once("error", reject);
+    let output = "";
+    child.stdout.on("data", (chunk) => {
+      output = (output + chunk).slice(-6000);
     });
-  } finally {
-    await diagnostic?.close();
-  }
+    child.stderr.on("data", (chunk) => {
+      output = (output + chunk).slice(-6000);
+    });
+    child.once("exit", (code) =>
+      code === 0
+        ? resolve()
+        : reject(
+            new Error(
+              `Não foi possível preparar a atualização: ${output.trim()}`,
+            ),
+          ),
+    );
+  });
 }
 function createUpdater(options) {
   const {
@@ -314,24 +298,65 @@ function createUpdater(options) {
     } catch (error) {
       if (error.code !== "ENOENT") throw error;
     }
-    const script = path.join(root, `apply-${nonce}.ps1`);
+    const helper = path.join(root, `helper-${nonce}.cjs`);
+    const config = path.join(root, `helper-${nonce}.json`);
+    const helperReady = path.join(root, `helper-ready-${nonce}.json`);
     await fs.writeFile(
-      script,
-      "\uFEFF" +
-        applyScript({
-          version,
-          nonce,
-          pid,
-          executable: target,
-          original: executable,
-          active,
-          log,
-          ack: path.join(root, `ready-${nonce}.json`),
-        }),
+      helper,
+      await fs.readFile(path.join(__dirname, "update-helper.cjs")),
       { mode: 0o600 },
     );
-    await runPowerShell(script, true);
-    return { restarting: true };
+    await fs.rm(helperReady, { force: true });
+    await fs.writeFile(
+      config,
+      JSON.stringify({
+        version,
+        nonce,
+        pid,
+        executable: target,
+        original: executable,
+        active,
+        log,
+        helperReady,
+        ack: path.join(root, `ready-${nonce}.json`),
+      }),
+      { mode: 0o600 },
+    );
+    const env = Object.fromEntries(
+      Object.entries(process.env).filter(
+        ([key]) => key.toUpperCase() !== "ELECTRON_RUN_AS_NODE",
+      ),
+    );
+    env.ELECTRON_RUN_AS_NODE = "1";
+    const child = spawn(executable, [helper, config], {
+      detached: true,
+      windowsHide: true,
+      stdio: "ignore",
+      env,
+    });
+    await new Promise((resolve, reject) => {
+      child.once("error", reject);
+      child.once("spawn", () => {
+        child.unref();
+        resolve();
+      });
+    });
+    const deadline = Date.now() + 15000;
+    while (Date.now() < deadline) {
+      try {
+        const ready = JSON.parse(await fs.readFile(helperReady, "utf8"));
+        if (ready.nonce === nonce && ready.version === version)
+          return { restarting: true };
+      } catch {
+        /* Keep the original application running until its helper is ready. */
+      }
+      if (child.exitCode !== null) break;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    child.kill();
+    throw new Error(
+      "Não foi possível iniciar o atualizador. A versão atual permanece aberta.",
+    );
   }
   async function activeLaunch() {
     if (!canInstall) return null;

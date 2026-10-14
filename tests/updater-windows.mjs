@@ -230,6 +230,13 @@ try {
     "Pacote local de teste criado; iniciando o aplicativo original.",
   );
   const pid = await launchOriginal();
+  assert.ok(Number.isInteger(pid) && pid > 0 && pid !== process.pid);
+  const liveCheck = await (
+    await app.firstWindow()
+  ).evaluate(() => window.saldo.checkUpdates());
+  assert.equal(liveCheck.currentVersion, currentVersion);
+  assert.equal(liveCheck.repository, REPOSITORY);
+  assert.match(liveCheck.version, /^\d+\.\d+\.\d+$/);
   annotation(
     "notice",
     "Atualizador Windows",
@@ -356,6 +363,15 @@ try { $null = $archive.CreateEntry('../../outside.txt') } finally { $archive.Dis
     "Windows: pacote de versão diferente e ZIP com tentativa de sair da pasta foram rejeitados.",
   );
 } catch (error) {
+  for (const file of await readdir(updates).catch(() => [])) {
+    if (file.endsWith(".log")) {
+      const contents = (await readFile(join(updates, file), "utf8")).slice(
+        -8000,
+      );
+      if (contents.trim())
+        annotation("error", "Diagnóstico do helper Windows", contents);
+    }
+  }
   annotation(
     "error",
     "Falha no teste de atualização Windows",

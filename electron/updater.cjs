@@ -46,67 +46,74 @@ function checksum(text) {
   if (!line) throw new Error("Checksum da versão indisponível.");
   return line.trim().split(/\s+/)[0].toLowerCase();
 }
-function runPowerShell(file, detached = false) {
-  return new Promise((resolve, reject) => {
-    // A PowerShell 7 launcher can pass module paths incompatible with Windows PowerShell 5.1.
-    const env = Object.fromEntries(
-      Object.entries(process.env).filter(
-        ([key]) => key.toUpperCase() !== "PSMODULEPATH",
-      ),
-    );
-    const executable =
-      process.platform === "win32"
-        ? path.join(
-            process.env.SystemRoot || "C:\\Windows",
-            "System32",
-            "WindowsPowerShell",
-            "v1.0",
-            "powershell.exe",
-          )
-        : "powershell.exe";
-    const child = spawn(
-      executable,
-      [
-        "-NoProfile",
-        "-NonInteractive",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        file,
-      ],
-      {
-        cwd: path.dirname(file),
-        windowsHide: true,
-        detached,
-        env,
-        stdio: detached ? "ignore" : ["ignore", "pipe", "pipe"],
-      },
-    );
-    child.on("error", reject);
-    if (detached) {
-      child.once("spawn", () => {
-        child.unref();
-        resolve();
+async function runPowerShell(file, detached = false) {
+  const diagnostic = detached ? await fs.open(file + ".log", "a", 0o600) : null;
+  try {
+    return await new Promise((resolve, reject) => {
+      // A PowerShell 7 launcher can pass module paths incompatible with Windows PowerShell 5.1.
+      const env = Object.fromEntries(
+        Object.entries(process.env).filter(
+          ([key]) => key.toUpperCase() !== "PSMODULEPATH",
+        ),
+      );
+      const executable =
+        process.platform === "win32"
+          ? path.join(
+              process.env.SystemRoot || "C:\\Windows",
+              "System32",
+              "WindowsPowerShell",
+              "v1.0",
+              "powershell.exe",
+            )
+          : "powershell.exe";
+      const child = spawn(
+        executable,
+        [
+          "-NoProfile",
+          "-NonInteractive",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          file,
+        ],
+        {
+          cwd: path.dirname(file),
+          windowsHide: true,
+          detached,
+          env,
+          stdio: detached
+            ? ["ignore", diagnostic.fd, diagnostic.fd]
+            : ["ignore", "pipe", "pipe"],
+        },
+      );
+      child.on("error", reject);
+      if (detached) {
+        child.once("spawn", () => {
+          child.unref();
+          resolve();
+        });
+        return;
+      }
+      let output = "";
+      child.stdout.on("data", (chunk) => {
+        output = (output + chunk).slice(-6000);
       });
-      return;
-    }
-    let output = "";
-    child.stdout.on("data", (chunk) => {
-      output = (output + chunk).slice(-6000);
-    });
-    child.stderr.on("data", (chunk) => {
-      output = (output + chunk).slice(-6000);
-    });
-    child.on("exit", (code) =>
-      code === 0
-        ? resolve()
-        : reject(
-            new Error(
-              `Não foi possível preparar a atualização: ${output.trim()}`,
+      child.stderr.on("data", (chunk) => {
+        output = (output + chunk).slice(-6000);
+      });
+      child.on("exit", (code) =>
+        code === 0
+          ? resolve()
+          : reject(
+              new Error(
+                `Não foi possível preparar a atualização: ${output.trim()}`,
+              ),
             ),
-          ),
-    );
-  });
+      );
+    });
+  } finally {
+    await diagnostic?.close();
+  }
 }
 function createUpdater(options) {
   const {

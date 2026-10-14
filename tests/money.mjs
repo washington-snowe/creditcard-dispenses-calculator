@@ -1,4 +1,8 @@
 import { expect } from "playwright/test";
+import { readFile } from "node:fs/promises";
+const version = JSON.parse(
+  await readFile(new URL("../package.json", import.meta.url), "utf8"),
+).version;
 export async function runMoney(page) {
   const month = await page.evaluate(() => {
     const d = new Date();
@@ -142,7 +146,7 @@ export async function runMoney(page) {
   ).toBeDisabled();
   await page.getByRole("button", { name: /Voltar ao mês atual/ }).click();
   await page.getByRole("button", { name: "Atualizações", exact: true }).click();
-  await expect(page.getByTestId("app-version")).toHaveText("3.0.0");
+  await expect(page.getByTestId("app-version")).toHaveText(version);
   await expect(
     page.getByText("Versões no GitHub", { exact: true }),
   ).toBeVisible();

@@ -61,6 +61,7 @@ $exe = ${quote(config.executable)}
 $original = ${quote(config.original)}
 $ack = ${quote(config.ack)}
 $log = ${quote(config.log)}
+[IO.File]::AppendAllText($log + '.progress.log', 'Helper started.' + [Environment]::NewLine)
 $previous = if (Test-Path -LiteralPath $active) { [IO.File]::ReadAllText($active) } else { $null }
 $newProcess = $null
 try {
@@ -69,7 +70,9 @@ try {
     Start-Sleep -Milliseconds 500
   }
   if (Get-Process -Id $oldPid -ErrorAction SilentlyContinue) { throw 'A versão anterior não fechou.' }
+  [IO.File]::AppendAllText($log + '.progress.log', 'Previous process closed.' + [Environment]::NewLine)
   $newProcess = Start-Process -FilePath $exe -WorkingDirectory (Split-Path $exe) -ArgumentList ${quote("--saldo-update-ack=" + config.nonce)} -PassThru
+  [IO.File]::AppendAllText($log + '.progress.log', 'New process started.' + [Environment]::NewLine)
   $ready = $false
   for ($i = 0; $i -lt 90; $i++) {
     if (Test-Path -LiteralPath $ack) {

@@ -104,6 +104,9 @@ try {
   await expect(page.getByTestId("performance-status")).toContainText(
     "Reinício necessário",
   );
+  await expect(
+    page.getByLabel("Usar aceleração de hardware", { exact: true }),
+  ).toBeEnabled();
   const preferenceSaved = JSON.parse(
     await readFile(join(directory, "finances.json"), "utf8"),
   );

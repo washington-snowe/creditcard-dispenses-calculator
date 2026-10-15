@@ -1,4 +1,4 @@
-**ContaClara 4.4 — sugestões com Tab, categorias pelo nome e marcas reais dos bancos.**
+**ContaClara 4.4.1 — sugestões com Tab, categorias pelo nome e marcas reais dos bancos.**
 
 Baixe **ContaClara-Windows-x64.zip**, extraia a pasta inteira e abra **saldo.exe**. Funciona offline e não exige Node.js.
 
@@ -8,6 +8,7 @@ Baixe **ContaClara-Windows-x64.zip**, extraia a pasta inteira e abra **saldo.exe
 - **Categorias pelo nome:** novos registros de compra, assinatura e despesa recebem uma categoria provável pelo nome e por correspondências do histórico. Notebook sugere Tecnologia; Netflix, Lazer; Conta de luz, Casa; Uber, Transporte. Você pode corrigir a categoria. Escolher manualmente interrompe a detecção naquele formulário; **Detectar pelo nome** permite retomá-la. Categorias existentes são preservadas ao editar.
 - **Logos reais nos cartões:** símbolos originais de Nubank, Itaú, Banco do Brasil, Bradesco, Santander, Inter, Caixa, C6 Bank, BTG Pactual, Mercado Pago e PicPay. As imagens ficam incluídas no aplicativo e funcionam offline. Bancos personalizados desconhecidos mantêm o nome e um ícone neutro.
 - **Privacidade e acessibilidade:** sugestões calculadas localmente, sem enviar lançamentos a terceiros. O preenchimento respeita limites de caracteres, seleção do texto, composição de teclado e navegação por Tab. Layout conferido também com texto ampliado.
+- O aviso de reinício do hardware aparece após a gravação da preferência.
 - Mantém hardware opcional, menu fluido, avisos por cor, boas-vindas, gráficos, identidade visual, temas, rendas, saldo entre meses, despesas, cartões, parcelas, assinaturas, filtros, antecipações e backups.
 
 ### Como atualizar

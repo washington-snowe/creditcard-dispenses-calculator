@@ -59,7 +59,9 @@ export function PerformancePanel({
       live = false;
     };
   }, []);
-  const pending = !!info && info.enabledAtLaunch !== enabled;
+  const pending =
+    !!info &&
+    info.enabledAtLaunch !== (settings.hardwareAcceleration !== false);
   const gpuActive =
     info?.accelerationEnabled && info.gpuCompositing === "enabled";
   async function restart() {
@@ -112,27 +114,31 @@ export function PerformancePanel({
           info && (
             <div
               className="feedback-note"
-              data-tone={pending ? "warning" : "success"}
+              data-tone={changing ? "info" : pending ? "warning" : "success"}
               role="status"
               data-testid="performance-status"
             >
               {pending ? <CircleAlert size={18} /> : <Check size={18} />}
               <div>
                 <strong>
-                  {pending
-                    ? "Reinício necessário"
-                    : enabled
-                      ? "Aceleração permitida"
-                      : "Aceleração desativada"}
+                  {changing
+                    ? "Salvando preferência…"
+                    : pending
+                      ? "Reinício necessário"
+                      : enabled
+                        ? "Aceleração permitida"
+                        : "Aceleração desativada"}
                 </strong>
                 <p>
-                  {pending
-                    ? "Sua preferência está salva. O programa continua com a configuração anterior até reiniciar."
-                    : gpuActive
-                      ? "A interface está usando composição gráfica por hardware."
-                      : enabled
-                        ? "A GPU está permitida. O sistema pode usar renderização por software conforme a disponibilidade do driver."
-                        : "O aplicativo foi iniciado com a aceleração de hardware desativada."}
+                  {changing
+                    ? "Aguarde a conclusão da gravação."
+                    : pending
+                      ? "Sua preferência está salva. O programa continua com a configuração anterior até reiniciar."
+                      : gpuActive
+                        ? "A interface está usando composição gráfica por hardware."
+                        : enabled
+                          ? "A GPU está permitida. O sistema pode usar renderização por software conforme a disponibilidade do driver."
+                          : "O aplicativo foi iniciado com a aceleração de hardware desativada."}
                 </p>
               </div>
             </div>

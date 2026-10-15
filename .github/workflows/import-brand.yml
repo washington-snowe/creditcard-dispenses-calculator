@@ -21,8 +21,22 @@ jobs:
         run: |
           try {
             $download = Join-Path $env:RUNNER_TEMP 'contaclara-brand.zip'
-            Invoke-WebRequest -Uri 'https://www.bulkshare.cloud/api/anonymous-download?id=VZ9XtPlHdz' -OutFile $download -TimeoutSec 90
+            $response = Invoke-WebRequest -Uri 'https://www.bulkshare.cloud/api/anonymous-download?id=VZ9XtPlHdz' -OutFile $download -TimeoutSec 90 -PassThru
             if ((Get-Item $download).Length -gt 64MB) { throw 'O arquivo excede 64 MB.' }
+            $prefix = [IO.File]::ReadAllBytes($download)
+            $signature = [BitConverter]::ToString($prefix[0..([Math]::Min(15, $prefix.Length - 1))])
+            Write-Output "::notice title=Formato recebido::Tipo $($response.Headers['Content-Type']); bytes $($prefix.Length); assinatura $signature"
+            $content = [Text.Encoding]::UTF8.GetString($prefix)
+            if ($content.TrimStart().StartsWith('{') -or $content.TrimStart().StartsWith('[')) {
+              $json = $content | ConvertFrom-Json
+              $properties = ($json.PSObject.Properties | ForEach-Object { "$($_.Name):$($_.Value.GetType().Name)" }) -join ', '
+              Write-Output "::notice title=Resposta JSON::$properties"
+              $target = @($json.downloadUrl, $json.download_url, $json.signedUrl, $json.url, $json.data.downloadUrl, $json.data.url) | Where-Object { $_ -is [string] -and $_.StartsWith('https://') } | Select-Object -First 1
+              if ($target) {
+                Invoke-WebRequest -Uri $target -OutFile $download -TimeoutSec 90
+                if ((Get-Item $download).Length -gt 64MB) { throw 'O arquivo excede 64 MB.' }
+              }
+            }
             Add-Type -AssemblyName System.IO.Compression
             Add-Type -AssemblyName System.IO.Compression.FileSystem
             $archive = [System.IO.Compression.ZipFile]::OpenRead($download)

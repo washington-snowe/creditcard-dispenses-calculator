@@ -4,11 +4,11 @@ Aplicativo desktop de finanças pessoais em **Node.js + Electron**, com interfac
 
 ## Baixar para Windows
 
-[**Baixar ContaClara 4.5.1 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.5.1/ContaClara-Windows-x64.zip)
+[**Baixar ContaClara 4.6.0 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.6.0/ContaClara-Windows-x64.zip)
 
 Extraia a pasta inteira e abra **saldo.exe**. Não é necessário instalar Node.js. A versão foi compilada e testada no Windows, incluindo os cálculos financeiros e a persistência dos dados após reiniciar o aplicativo.
 
-A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.5.1) também contém o checksum do ZIP.
+A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.6.0) também contém o checksum do ZIP.
 
 ## Executar no computador
 
@@ -43,7 +43,7 @@ A interface no navegador usa um armazenamento local separado do aplicativo deskt
 - Consultar o histórico de compras, saldo e parcelas mensais de cada cartão e o total de todos.
 - Explorar gráficos de distribuição por cartão, previsão mensal e comparação de saldos. As caixas de valores aparecem acima dos gráficos, fora do recorte dos painéis, e se ajustam às bordas da janela.
 - Abrir cada mês do planejamento para ver **todas as parcelas individuais** e os totais por cartão, até a quitação. Use as setas, o seletor de mês ou as barras dos gráficos para navegar por meses passados e futuros.
-- Exportar e restaurar backups JSON pelo menu **Opções de backup (•••)** no topo. A restauração substitui os dados atuais após confirmação; um arquivo inválido é rejeitado.
+- Exportar e restaurar backups JSON em **Configurações → Dados e segurança**. A restauração substitui os dados atuais após confirmação; um arquivo inválido é rejeitado.
 
 - Escolher tema claro, escuro ou **Ultra Dark**, paletas prontas ou uma cor personalizada; usar a tipografia oficial e ativar/desativar glow e animações suaves. As fontes vêm no aplicativo e as preferências são salvas no desktop e no backup.
 - Marcar todas as parcelas pendentes de um cartão no mês atual como pagas, com confirmação e opção de desfazer.
@@ -89,7 +89,17 @@ O seletor de mês altera as parcelas do período, o calendário, a situação da
 
 Em **Antecipações**, a classificação por maior parcela mostra o maior valor mensal; a classificação por alívio por real compara a parcela com o custo total para quitar a compra. A sugestão de orçamento seleciona compras por essa eficiência sem exceder o valor informado; ela pode ser ajustada e não promete uma combinação matematicamente ótima. A simulação mostra as parcelas futuras antes/depois; o custo integral à vista aparece separadamente. Não há estimativa de desconto ou juros do banco.
 
-Você também pode antecipar as próximas N parcelas em Minhas compras. A próxima cobrança avança N meses; quitar a compra elimina todos os compromissos futuros dela. O botão Desfazer reverte a última alteração de dados na sessão. Alterar o valor ou o total de parcelas no formulário de edição recalcula o histórico da compra.
+Você também pode antecipar as próximas N parcelas em Minhas compras. A próxima cobrança avança N meses; quitar a compra elimina todos os compromissos futuros dela. O botão Desfazer permite reverter até 20 alterações de dados na sessão. Alterar o valor ou o total de parcelas no formulário de edição recalcula o histórico da compra.
+
+## Navegação e interface
+
+O menu lateral tem quatro áreas: **Resumo**, **Movimentações**, **Planejamento** e **Configurações**. As telas de cada área aparecem na faixa superior. Ao voltar a uma área, a última tela visitada é lembrada durante a sessão. A busca geral com Ctrl + K também abre registros de qualquer área.
+
+Com dados cadastrados, o início mostra por padrão **disponível para gastar, pagamentos do mês e próximos compromissos**. Comparações e atalhos explicativos podem ser ativados e ordenados em Personalizar início; escolhas anteriores são preservadas. As sugestões de funções aparecem inicialmente quando ainda não há dados. O tema mantém Manrope e Inter, com superfícies neutras, espaçamentos consistentes e cores de situação concentradas nos indicadores. Glow permanece opcional, com efeitos discretos.
+
+Filtros de entradas, rendas, despesas e assinaturas são mantidos ao navegar durante a sessão e reiniciados ao recarregar a janela ou restaurar um backup. Filtros avançados de compras abrem pelo botão **Filtros**. Em compras, pagamento e edição ficam visíveis; antecipação e exclusão ficam em **Mais opções**, que funciona também pelo teclado. Ações destrutivas continuam exigindo confirmação.
+
+Exportação e importação de backups JSON ficam em Configurações → Dados e segurança. Alterações de tema, privacidade e menu usam o indicador de salvamento sem avisos repetidos. Janelas só fecham pelo fundo quando o clique começa e termina fora dos limites; clicar no espaçamento interno ou arrastar do formulário para fora não descarta o preenchimento. O foco retorna ao controle anterior ao fechar.
 
 ## Planejamento e ferramentas
 

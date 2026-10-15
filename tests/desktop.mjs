@@ -1,3 +1,5 @@
+import { verifyCohesion } from "./cohesion.mjs";
+import { goTo } from "./navigation.mjs";
 import { runWorkbench } from "./workbench.mjs";
 import { runFormAssistance } from "./form-assistance.mjs";
 import { verifyChartTooltips, verifyNavigation } from "./design.mjs";
@@ -54,6 +56,7 @@ try {
   await runNewPlanning(page);
   await runFormAssistance(page);
   await runWorkbench(page);
+  await verifyCohesion(page);
   const expanded = JSON.parse(
     await readFile(join(directory, "finances.json"), "utf8"),
   );
@@ -61,7 +64,7 @@ try {
   expect(expanded.incomeReceipts).toHaveLength(1);
   expect(expanded.expenses).toHaveLength(1);
   expect(expanded.settings.accent).toBe("#20c7a0");
-  await page.getByRole("button", { name: "Visão geral", exact: true }).click();
+  await goTo(page, "Visão geral");
   await verifyTypography(page);
   await verifyNavigation(page);
   const zoomRoles = await app.evaluate(({ Menu }) => {
@@ -83,7 +86,7 @@ try {
       "Entradas do mês",
       "Aparência",
     ]) {
-      await page.getByRole("button", { name: tab, exact: true }).click();
+      await goTo(page, tab);
       await verifyPageLayout(page, `Electron / zoom ${factor * 100}% / ${tab}`);
     }
     await verifyChartTooltips(page);
@@ -96,7 +99,7 @@ try {
   );
   expect(await page.evaluate(() => typeof window.saldo?.save)).toBe("function");
   expect(await page.evaluate(() => typeof window.require)).toBe("undefined");
-  await page.getByRole("button", { name: "Aparência", exact: true }).click();
+  await goTo(page, "Aparência");
   await expect(
     page.getByLabel("Usar aceleração de hardware", { exact: true }),
   ).toBeEnabled();
@@ -162,7 +165,7 @@ try {
   });
   const restarted = await app.firstWindow();
   await expect(
-    restarted.getByRole("heading", { name: "Boas-vindas ao ContaClara." }),
+    restarted.getByRole("heading", { name: "Resumo do mês" }),
   ).toBeVisible();
   expect(
     await app.evaluate(({ app }) => app.isHardwareAccelerationEnabled()),
@@ -177,26 +180,18 @@ try {
     "data-theme",
     "ultra",
   );
-  await restarted
-    .getByRole("button", { name: "Visão geral", exact: true })
-    .click();
+  await goTo(restarted, "Visão geral");
   await expect(restarted.getByTestId("total-debt")).toHaveText(/1\.900,00/);
-  await restarted
-    .getByRole("button", { name: "Entradas do mês", exact: true })
-    .click();
+  await goTo(restarted, "Entradas do mês");
   await expect(restarted.getByTestId("cash-remaining")).toHaveText(/5\.450,00/);
-  await restarted
-    .getByRole("button", { name: "Minhas compras", exact: true })
-    .click();
+  await goTo(restarted, "Minhas compras");
   await restarted
     .getByRole("button", { name: "Quitadas", exact: true })
     .click();
   await expect(restarted.locator(".purchase-table tbody")).toContainText(
     "Teste de centavos",
   );
-  await restarted
-    .getByRole("button", { name: "Aparência", exact: true })
-    .click();
+  await goTo(restarted, "Aparência");
   await expect(restarted.getByTestId("performance-status")).toContainText(
     "Aceleração desativada",
   );
@@ -221,9 +216,7 @@ try {
     env: { ...process.env, SALDO_DATA_DIR: directory },
   });
   const enabledAgain = await app.firstWindow();
-  await enabledAgain
-    .getByRole("button", { name: "Aparência", exact: true })
-    .click();
+  await goTo(enabledAgain, "Aparência");
   await expect(
     enabledAgain.getByLabel("Usar aceleração de hardware", { exact: true }),
   ).toBeChecked();
@@ -269,9 +262,7 @@ try {
     env: { ...process.env, SALDO_DATA_DIR: directory },
   });
   const upgraded = await app.firstWindow();
-  await upgraded
-    .getByRole("button", { name: "Visão geral", exact: true })
-    .click();
+  await goTo(upgraded, "Visão geral");
   await expect(upgraded.getByTestId("total-debt")).toHaveText(/66,66/);
   expect(await readFile(join(directory, "finances.json"), "utf8")).toBe(
     legacyJson,

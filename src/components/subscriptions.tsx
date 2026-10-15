@@ -1,3 +1,4 @@
+import { useViewFilter } from "../view-state";
 import { SuggestionInput } from "./suggestion-input";
 import { CategoryHint, useSmartCategory } from "./smart-category";
 import { EXAMPLES, nameOptions, categoryHistory } from "../suggestions";
@@ -286,9 +287,9 @@ export function SubscriptionsPage({
   onPay: (s: Subscription) => void;
   onUnpay: (s: Subscription) => void;
 }) {
-  const [search, setSearch] = useState(""),
-    [card, setCard] = useState("all"),
-    [frequency, setFrequency] = useState("all");
+  const [search, setSearch] = useViewFilter("subscriptions.search", ""),
+    [card, setCard] = useViewFilter("subscriptions.card", "all"),
+    [frequency, setFrequency] = useViewFilter("subscriptions.frequency", "all");
   const subs = data.subscriptions ?? [],
     occurrences = subscriptionMonth(
       subs,

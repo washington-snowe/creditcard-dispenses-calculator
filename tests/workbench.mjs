@@ -1,3 +1,4 @@
+import { goTo, areas } from "./navigation.mjs";
 import { expect } from "playwright/test";
 const readData = (page) =>
   page.evaluate(async () =>
@@ -6,7 +7,9 @@ const readData = (page) =>
       : JSON.parse(localStorage.getItem("saldo-data-v1")),
   );
 const nav = (page, name) =>
-  page.getByRole("button", { name, exact: true }).click();
+  areas[name]
+    ? goTo(page, name)
+    : page.getByRole("button", { name, exact: true }).click();
 export async function runWorkbench(page) {
   const original = await readData(page),
     now = new Date(),
@@ -24,14 +27,14 @@ export async function runWorkbench(page) {
   await expect(
     page.getByRole("button", { name: "Explorar Visão geral", exact: true }),
   ).toHaveCount(0);
-  await nav(page, "Mover Disponível para gastar para cima");
+  await nav(page, "Mover Disponível para gastar para baixo");
   await expect
-    .poll(async () => (await readData(page)).settings.homeWidgets[0])
+    .poll(async () => (await readData(page)).settings.homeWidgets[1])
     .toBe("available");
   await nav(page, "Restaurar organização padrão");
   await expect(
     page.getByRole("button", { name: "Explorar Visão geral", exact: true }),
-  ).toBeVisible();
+  ).toHaveCount(0);
   await nav(page, "Calendário");
   await expect(page.locator(".calendar-day")).toHaveCount(
     new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(),

@@ -126,13 +126,17 @@ export function AvailableCard({
         <span>
           Compromissos pendentes<strong>− {money(b.pending)}</strong>
         </span>
-        <span>
-          Reserva mensal<strong>− {money(b.reserve)}</strong>
-        </span>
-        <span>
-          Se a renda prevista entrar
-          <strong>{money(b.projectedAvailable)}</strong>
-        </span>
+        {b.reserve > 0 && (
+          <span>
+            Reserva mensal<strong>− {money(b.reserve)}</strong>
+          </span>
+        )}
+        {b.expectedIncome > 0 && (
+          <span>
+            Se a renda prevista entrar
+            <strong>{money(b.projectedAvailable)}</strong>
+          </span>
+        )}
       </div>
       <details className="more-details">
         <summary>Ajustar reserva</summary>
@@ -174,13 +178,13 @@ export function AvailableCard({
             {error}
           </p>
         )}
+        <p className="field-hint">
+          Considera apenas o que você cadastrou
+          {b.carryEnabled ? ", incluindo o saldo entre meses configurado" : ""}.
+          Renda prevista não entra no valor principal.
+          {b.estimated ? " Há pagamentos históricos estimados." : ""}
+        </p>{" "}
       </details>
-      <p className="field-hint">
-        Considera apenas o que você cadastrou
-        {b.carryEnabled ? ", incluindo o saldo entre meses configurado" : ""}.
-        Renda prevista não entra no valor principal.
-        {b.estimated ? " Há pagamentos históricos estimados." : ""}
-      </p>
     </Panel>
   );
 }

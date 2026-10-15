@@ -1,3 +1,4 @@
+import { goTo, purchaseAction } from "./navigation.mjs";
 import { expect } from "playwright/test";
 export async function runEnhancements(page) {
   const today = await page.evaluate(() => {
@@ -13,9 +14,7 @@ export async function runEnhancements(page) {
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-  await page
-    .getByRole("button", { name: "Minhas compras", exact: true })
-    .click();
+  await goTo(page, "Minhas compras");
   async function add(
     description,
     bank,
@@ -43,7 +42,7 @@ export async function runEnhancements(page) {
   await add("Viagem futura", "Inter", "900,00", 3, "Lazer", following);
   await expect(page.getByTestId("total-debt")).toHaveText(/2\.500,00/);
   await expect(page.getByTestId("monthly-total")).toHaveText(/600,00/);
-  await page.getByRole("button", { name: "Visão geral", exact: true }).click();
+  await goTo(page, "Visão geral");
   await page
     .locator('.chart-monthly path.recharts-rectangle[fill="var(--accent)"]')
     .nth(1)
@@ -61,7 +60,7 @@ export async function runEnhancements(page) {
   await page.getByRole("button", { name: /Voltar ao mês atual/ }).click();
   await page.getByLabel("Buscar compras").fill("Geladeira");
   await expect(page.getByTestId("total-debt")).toHaveText(/1\.200,00/);
-  await page.getByRole("button", { name: "Planejamento", exact: true }).click();
+  await goTo(page, "Planejamento");
   await expect(page.locator(".selected-month-panel")).toContainText(
     "Geladeira",
   );
@@ -75,7 +74,7 @@ export async function runEnhancements(page) {
     .getByRole("button", { name: "Limpar filtros", exact: true })
     .click();
   await page.getByLabel("Filtrar categoria").selectOption("Casa");
-  await page.getByRole("button", { name: "Meus cartões", exact: true }).click();
+  await goTo(page, "Meus cartões");
   await page
     .getByRole("button", { name: "Pagar cartão Principal neste mês" })
     .click();
@@ -98,7 +97,7 @@ export async function runEnhancements(page) {
   await page
     .getByRole("button", { name: "Limpar filtros", exact: true })
     .click();
-  await page.getByRole("button", { name: "Antecipações", exact: true }).click();
+  await goTo(page, "Antecipações");
   await page.getByLabel("Orçamento para antecipação").fill("500,00");
   await page.getByRole("button", { name: "Sugerir seleção" }).click();
   await expect(page.getByLabel("Selecionar quitação de Curso")).toBeChecked();
@@ -112,18 +111,14 @@ export async function runEnhancements(page) {
     .click();
   await page.getByRole("button", { name: "Continuar", exact: true }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible();
-  await page
-    .getByRole("button", { name: "Minhas compras", exact: true })
-    .click();
+  await goTo(page, "Minhas compras");
   await expect(page.getByTestId("total-debt")).toHaveText(/2\.100,00/);
   await expect(
     page.locator(".purchase-table tbody tr").filter({ hasText: "Curso" }),
   ).toContainText("Quitada");
   await page.getByRole("button", { name: "Desfazer última alteração" }).click();
   await expect(page.getByTestId("total-debt")).toHaveText(/2\.500,00/);
-  await page
-    .getByRole("button", { name: "Antecipar Geladeira", exact: true })
-    .click();
+  await purchaseAction(page, "Antecipar Geladeira");
   await page.getByLabel("Quantas parcelas você pagou adiantado?").fill("2");
   await expect(page.getByRole("dialog")).toContainText("800,00");
   await page
@@ -134,7 +129,7 @@ export async function runEnhancements(page) {
   await expect(page.getByTestId("monthly-total")).toHaveText(/200,00/);
   await page.getByRole("button", { name: "Próximo mês", exact: true }).click();
   await expect(page.getByTestId("monthly-total")).toHaveText(/500,00/);
-  await page.getByRole("button", { name: "Meus cartões", exact: true }).click();
+  await goTo(page, "Meus cartões");
   await expect(
     page.getByRole("button", { name: "Pagar cartão Principal neste mês" }),
   ).toBeDisabled();
@@ -149,7 +144,7 @@ export async function runEnhancements(page) {
   await page.reload();
   await expect(page.getByTestId("welcome-paid")).toContainText("600,00");
   await expect(page.getByTestId("welcome-pending")).toHaveText(/0,00/);
-  await page.getByRole("button", { name: "Visão geral", exact: true }).click();
+  await goTo(page, "Visão geral");
   await expect(page.getByTestId("total-debt")).toHaveText(/1\.900,00/);
   await expect(page.getByTestId("monthly-total")).toHaveText(/0,00/);
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");

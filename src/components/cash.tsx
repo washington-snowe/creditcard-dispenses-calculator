@@ -1,3 +1,4 @@
+import { useViewFilter } from "../view-state";
 import { SuggestionInput } from "./suggestion-input";
 import { EXAMPLES, nameOptions } from "../suggestions";
 import { useMemo, useState } from "react";
@@ -246,9 +247,9 @@ export function CashPage({
   onCards: () => void;
   onReceive: (entry: CashEntry) => void;
 }) {
-  const [search, setSearch] = useState(""),
-    [source, setSource] = useState("all"),
-    [kind, setKind] = useState("all");
+  const [search, setSearch] = useViewFilter("cash.search", ""),
+    [source, setSource] = useViewFilter("cash.source", "all"),
+    [kind, setKind] = useViewFilter("cash.kind", "all");
   const budget = monthlyBudget(data, month);
   const rows = budget.entries
     .filter(

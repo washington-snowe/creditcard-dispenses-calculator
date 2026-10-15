@@ -5,18 +5,14 @@ import {
   ArrowUpRight,
   Banknote,
   CalendarDays,
-  CheckCheck,
   CreditCard,
   LayoutDashboard,
-  Palette,
   ReceiptText,
-  RefreshCw,
   Repeat,
   ShoppingBag,
-  Sparkles,
   Zap,
 } from "lucide-react";
-import { money, monthLabel, type Data, type Settings } from "../domain";
+import { money, type Data, type Settings } from "../domain";
 import { monthFlow } from "../finance";
 export const destinations = [
   {
@@ -100,19 +96,23 @@ export function WelcomePage({
   onDrill: (rows: LedgerItem[], title: string) => void;
 }) {
   const flow = monthFlow(data, month);
-  const defaultWidgets = [
-    "summary",
-    "available",
-    "attention",
-    "functions",
-    "comparison",
-  ];
+  const hasData = !!(
+    data.cards.length ||
+    data.purchases.length ||
+    data.cashEntries?.length ||
+    data.recurringIncomes?.length ||
+    data.expenses?.length ||
+    data.subscriptions?.length
+  );
+  const defaultWidgets = hasData
+    ? ["available", "summary", "attention"]
+    : ["summary", "functions"];
   const [widgets, setWidgets] = useState(
     data.settings?.homeWidgets ?? defaultWidgets,
   );
   useEffect(
     () => setWidgets(data.settings?.homeWidgets ?? defaultWidgets),
-    [data.settings?.homeWidgets],
+    [data.settings?.homeWidgets, hasData],
   );
   const [customizing, setCustomizing] = useState(false);
   const names: Record<string, string> = {
@@ -144,14 +144,6 @@ export function WelcomePage({
     )
       setWidgets(previous);
   };
-  const hasData = !!(
-    data.cards.length ||
-    data.purchases.length ||
-    data.cashEntries?.length ||
-    data.recurringIncomes?.length ||
-    data.expenses?.length ||
-    data.subscriptions?.length
-  );
   const percentage = flow.commitments
     ? Math.round((flow.paid / flow.commitments) * 100)
     : 0;
@@ -225,15 +217,7 @@ export function WelcomePage({
             <button
               className="text-button"
               disabled={saving}
-              onClick={() =>
-                saveWidgets([
-                  "summary",
-                  "available",
-                  "attention",
-                  "functions",
-                  "comparison",
-                ])
-              }
+              onClick={() => saveWidgets(defaultWidgets)}
             >
               Restaurar organização padrão
             </button>
@@ -256,7 +240,6 @@ export function WelcomePage({
           <div className="panel-heading">
             <div>
               <h2>Próximos compromissos</h2>
-              <p>Comece pelo que precisa de atenção.</p>
             </div>
           </div>
           <LedgerList
@@ -280,15 +263,7 @@ export function WelcomePage({
               className="welcome-balance"
               data-tone={flow.pending > 0 ? "warning" : "success"}
             >
-              <span className="eyebrow">
-                <span className="welcome-symbol">
-                  <Sparkles size={20} />
-                </span>
-                SEU MÊS EM FOCO
-              </span>
-              <p>
-                Falta pagar em {monthLabel(month).toLocaleLowerCase("pt-BR")}
-              </p>
+              <p>Falta pagar no mês</p>
               <strong data-testid="welcome-pending">
                 {money(flow.pending)}
               </strong>
@@ -296,7 +271,7 @@ export function WelcomePage({
                 Parcelas de cartões, assinaturas e despesas pendentes.
               </span>
               <button
-                className="button primary"
+                className="text-button"
                 onClick={() => onNavigate("income")}
               >
                 Ver meu orçamento <ArrowUpRight size={17} />
@@ -308,9 +283,6 @@ export function WelcomePage({
                 data-testid="welcome-paid"
                 data-tone="success"
               >
-                <span className="welcome-symbol">
-                  <CheckCheck size={23} />
-                </span>
                 <p>Você já pagou neste mês</p>
                 <strong>{money(flow.paid)}</strong>
                 <div
@@ -324,10 +296,7 @@ export function WelcomePage({
                   <i style={{ width: `${percentage}%` }} />
                 </div>
                 <span>{percentage}% dos compromissos registrados no mês.</span>
-                <small>
-                  Pagamentos pela data em que saíram do seu dinheiro, incluindo
-                  antecipações.
-                </small>
+                <small>Inclui antecipações pagas no mês.</small>
               </div>
             )}
           </section>
@@ -360,7 +329,6 @@ export function WelcomePage({
               <h2>O que você quer organizar hoje?</h2>
               <p>Escolha uma sugestão para conhecer e usar cada função.</p>
             </div>
-            <span className="badge accent-badge">Tudo em um só lugar</span>
           </div>
           <section className="welcome-cards" aria-label="Conheça as funções">
             {destinations.map((item) => (
@@ -394,27 +362,6 @@ export function WelcomePage({
           </section>
         </>,
       )}
-      <section
-        className="welcome-preferences"
-        aria-label="Personalização e versão"
-      >
-        <button onClick={() => onNavigate("appearance")}>
-          <Palette size={19} />
-          <span>
-            <strong>Do seu jeito</strong>
-            <small>Temas, cores e efeitos em Aparência</small>
-          </span>
-          <ArrowUpRight size={16} />
-        </button>
-        <button onClick={() => onNavigate("updates")}>
-          <RefreshCw size={19} />
-          <span>
-            <strong>Sempre em dia</strong>
-            <small>Confira as novidades em Atualizações</small>
-          </span>
-          <ArrowUpRight size={16} />
-        </button>
-      </section>
     </div>
   );
 }

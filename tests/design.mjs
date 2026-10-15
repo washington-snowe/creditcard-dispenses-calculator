@@ -1,3 +1,4 @@
+import { goTo } from "./navigation.mjs";
 import { expect } from "playwright/test";
 
 async function assertFloating(page) {
@@ -36,7 +37,7 @@ async function assertFloating(page) {
   expect(placement.bottom).toBeLessThanOrEqual(placement.height - 7);
 }
 export async function verifyChartTooltips(page) {
-  await page.getByRole("button", { name: "Visão geral", exact: true }).click();
+  await goTo(page, "Visão geral");
   const clear = page.getByRole("button", {
     name: "Limpar filtros",
     exact: true,
@@ -70,7 +71,7 @@ export async function verifyChartTooltips(page) {
   await page.mouse.move(point.x, point.y);
   await assertFloating(page);
   await page.mouse.move(0, 0);
-  await page.getByRole("button", { name: "Antecipações", exact: true }).click();
+  await goTo(page, "Antecipações");
   const simulation = page.locator(".simulation-chart svg[role=application]");
   await simulation.scrollIntoViewIfNeeded();
   const bounds = await simulation.boundingBox();
@@ -82,10 +83,15 @@ export async function verifyChartTooltips(page) {
   await page.mouse.move(0, 0);
 }
 export async function verifyNavigation(page) {
-  await page.getByRole("button", { name: "Início", exact: true }).click();
+  await goTo(page, "Início");
   await expect(
-    page.getByRole("heading", { name: "Boas-vindas ao ContaClara." }),
+    page.getByRole("heading", { name: "Resumo do mês" }),
   ).toBeVisible();
+  await expect(page.locator(".sidebar .nav-item")).toHaveCount(4);
+  await page
+    .getByRole("button", { name: "Personalizar início", exact: true })
+    .click();
+  await page.getByLabel("Atalhos das funções", { exact: true }).check();
   await expect(
     page
       .getByRole("region", { name: "Conheça as funções" })
@@ -113,8 +119,17 @@ export async function verifyNavigation(page) {
         .getByRole("navigation")
         .getByRole("button", { name: title, exact: true }),
     ).toHaveAttribute("aria-current", "page");
-    await page.getByRole("button", { name: "Início", exact: true }).click();
+    await goTo(page, "Início");
   }
+  await page
+    .getByRole("button", { name: "Personalizar início", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Restaurar organização padrão", exact: true })
+    .click();
+  await expect(
+    page.getByRole("region", { name: "Conheça as funções" }),
+  ).toHaveCount(0);
   const wide = await page.evaluate(() => innerWidth > 1020);
   if (wide) {
     const before = await page.locator(".main-wrapper").boundingBox();
@@ -152,8 +167,9 @@ export async function verifyNavigation(page) {
       .getByRole("button", { name: "Expandir menu lateral", exact: true })
       .click();
     await page
-      .getByRole("button", { name: "Meus cartões", exact: true })
+      .getByRole("button", { name: "Área: Movimentações", exact: true })
       .click();
+    await goTo(page, "Meus cartões");
     await expect(page.locator(".app-shell")).not.toHaveClass(
       /mobile-menu-open/,
     );
@@ -164,12 +180,12 @@ export async function verifyNavigation(page) {
 }
 
 export async function verifyMotion(page) {
-  await page.getByRole("button", { name: "Aparência", exact: true }).click();
+  await goTo(page, "Aparência");
   await page.getByLabel("Animações suaves", { exact: true }).check();
   await page
     .getByRole("button", { name: "Aplicar aparência", exact: true })
     .click();
-  await page.getByRole("button", { name: "Início", exact: true }).click();
+  await goTo(page, "Início");
   const frames = await page.evaluate(async () => {
     const sidebar = document.querySelector(".sidebar");
     const main = document.querySelector(".main-wrapper");
@@ -211,7 +227,7 @@ export async function verifyMotion(page) {
       .evaluate((el) => getComputedStyle(el).transitionDuration),
   ).toBe("0s");
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.getByRole("button", { name: "Aparência", exact: true }).click();
+  await goTo(page, "Aparência");
   await page.getByLabel("Animações suaves", { exact: true }).uncheck();
   await page
     .getByRole("button", { name: "Aplicar aparência", exact: true })
@@ -230,14 +246,12 @@ export async function verifyMotion(page) {
 }
 
 export async function verifyFeedback(page) {
-  await page.getByRole("button", { name: "Visão geral", exact: true }).click();
+  await goTo(page, "Visão geral");
   await expect(page.getByTestId("monthly-total").locator("..")).toHaveAttribute(
     "data-tone",
     "warning",
   );
-  await page
-    .getByRole("button", { name: "Entradas do mês", exact: true })
-    .click();
+  await goTo(page, "Entradas do mês");
   await expect(
     page.getByTestId("cash-remaining").locator(".."),
   ).toHaveAttribute("data-tone", "danger");
@@ -245,7 +259,7 @@ export async function verifyFeedback(page) {
     "data-tone",
     "success",
   );
-  await page.getByRole("button", { name: "Despesas", exact: true }).click();
+  await goTo(page, "Despesas");
   await page.getByRole("button", { name: "Nova despesa", exact: true }).click();
   await page
     .getByLabel("Descrição da despesa")
@@ -269,10 +283,7 @@ export async function verifyFeedback(page) {
 }
 
 export async function verifySuggestionLayout(page, context) {
-  await page
-    .getByRole("navigation")
-    .getByRole("button", { name: "Minhas compras", exact: true })
-    .click();
+  await goTo(page, "Minhas compras");
   await page.getByRole("button", { name: "Nova compra", exact: true }).click();
   const input = page.getByLabel("Descrição da compra", { exact: true });
   await input.fill("No");

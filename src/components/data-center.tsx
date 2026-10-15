@@ -32,6 +32,8 @@ export function DataCenter({
   onRestore,
   history,
   onUndo,
+  onExport,
+  onImport,
 }: {
   data: Data;
   month: string;
@@ -41,6 +43,8 @@ export function DataCenter({
   onRestore: (d: Data) => void;
   history: ChangeRecord[];
   onUndo: () => void;
+  onExport: () => void;
+  onImport: () => void;
 }) {
   const [text, setText] = useState(""),
     [format, setFormat] = useState("csv"),
@@ -377,12 +381,19 @@ export function DataCenter({
           </>
         )}
         <p className="field-hint">
-          No cartão, cada linha vira uma compra de uma parcela no mês da fatura
-          escolhido. Se o arquivo trouxer parcelas individuais, importe apenas a
-          fatura desejada e ajuste o parcelamento na compra quando necessário.
-          Créditos, estornos e pagamentos da fatura não devem ser cadastrados
-          como compras. Possíveis duplicatas são bloqueadas.
+          No cartão, cada linha vira uma compra de uma parcela. Revise o mês e
+          as possíveis duplicatas antes de confirmar.
         </p>
+        <details className="more-details">
+          <summary>Como importar sem duplicar valores</summary>
+          <p className="field-hint">
+            No cartão, cada linha vira uma compra de uma parcela no mês da
+            fatura escolhido. Se o arquivo trouxer parcelas individuais, importe
+            apenas a fatura desejada e ajuste o parcelamento na compra quando
+            necessário. Créditos, estornos e pagamentos da fatura não devem ser
+            cadastrados como compras. Possíveis duplicatas são bloqueadas.
+          </p>{" "}
+        </details>
       </Panel>
       <Panel
         title="Cópias de segurança"
@@ -402,6 +413,22 @@ export function DataCenter({
           </button>
         }
       >
+        <div className="backup-file-actions">
+          <button
+            className="button secondary"
+            disabled={saving || busy}
+            onClick={onExport}
+          >
+            Exportar backup
+          </button>
+          <button
+            className="button secondary"
+            disabled={saving || busy}
+            onClick={onImport}
+          >
+            Importar backup
+          </button>
+        </div>
         <label className="check-line">
           <input
             type="checkbox"

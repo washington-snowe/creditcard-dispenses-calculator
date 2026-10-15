@@ -1,3 +1,4 @@
+import { goTo } from "./navigation.mjs";
 import { expect } from "playwright/test";
 import { readFile } from "node:fs/promises";
 const version = JSON.parse(
@@ -8,9 +9,7 @@ export async function runMoney(page) {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
   });
-  await page
-    .getByRole("button", { name: "Entradas do mês", exact: true })
-    .click();
+  await goTo(page, "Entradas do mês");
   await expect(page.getByTestId("cash-remaining")).toHaveText(/−?\s*-?600,00/);
   await page.getByRole("button", { name: "Nova entrada", exact: true }).click();
   await page.getByLabel("Descrição do movimento").fill("Salário recebido");
@@ -58,7 +57,7 @@ export async function runMoney(page) {
   await page.getByRole("button", { name: "Confirmar", exact: true }).click();
   await expect(page.getByTestId("cash-remaining")).toHaveText(/4\.400,00/);
   await page.getByRole("button", { name: "Desfazer última alteração" }).click();
-  await page.getByRole("button", { name: "Assinaturas", exact: true }).click();
+  await goTo(page, "Assinaturas");
   async function subscribe(name, provider, value, card = "") {
     await page
       .getByRole("button", { name: "Nova assinatura", exact: true })
@@ -84,9 +83,7 @@ export async function runMoney(page) {
     "Academia",
   );
   await page.getByLabel("Filtrar cartão das assinaturas").selectOption("all");
-  await page
-    .getByRole("button", { name: "Entradas do mês", exact: true })
-    .click();
+  await goTo(page, "Entradas do mês");
   await expect(page.getByTestId("cash-commitments")).toHaveText(/750,00/);
   await expect(page.getByTestId("cash-remaining")).toHaveText(/4\.050,00/);
   await page.getByRole("button", { name: "Próximo mês", exact: true }).click();
@@ -102,12 +99,10 @@ export async function runMoney(page) {
   await expect(page.getByRole("dialog")).toContainText("100,00");
   await page.getByRole("button", { name: "Continuar", exact: true }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible();
-  await page
-    .getByRole("button", { name: "Entradas do mês", exact: true })
-    .click();
+  await goTo(page, "Entradas do mês");
   await expect(page.getByTestId("cash-remaining")).toHaveText(/4\.050,00/);
   await expect(page.locator(".budget-breakdown")).toContainText("700,00");
-  await page.getByRole("button", { name: "Assinaturas", exact: true }).click();
+  await goTo(page, "Assinaturas");
   await page
     .getByRole("button", { name: "Pagar assinatura Academia", exact: true })
     .click();
@@ -145,19 +140,15 @@ export async function runMoney(page) {
     }),
   ).toBeDisabled();
   await page.getByRole("button", { name: /Voltar ao mês atual/ }).click();
-  await page.getByRole("button", { name: "Atualizações", exact: true }).click();
+  await goTo(page, "Atualizações");
   await expect(page.getByTestId("app-version")).toHaveText(version);
   await expect(
     page.getByText("Versões no GitHub", { exact: true }),
   ).toBeVisible();
-  await page
-    .getByRole("button", { name: "Entradas do mês", exact: true })
-    .click();
+  await goTo(page, "Entradas do mês");
   await expect(page.getByTestId("cash-remaining")).toHaveText(/4\.050,00/);
   await page.reload();
-  await page
-    .getByRole("button", { name: "Entradas do mês", exact: true })
-    .click();
+  await goTo(page, "Entradas do mês");
   await expect(page.getByTestId("cash-commitments")).toHaveText(/750,00/);
   await expect(page.getByTestId("cash-remaining")).toHaveText(/4\.050,00/);
   await expect(page.locator(".cash-table tbody tr")).toHaveCount(2);

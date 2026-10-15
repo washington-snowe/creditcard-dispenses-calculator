@@ -1,8 +1,9 @@
+import { goTo, purchaseAction } from "./navigation.mjs";
 import { expect } from "playwright/test";
 
 export async function runFlow(page) {
   await expect(
-    page.getByRole("heading", { name: "Boas-vindas ao ContaClara." }),
+    page.getByRole("heading", { name: "Resumo do mês" }),
   ).toBeVisible();
   await expect(page.getByTestId("welcome-pending")).toHaveText(/0,00/);
   await expect(page.getByTestId("welcome-paid")).toHaveCount(0);
@@ -10,7 +11,7 @@ export async function runFlow(page) {
     .getByRole("button", { name: "Explorar Visão geral", exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: "Tudo sob controle." }),
+    page.getByRole("heading", { name: "Visão geral", exact: true }),
   ).toBeVisible();
   await expect(page.getByTestId("total-debt")).toHaveText(/0,00/);
   await page.getByRole("button", { name: "Novo cartão", exact: true }).click();
@@ -36,7 +37,7 @@ export async function runFlow(page) {
   await expect(page.getByRole("dialog")).not.toBeVisible();
   await expect(page.getByTestId("total-debt")).toHaveText(/66,66/);
   await expect(page.getByTestId("monthly-total")).toHaveText(/33,33/);
-  await page.getByRole("button", { name: "Meus cartões" }).click();
+  await goTo(page, "Meus cartões");
   await page.getByRole("button", { name: "Novo cartão", exact: true }).click();
   await page.getByLabel("Nome do cartão").fill("Viagens");
   await page.getByLabel("Banco", { exact: true }).selectOption("Inter");
@@ -44,9 +45,7 @@ export async function runFlow(page) {
     .getByRole("button", { name: "Salvar cartão", exact: true })
     .click();
   await expect(page.getByRole("dialog")).not.toBeVisible();
-  await page
-    .getByRole("button", { name: "Minhas compras", exact: true })
-    .click();
+  await goTo(page, "Minhas compras");
   await page.getByRole("button", { name: "Nova compra", exact: true }).click();
   await page.getByLabel("Descrição da compra").fill("Passagem");
   await page.getByLabel("Banco", { exact: true }).selectOption("Inter");
@@ -91,13 +90,13 @@ export async function runFlow(page) {
     .getAttribute("value");
   await page.getByLabel("Filtrar por cartão").selectOption(id);
   await expect(page.getByTestId("total-debt")).toHaveText(/66,66/);
-  await page.getByRole("button", { name: "Meus cartões" }).click();
+  await goTo(page, "Meus cartões");
   await expect(page.locator(".card-summary tfoot")).toContainText("66,66");
   await page.getByRole("button", { name: "Excluir cartão Principal" }).click();
   await expect(page.getByRole("status")).toContainText("compras vinculadas");
   await expect(page.locator(".toast")).toHaveAttribute("data-tone", "warning");
   await expect(page.getByRole("dialog")).not.toBeVisible();
-  await page.getByRole("button", { name: "Planejamento", exact: true }).click();
+  await goTo(page, "Planejamento");
   await page.getByLabel("Filtrar por cartão").selectOption("all");
   await expect(page.locator(".forecast-table tfoot")).toContainText("666,66");
   await page
@@ -113,21 +112,15 @@ export async function runFlow(page) {
     "Passagem",
   );
   await page.reload();
-  await page.getByRole("button", { name: "Visão geral", exact: true }).click();
+  await goTo(page, "Visão geral");
   await expect(page.getByTestId("total-debt")).toHaveText(/666,66/);
-  await page
-    .getByRole("button", { name: "Minhas compras", exact: true })
-    .click();
+  await goTo(page, "Minhas compras");
   await page.getByLabel("Buscar compras").fill("Passagem");
   await expect(page.locator(".purchase-table tbody tr")).toHaveCount(1);
-  await page
-    .getByRole("button", { name: "Excluir Passagem", exact: true })
-    .click();
+  await purchaseAction(page, "Excluir Passagem");
   await page.getByRole("button", { name: "Cancelar", exact: true }).click();
   await expect(page.locator(".purchase-table tbody tr")).toHaveCount(1);
-  await page
-    .getByRole("button", { name: "Excluir Passagem", exact: true })
-    .click();
+  await purchaseAction(page, "Excluir Passagem");
   await page.getByRole("button", { name: "Confirmar", exact: true }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible();
   await expect(page.getByTestId("total-debt")).toHaveText(/0,00/);
@@ -144,7 +137,7 @@ export async function runFlow(page) {
   await expect(page.getByTestId("total-debt")).toHaveText(/0,00/);
   await page.getByRole("button", { name: "Quitadas", exact: true }).click();
   await expect(page.locator(".purchase-table tbody")).toContainText("Quitada");
-  await page.getByRole("button", { name: "Planejamento", exact: true }).click();
+  await goTo(page, "Planejamento");
   await expect(
     page.getByRole("heading", { name: "Um mês livre de parcelas" }),
   ).toBeVisible();

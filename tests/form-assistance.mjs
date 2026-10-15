@@ -1,10 +1,7 @@
+import { goTo } from "./navigation.mjs";
 import { expect } from "playwright/test";
 export async function runFormAssistance(page) {
-  const nav = async (name) =>
-    page
-      .getByRole("navigation")
-      .getByRole("button", { name, exact: true })
-      .click();
+  const nav = (name) => goTo(page, name);
   const cancel = async () => {
     await page.getByRole("button", { name: "Cancelar", exact: true }).click();
     await expect(page.getByRole("dialog")).not.toBeVisible();

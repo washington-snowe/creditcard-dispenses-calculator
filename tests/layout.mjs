@@ -1,3 +1,4 @@
+import { goTo } from "./navigation.mjs";
 import {
   verifyChartTooltips,
   verifyNavigation,
@@ -90,23 +91,19 @@ try {
   await verifyChartTooltips(page);
   await mkdir(".runtime", { recursive: true });
   for (const theme of ["Escuro", "Ultra Dark", "Claro"]) {
-    await page.getByRole("button", { name: "Aparência", exact: true }).click();
+    await goTo(page, "Aparência");
     await page.getByRole("button", { name: new RegExp(`^${theme}`) }).click();
     await page
       .getByRole("button", { name: "Aplicar aparência", exact: true })
       .click();
-    await page
-      .getByRole("button", { name: "Visão geral", exact: true })
-      .click();
+    await goTo(page, "Visão geral");
     await verifyTypography(page);
-    await page.getByRole("button", { name: "Início", exact: true }).click();
+    await goTo(page, "Início");
     await page.screenshot({
       path: `.runtime/welcome-${theme.replaceAll(" ", "-")}.png`,
       fullPage: true,
     });
-    await page
-      .getByRole("button", { name: "Visão geral", exact: true })
-      .click();
+    await goTo(page, "Visão geral");
     await page.screenshot({
       path: `.runtime/identity-theme-${theme.replaceAll(" ", "-")}.png`,
       fullPage: true,
@@ -121,7 +118,7 @@ try {
       await verifyChartTooltips(page);
     }
     for (const tab of tabs) {
-      await page.getByRole("button", { name: tab, exact: true }).click();
+      await goTo(page, tab);
       await verifyPageLayout(page, `${width}px / ${tab}`);
       if (tab === "Simular compra" || tab === "Dados e segurança") {
         const controls = await page
@@ -143,9 +140,7 @@ try {
         }
       }
     }
-    await page
-      .getByRole("button", { name: "Visão geral", exact: true })
-      .click();
+    await goTo(page, "Visão geral");
     await page.screenshot({
       path: `.runtime/identity-${width}.png`,
       fullPage: true,
@@ -159,10 +154,10 @@ try {
   });
   await verifySuggestionLayout(page, "Sugestão com texto a 200%");
   for (const tab of tabs) {
-    await page.getByRole("button", { name: tab, exact: true }).click();
+    await goTo(page, tab);
     await verifyPageLayout(page, `texto 200% / ${tab}`);
   }
-  await page.getByRole("button", { name: "Visão geral", exact: true }).click();
+  await goTo(page, "Visão geral");
   await page.screenshot({
     path: ".runtime/identity-text-200.png",
     fullPage: true,

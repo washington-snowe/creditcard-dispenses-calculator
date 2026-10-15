@@ -1,3 +1,5 @@
+import { resetViewFilters } from "./view-state";
+import { ActionMenu } from "./components/action-menu";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   AvailableCard,
@@ -12,7 +14,14 @@ import {
 import { DataCenter, type ChangeRecord } from "./components/data-center";
 import { monthLedger, type Destination, type LedgerItem } from "./insights";
 import { createBackup } from "./storage";
-import { Eye, EyeOff, DatabaseBackup, Bell, Calculator } from "lucide-react";
+import {
+  Settings2,
+  Eye,
+  EyeOff,
+  DatabaseBackup,
+  Bell,
+  Calculator,
+} from "lucide-react";
 import { WelcomePage } from "./components/welcome";
 import { BrandLogo } from "./components/brand";
 import {
@@ -192,75 +201,46 @@ const nav = [
   { id: "updates" as const, title: "Atualizações", icon: RefreshCw },
 ];
 const navGroups = [
-  { title: "Acompanhar", ids: ["home", "overview", "calendar", "pending"] },
   {
-    title: "Organizar",
-    ids: ["cards", "purchases", "income", "expenses", "subscriptions"],
+    title: "Resumo",
+    icon: House,
+    ids: ["home", "overview", "calendar", "pending"],
   },
-  { title: "Planejar", ids: ["planning", "anticipation", "simulator"] },
-  { title: "Preferências", ids: ["appearance", "data", "updates"] },
+  {
+    title: "Movimentações",
+    icon: ReceiptText,
+    ids: ["purchases", "cards", "income", "expenses", "subscriptions"],
+  },
+  {
+    title: "Planejamento",
+    icon: CalendarDays,
+    ids: ["planning", "anticipation", "simulator"],
+  },
+  {
+    title: "Configurações",
+    icon: Settings2,
+    ids: ["appearance", "data", "updates"],
+  },
 ];
 const titles: Record<Tab, [string, string]> = {
-  calendar: [
-    "Cada dia, uma visão clara.",
-    "Recebimentos, vencimentos e fechamentos organizados no mês.",
-  ],
-  pending: [
-    "O próximo passo está aqui.",
-    "Veja o que falta pagar e o que merece sua atenção.",
-  ],
-  simulator: [
-    "Compre com planejamento.",
-    "Compare cartões e descubra o impacto antes de assumir uma parcela.",
-  ],
-  data: [
-    "Seus dados, bem cuidados.",
-    "Importe lançamentos, acompanhe alterações e restaure cópias de segurança.",
-  ],
-  home: [
-    "Boas-vindas ao ContaClara.",
-    "Seu mês com clareza. Escolha por onde começar.",
-  ],
-  expenses: [
-    "Cada conta, no seu tempo.",
-    "Organize Pix, boletos, dinheiro e débito, com vencimento e pagamento.",
-  ],
-  appearance: [
-    "Um espaço que é seu.",
-    "Ultra Dark, cores e movimento. Escolha como suas finanças se apresentam.",
-  ],
-  income: [
-    "Seu dinheiro, com destino.",
-    "Registre as entradas, ajuste os valores e saiba quanto vai sobrar.",
-  ],
-  subscriptions: [
-    "Recorrências sob controle.",
-    "Seus serviços, renovações e compromissos em um só lugar.",
-  ],
-  updates: [
-    "Seu ContaClara, sempre atual.",
-    "Confira as novas versões publicadas no seu repositório GitHub.",
-  ],
-  overview: [
-    "Tudo sob controle.",
-    "Um pouco mais de clareza. Muito mais tranquilidade.",
-  ],
-  purchases: [
-    "Cada compra, no seu lugar.",
-    "Todos os cartões. Todas as parcelas. Uma visão completa.",
-  ],
-  cards: [
-    "Seus cartões. Seu ritmo.",
-    "Acompanhe cada saldo e dê o mês como pago em um clique.",
-  ],
-  planning: [
-    "Faça espaço para o futuro.",
-    "Navegue pelo calendário e veja exatamente o que vem pela frente.",
-  ],
+  home: ["Resumo do mês", ""],
+  overview: ["Visão geral", "Parcelas, assinaturas e saldos por cartão."],
+  calendar: ["Calendário", "Recebimentos, vencimentos e fechamentos."],
+  pending: ["Pendências", "O que precisa da sua atenção."],
+  purchases: ["Compras", ""],
+  cards: ["Cartões", ""],
+  income: ["Entradas", ""],
+  expenses: ["Despesas", ""],
+  subscriptions: ["Assinaturas", ""],
+  planning: ["Previsão mensal", "Seus compromissos nos próximos meses."],
   anticipation: [
-    "Menos parcelas. Mais respiro.",
-    "Compare os valores, simule quitações e alivie os próximos meses.",
+    "Antecipações",
+    "Compare o custo de quitar com o alívio mensal.",
   ],
+  simulator: ["Simular compra", "Confira o impacto antes de cadastrar."],
+  appearance: ["Aparência", ""],
+  data: ["Dados e segurança", "Importação e cópias de segurança."],
+  updates: ["Atualizações", ""],
 };
 function demoData(theme: Settings["theme"]): Data {
   const cards: Card[] = [
@@ -424,7 +404,10 @@ export default function App() {
   const [saving, setSaving] = useState(false),
     savingLock = useRef(false);
   const [tab, setTab] = useState<Tab>("home");
+  const activeGroup = navGroups.find((group) => group.ids.includes(tab))!;
+  const lastVisited = useRef<Record<string, Tab>>({});
   const [filters, setFilters] = useState<Filters>(CLEAR);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [month, setMonth] = useState(currentMonth());
   const [modal, setModal] = useState<Modal>(null);
   const [toast, setToastState] = useState<{
@@ -447,16 +430,16 @@ export default function App() {
     () => window.matchMedia("(max-width: 1020px)").matches,
   );
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [toolsOpen, setToolsOpen] = useState(false);
-  const toolsRef = useRef<HTMLDivElement>(null);
   const menuToggleRef = useRef<HTMLButtonElement>(null);
   const collapsed = compactViewport
     ? !mobileMenuOpen
     : !!data.settings?.sidebarCollapsed;
   const navigate = (next: Tab) => {
+    lastVisited.current[
+      navGroups.find((group) => group.ids.includes(next))!.title
+    ] = next;
     setTab(next);
     setMobileMenuOpen(false);
-    setToolsOpen(false);
   };
   useEffect(() => {
     const query = window.matchMedia("(max-width: 1020px)");
@@ -468,27 +451,22 @@ export default function App() {
     return () => query.removeEventListener("change", update);
   }, []);
   useEffect(() => {
-    const dismiss = (event: PointerEvent) => {
-      if (!toolsRef.current?.contains(event.target as Node))
-        setToolsOpen(false);
-    };
+    lastVisited.current[activeGroup.title] = tab;
+  }, [tab]);
+  useEffect(() => {
     const escape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        if (toolsOpen) toolsRef.current?.querySelector("button")?.focus();
-        setToolsOpen(false);
-        if (mobileMenuOpen) {
-          setMobileMenuOpen(false);
-          menuToggleRef.current?.focus();
-        }
+      if (
+        event.key === "Escape" &&
+        mobileMenuOpen &&
+        !document.querySelector("dialog[open]")
+      ) {
+        setMobileMenuOpen(false);
+        menuToggleRef.current?.focus();
       }
     };
-    document.addEventListener("pointerdown", dismiss);
     document.addEventListener("keydown", escape);
-    return () => {
-      document.removeEventListener("pointerdown", dismiss);
-      document.removeEventListener("keydown", escape);
-    };
-  }, [mobileMenuOpen, toolsOpen]);
+    return () => document.removeEventListener("keydown", escape);
+  }, [mobileMenuOpen]);
   const importRef = useRef<HTMLInputElement>(null);
   const today = currentMonth(),
     theme = data.settings?.theme ?? "light";
@@ -530,7 +508,7 @@ export default function App() {
           ].slice(-20),
         );
       setData(clean);
-      setToast(message);
+      if (message) setToast(message);
       return true;
     } catch (error) {
       setToast(
@@ -682,6 +660,26 @@ export default function App() {
         : previous.filter((id) => valid.has(id)),
     );
   }, [data, filters]);
+  useEffect(() => {
+    if (!loaded) return;
+    setFilters((previous) => {
+      const bank =
+        previous.bank === "all" ||
+        data.cards.some((c) => c.bank === previous.bank)
+          ? previous.bank
+          : "all";
+      const card =
+        previous.card === "all" ||
+        data.cards.some(
+          (c) => c.id === previous.card && (bank === "all" || c.bank === bank),
+        )
+          ? previous.card
+          : "all";
+      return bank === previous.bank && card === previous.card
+        ? previous
+        : { ...previous, bank, card };
+    });
+  }, [data.cards, loaded]);
   function updateFilter(key: keyof Filters, value: string) {
     setFilters((previous) => ({
       ...previous,
@@ -834,6 +832,7 @@ export default function App() {
           }
           const ok = await commit(imported, "Backup restaurado.");
           if (ok) {
+            resetViewFilters();
             setFilters(CLEAR);
             setSelectedPayoffs([]);
           }
@@ -852,7 +851,7 @@ export default function App() {
     if (
       undo &&
       (await commit(
-        { ...undo, ...(data.settings ? { settings: data.settings } : {}) },
+        { ...undo, settings: data.settings },
         "Última alteração desfeita.",
         false,
       ))
@@ -1056,17 +1055,6 @@ export default function App() {
                           >
                             <Check size={17} />
                           </button>
-                          <button
-                            className="icon-button"
-                            disabled={saving}
-                            title="Antecipar parcelas"
-                            aria-label={`Antecipar ${p.description}`}
-                            onClick={() =>
-                              setModal({ type: "advance", purchase: p })
-                            }
-                          >
-                            <Zap size={15} />
-                          </button>
                         </>
                       )}
                       <button
@@ -1080,27 +1068,47 @@ export default function App() {
                       >
                         <Pencil size={15} />
                       </button>
-                      {!compact && (
-                        <button
-                          className="icon-button danger-text"
+                      {(!paid || !compact) && (
+                        <ActionMenu
+                          label={`Mais opções de ${p.description}`}
                           disabled={saving}
-                          aria-label={`Excluir ${p.description}`}
-                          title="Excluir compra"
-                          onClick={() =>
-                            confirm(
-                              "Excluir compra?",
-                              `Remover “${p.description}” e os registros de pagamento desta compra?`,
-                              () =>
-                                commit(
-                                  removePurchase(data, p.id),
-                                  "Compra excluída.",
-                                ),
-                              true,
-                            )
-                          }
                         >
-                          <Trash2 size={15} />
-                        </button>
+                          {!paid && (
+                            <button
+                              className="icon-button"
+                              disabled={saving}
+                              title="Antecipar parcelas"
+                              aria-label={`Antecipar ${p.description}`}
+                              onClick={() =>
+                                setModal({ type: "advance", purchase: p })
+                              }
+                            >
+                              <Zap size={15} /> Antecipar parcelas
+                            </button>
+                          )}
+                          {!compact && (
+                            <button
+                              className="icon-button danger-text"
+                              disabled={saving}
+                              aria-label={`Excluir ${p.description}`}
+                              title="Excluir compra"
+                              onClick={() =>
+                                confirm(
+                                  "Excluir compra?",
+                                  `Remover “${p.description}” e os registros de pagamento desta compra?`,
+                                  () =>
+                                    commit(
+                                      removePurchase(data, p.id),
+                                      "Compra excluída.",
+                                    ),
+                                  true,
+                                )
+                              }
+                            >
+                              <Trash2 size={15} /> Excluir compra
+                            </button>
+                          )}
+                        </ActionMenu>
                       )}
                     </div>
                   </td>
@@ -1251,7 +1259,7 @@ export default function App() {
                     sidebarCollapsed: !collapsed,
                   },
                 },
-                collapsed ? "Menu expandido." : "Menu recolhido.",
+                "",
                 false,
               );
           }}
@@ -1265,25 +1273,23 @@ export default function App() {
         </button>
         <nav id="main-navigation" aria-label="Navegação principal">
           {navGroups.map((group) => (
-            <div className="nav-group" key={group.title}>
-              <span className="nav-group-label">{group.title}</span>
-              {group.ids.map((id) => {
-                const item = nav.find((item) => item.id === id)!;
-                return (
-                  <button
-                    key={item.id}
-                    aria-label={item.title}
-                    title={collapsed ? item.title : undefined}
-                    className={`nav-item ${tab === item.id ? "active" : ""}`}
-                    aria-current={tab === item.id ? "page" : undefined}
-                    onClick={() => navigate(item.id)}
-                  >
-                    <item.icon size={19} />
-                    <span>{item.title}</span>
-                  </button>
-                );
-              })}
-            </div>
+            <button
+              key={group.title}
+              aria-label={`Área: ${group.title}`}
+              title={collapsed ? group.title : undefined}
+              className={`nav-item ${activeGroup.title === group.title ? "active" : ""}`}
+              aria-current={
+                activeGroup.title === group.title ? "true" : undefined
+              }
+              onClick={() =>
+                navigate(
+                  lastVisited.current[group.title] ?? (group.ids[0] as Tab),
+                )
+              }
+            >
+              <group.icon size={20} />
+              <span>{group.title}</span>
+            </button>
           ))}
         </nav>
         <div className="sidebar-bottom">
@@ -1302,7 +1308,7 @@ export default function App() {
                     theme: theme === "light" ? "dark" : "light",
                   },
                 },
-                `Tema ${theme === "light" ? "escuro" : "claro"} ativado.`,
+                "",
                 false,
               )
             }
@@ -1327,8 +1333,7 @@ export default function App() {
         <header className="topbar">
           <div className="breadcrumb">
             <span className="brand-name">ContaClara</span>
-            <ChevronRight size={13} />
-            <span>{nav.find((n) => n.id === tab)?.title}</span>
+            <span className="section-context">{activeGroup.title}</span>
           </div>
           <div className="topbar-actions">
             <button
@@ -1356,9 +1361,7 @@ export default function App() {
                       privacy: !data.settings?.privacy,
                     },
                   },
-                  data.settings?.privacy
-                    ? "Valores visíveis."
-                    : "Valores ocultos.",
+                  "",
                   false,
                 )
               }
@@ -1384,48 +1387,6 @@ export default function App() {
                 <Undo2 size={17} />
               </button>
             )}
-            <div className="topbar-tools" ref={toolsRef}>
-              <button
-                className="icon-button"
-                aria-label="Opções de backup"
-                title="Opções de backup"
-                aria-expanded={toolsOpen}
-                aria-controls="backup-options"
-                onClick={() => setToolsOpen(!toolsOpen)}
-              >
-                <Ellipsis size={20} />
-              </button>
-              {toolsOpen && (
-                <div
-                  id="backup-options"
-                  className="backup-options"
-                  aria-label="Cópias de segurança"
-                >
-                  <strong>Cópias de segurança</strong>
-                  <button
-                    disabled={saving}
-                    onClick={() => {
-                      exportBackup();
-                      setToolsOpen(false);
-                    }}
-                  >
-                    <Download size={17} />
-                    Exportar backup
-                  </button>
-                  <button
-                    disabled={saving}
-                    onClick={() => {
-                      importRef.current?.click();
-                      setToolsOpen(false);
-                    }}
-                  >
-                    <FileUp size={17} />
-                    Importar backup
-                  </button>
-                  <small>Seus dados ficam apenas neste dispositivo.</small>
-                </div>
-              )}
-            </div>
             <input
               ref={importRef}
               type="file"
@@ -1436,18 +1397,80 @@ export default function App() {
                 e.target.value = "";
               }}
             />
-            <span className="avatar-small">EU</span>
           </div>
         </header>
-        <main key={tab} className="page-content">
+        <main key={tab} className="page-content" data-page={tab}>
+          <nav
+            className="section-tabs"
+            aria-label={`Telas de ${activeGroup.title}`}
+          >
+            {activeGroup.ids.map((id) => {
+              const item = nav.find((n) => n.id === id)!;
+              return (
+                <button
+                  key={id}
+                  aria-current={tab === id ? "page" : undefined}
+                  aria-label={item.title}
+                  onClick={() => navigate(item.id)}
+                >
+                  {item.title}
+                </button>
+              );
+            })}
+          </nav>
           <div className="page-heading">
             <div>
-              <span className="eyebrow">
-                <i className="dot accent" /> CLAREZA PARA SEUS PRÓXIMOS PASSOS
-              </span>
-              <h1>{titles[tab][0]}</h1>
-              <p>{titles[tab][1]}</p>
+              <h1 tabIndex={-1}>{titles[tab][0]}</h1>
+              {titles[tab][1] && <p>{titles[tab][1]}</p>}
             </div>
+            {!["updates", "appearance", "data", "simulator"].includes(tab) && (
+              <div className="month-toolbar">
+                <div className="month-navigation">
+                  <button
+                    className="icon-button"
+                    aria-label="Mês anterior"
+                    disabled={month <= "2000-01"}
+                    onClick={() => setMonth(addMonths(month, -1))}
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <label className="month-label">
+                    <CalendarDays size={17} />
+                    <span>{monthLabel(month)}</span>
+                    <input
+                      aria-label="Escolher mês"
+                      type="month"
+                      min="2000-01"
+                      max="2199-12"
+                      value={month}
+                      onChange={(e) => {
+                        if (e.target.value) setMonth(e.target.value);
+                      }}
+                    />
+                  </label>
+                  <button
+                    className="icon-button"
+                    aria-label="Próximo mês"
+                    disabled={month >= "2199-12"}
+                    onClick={() => setMonth(addMonths(month, 1))}
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+                <div className="period-hint">
+                  {month === today ? (
+                    <span className="badge accent-badge">Mês atual</span>
+                  ) : (
+                    <button
+                      className="text-button"
+                      onClick={() => setMonth(today)}
+                    >
+                      Voltar ao mês atual <ArrowRight size={13} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
             {![
               "home",
               "updates",
@@ -1485,61 +1508,6 @@ export default function App() {
               </button>
             )}
           </div>
-          {!["updates", "appearance", "data", "simulator"].includes(tab) && (
-            <div className="month-toolbar">
-              <div className="month-navigation">
-                <button
-                  className="icon-button"
-                  aria-label="Mês anterior"
-                  disabled={month <= "2000-01"}
-                  onClick={() => setMonth(addMonths(month, -1))}
-                >
-                  <ChevronLeft size={18} />
-                </button>
-                <label className="month-label">
-                  <CalendarDays size={17} />
-                  <span>{monthLabel(month)}</span>
-                  <input
-                    aria-label="Escolher mês"
-                    type="month"
-                    min="2000-01"
-                    max="2199-12"
-                    value={month}
-                    onChange={(e) => {
-                      if (e.target.value) setMonth(e.target.value);
-                    }}
-                  />
-                </label>
-                <button
-                  className="icon-button"
-                  aria-label="Próximo mês"
-                  disabled={month >= "2199-12"}
-                  onClick={() => setMonth(addMonths(month, 1))}
-                >
-                  <ChevronRight size={18} />
-                </button>
-              </div>
-              <div className="period-hint">
-                {month === today ? (
-                  <span className="badge accent-badge">Mês atual</span>
-                ) : (
-                  <button
-                    className="text-button"
-                    onClick={() => setMonth(today)}
-                  >
-                    Voltar ao mês atual <ArrowRight size={13} />
-                  </button>
-                )}
-                <span>
-                  {month < today
-                    ? "Histórico de parcelas"
-                    : month > today
-                      ? "Previsão de pagamentos"
-                      : "Seu ponto de partida"}
-                </span>
-              </div>
-            </div>
-          )}
           {hasPurchaseFilters && (
             <section className="global-filters" aria-label="Filtros globais">
               <label className="search">
@@ -1551,51 +1519,78 @@ export default function App() {
                   onChange={(e) => updateFilter("search", e.target.value)}
                 />
               </label>
-              <select
-                aria-label="Filtrar banco"
-                value={filters.bank}
-                onChange={(e) => updateFilter("bank", e.target.value)}
+              <button
+                className="button secondary"
+                aria-label="Filtros de compras"
+                aria-expanded={filtersOpen}
+                aria-controls="purchase-filter-fields"
+                onClick={() => setFiltersOpen(!filtersOpen)}
               >
-                <option value="all">Todos os bancos</option>
-                {[...new Set(data.cards.map((c) => c.bank))].map((b) => (
-                  <option key={b}>{b}</option>
-                ))}
-              </select>
-              <select
-                aria-label="Filtrar por cartão"
-                value={filters.card}
-                onChange={(e) => updateFilter("card", e.target.value)}
+                <Filter size={16} />
+                Filtros
+                {Object.entries(filters).filter(
+                  ([k, v]) => k !== "search" && v !== "all",
+                ).length > 0 && (
+                  <span className="filter-count">
+                    {
+                      Object.entries(filters).filter(
+                        ([k, v]) => k !== "search" && v !== "all",
+                      ).length
+                    }
+                  </span>
+                )}
+              </button>
+              <div
+                id="purchase-filter-fields"
+                className="advanced-filters"
+                hidden={!filtersOpen}
               >
-                <option value="all">Todos os cartões</option>
-                {data.cards
-                  .filter(
-                    (c) => filters.bank === "all" || c.bank === filters.bank,
-                  )
-                  .map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.bank} · {c.name}
-                    </option>
+                <select
+                  aria-label="Filtrar banco"
+                  value={filters.bank}
+                  onChange={(e) => updateFilter("bank", e.target.value)}
+                >
+                  <option value="all">Todos os bancos</option>
+                  {[...new Set(data.cards.map((c) => c.bank))].map((b) => (
+                    <option key={b}>{b}</option>
                   ))}
-              </select>
-              <select
-                aria-label="Filtrar categoria"
-                value={filters.category}
-                onChange={(e) => updateFilter("category", e.target.value)}
-              >
-                <option value="all">Todas as categorias</option>
-                {CATEGORIES.map((c) => (
-                  <option key={c}>{c}</option>
-                ))}
-              </select>
-              <select
-                aria-label="Filtrar status"
-                value={filters.status}
-                onChange={(e) => updateFilter("status", e.target.value)}
-              >
-                <option value="all">Todos os status</option>
-                <option value="active">Em andamento</option>
-                <option value="paid">Quitadas</option>
-              </select>
+                </select>
+                <select
+                  aria-label="Filtrar por cartão"
+                  value={filters.card}
+                  onChange={(e) => updateFilter("card", e.target.value)}
+                >
+                  <option value="all">Todos os cartões</option>
+                  {data.cards
+                    .filter(
+                      (c) => filters.bank === "all" || c.bank === filters.bank,
+                    )
+                    .map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.bank} · {c.name}
+                      </option>
+                    ))}
+                </select>
+                <select
+                  aria-label="Filtrar categoria"
+                  value={filters.category}
+                  onChange={(e) => updateFilter("category", e.target.value)}
+                >
+                  <option value="all">Todas as categorias</option>
+                  {CATEGORIES.map((c) => (
+                    <option key={c}>{c}</option>
+                  ))}
+                </select>
+                <select
+                  aria-label="Filtrar status"
+                  value={filters.status}
+                  onChange={(e) => updateFilter("status", e.target.value)}
+                >
+                  <option value="all">Todos os status</option>
+                  <option value="active">Em andamento</option>
+                  <option value="paid">Quitadas</option>
+                </select>
+              </div>
               {filtered && (
                 <button
                   className="icon-button"
@@ -1902,6 +1897,8 @@ export default function App() {
               saving={saving}
               history={history}
               onUndo={() => void restoreUndo()}
+              onExport={exportBackup}
+              onImport={() => importRef.current?.click()}
               onCommit={commit}
               onSettings={(settings) =>
                 commit(
@@ -1921,7 +1918,15 @@ export default function App() {
                       setToast((error as Error).message, "danger");
                       return false;
                     }
-                    return commit(restored, "Cópia de segurança restaurada.");
+                    const ok = await commit(
+                      restored,
+                      "Cópia de segurança restaurada.",
+                    );
+                    if (ok) {
+                      resetViewFilters();
+                      setFilters(CLEAR);
+                    }
+                    return ok;
                   },
                   true,
                 )
@@ -2767,10 +2772,7 @@ export default function App() {
           {tab === "updates" && <UpdatesPage />}
           <footer className="page-footer">
             <LocalNote />
-            <span>
-              ContaClara {__APP_VERSION__} <i>·</i> Seu dinheiro. Suas
-              possibilidades.
-            </span>
+            <span>ContaClara {__APP_VERSION__}</span>
           </footer>
         </main>
       </div>

@@ -1,3 +1,5 @@
+import { verifyCohesion } from "./cohesion.mjs";
+import { goTo } from "./navigation.mjs";
 import { runWorkbench } from "./workbench.mjs";
 import { runFormAssistance } from "./form-assistance.mjs";
 import { chromium, expect } from "playwright/test";
@@ -48,20 +50,21 @@ try {
   await runNewPlanning(page);
   await runFormAssistance(page);
   await runWorkbench(page);
+  await verifyCohesion(page);
   await mkdir(".runtime", { recursive: true });
   await page.screenshot({ path: ".runtime/income.png", fullPage: true });
-  await page.getByRole("button", { name: "Assinaturas", exact: true }).click();
+  await goTo(page, "Assinaturas");
   await page.screenshot({ path: ".runtime/subscriptions.png", fullPage: true });
-  await page.getByRole("button", { name: "Atualizações", exact: true }).click();
+  await goTo(page, "Atualizações");
   await page.screenshot({ path: ".runtime/updates.png", fullPage: true });
-  await page.getByRole("button", { name: "Aparência", exact: true }).click();
+  await goTo(page, "Aparência");
   await page.screenshot({ path: ".runtime/appearance.png", fullPage: true });
-  await page.getByRole("button", { name: "Despesas", exact: true }).click();
+  await goTo(page, "Despesas");
   await page.screenshot({ path: ".runtime/expenses.png", fullPage: true });
   const backup = await page.evaluate(() =>
     localStorage.getItem("saldo-data-v1"),
   );
-  await page.locator("input[type=file]").setInputFiles({
+  await page.locator('input[accept=".json,application/json"]').setInputFiles({
     name: "backup.json",
     mimeType: "application/json",
     buffer: Buffer.from(backup),
@@ -71,9 +74,7 @@ try {
   ).toBeVisible();
   await page.getByRole("button", { name: "Confirmar", exact: true }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible();
-  await page
-    .getByRole("button", { name: "Opções de backup", exact: true })
-    .click();
+  await goTo(page, "Dados e segurança");
   const download = page.waitForEvent("download");
   await page
     .getByRole("button", { name: "Exportar backup", exact: true })
@@ -81,7 +82,7 @@ try {
   await expect((await download).suggestedFilename()).toMatch(
     /^saldo-backup-.*\.json$/,
   );
-  await page.locator("input[type=file]").setInputFiles({
+  await page.locator('input[accept=".json,application/json"]').setInputFiles({
     name: "invalid.json",
     mimeType: "application/json",
     buffer: Buffer.from('{"version":99}'),
@@ -90,13 +91,13 @@ try {
     "Não foi possível importar",
   );
   await expect(page.locator(".toast")).toHaveAttribute("data-tone", "danger");
-  await page.getByRole("button", { name: "Visão geral", exact: true }).click();
+  await goTo(page, "Visão geral");
   await page.evaluate(() => localStorage.clear());
   await page.reload();
   await page.getByRole("button", { name: "Experimentar exemplo" }).click();
   await page.getByRole("button", { name: "Continuar", exact: true }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible();
-  await page.getByRole("button", { name: "Visão geral", exact: true }).click();
+  await goTo(page, "Visão geral");
   await page.waitForTimeout(800);
   await page.mouse.move(0, 0);
   await page.getByRole("button", { name: "Fechar aviso" }).click();

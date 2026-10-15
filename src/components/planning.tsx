@@ -1,3 +1,4 @@
+import { useViewFilter } from "../view-state";
 import { SuggestionInput } from "./suggestion-input";
 import { CategoryHint, useSmartCategory } from "./smart-category";
 import { EXAMPLES, nameOptions, categoryHistory } from "../suggestions";
@@ -318,9 +319,9 @@ export function IncomePlanning({
     ),
     [negative, setNegative] = useState((config?.openingCents ?? 0) < 0),
     [error, setError] = useState("");
-  const [search, setSearch] = useState(""),
-    [source, setSource] = useState("all"),
-    [status, setStatus] = useState("all");
+  const [search, setSearch] = useViewFilter("recurring.search", ""),
+    [source, setSource] = useViewFilter("recurring.source", "all"),
+    [status, setStatus] = useViewFilter("recurring.status", "all");
   const occurrences = incomeMonth(data, month),
     rows = (data.recurringIncomes ?? []).filter(
       (r) =>
@@ -801,10 +802,10 @@ export function ExpensesPage({
   onPay: (e: Expense) => void;
   onUnpay: (e: Expense) => void;
 }) {
-  const [search, setSearch] = useState(""),
-    [category, setCategory] = useState("all"),
-    [method, setMethod] = useState("all"),
-    [status, setStatus] = useState("all");
+  const [search, setSearch] = useViewFilter("expenses.search", ""),
+    [category, setCategory] = useViewFilter("expenses.category", "all"),
+    [method, setMethod] = useViewFilter("expenses.method", "all"),
+    [status, setStatus] = useViewFilter("expenses.status", "all");
   const period = expenseMonth(data, month),
     late = (e: Expense) => !e.paidDate && e.dueDate < localDate(),
     rows = period

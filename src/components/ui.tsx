@@ -1,5 +1,11 @@
 import { BankLogo } from "./bank-logo";
-import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import {
   ChartNoAxesCombined,
   CreditCard,
@@ -23,30 +29,60 @@ export function Dialog({
   wide?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
+  const backdropPress = useRef(false);
   useEffect(() => {
     const element = ref.current;
+    const opener = document.activeElement as HTMLElement | null;
     element?.showModal();
-    return () => element?.close();
+    return () => {
+      element?.close();
+      requestAnimationFrame(() => {
+        if (document.querySelector("dialog[open]")) return;
+        if (opener?.isConnected && !opener.closest("dialog"))
+          opener.focus({ preventScroll: true });
+        else
+          document
+            .querySelector<HTMLElement>("main h1")
+            ?.focus({ preventScroll: true });
+      });
+    };
   }, []);
   return (
     <dialog
       ref={ref}
       className={`dialog ${wide ? "wide" : ""}`}
-      aria-labelledby="dialog-title"
+      aria-labelledby={titleId}
       onCancel={(e) => {
         e.preventDefault();
         onClose();
       }}
+      onPointerDown={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        backdropPress.current =
+          e.target === e.currentTarget &&
+          (e.clientX < rect.left ||
+            e.clientX > rect.right ||
+            e.clientY < rect.top ||
+            e.clientY > rect.bottom);
+      }}
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        const rect = e.currentTarget.getBoundingClientRect();
+        if (
+          backdropPress.current &&
+          e.target === e.currentTarget &&
+          (e.clientX < rect.left ||
+            e.clientX > rect.right ||
+            e.clientY < rect.top ||
+            e.clientY > rect.bottom)
+        )
+          onClose();
+        backdropPress.current = false;
       }}
     >
       <div className="dialog-heading">
         <div>
-          <span className="eyebrow">
-            <Sparkles size={12} /> SEU PRÓXIMO PASSO
-          </span>
-          <h2 id="dialog-title">{title}</h2>
+          <h2 id={titleId}>{title}</h2>
           {subtitle && <p>{subtitle}</p>}
         </div>
         <button className="icon-button" onClick={onClose} aria-label="Fechar">

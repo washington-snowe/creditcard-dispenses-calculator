@@ -1,0 +1,71 @@
+[
+  {
+    "bank": "Nubank",
+    "file": "nubank.ico",
+    "website": "https://nubank.com.br/",
+    "source": "https://nubank.com.br/favicon.ico",
+    "sha256": "7f3f2dca283160ae4b9d21e27e9ce1b25f5e569d0ba32db0cca5f00aebe88a6b"
+  },
+  {
+    "bank": "Itaú",
+    "website": "https://www.itau.com.br/",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "bank": "Banco do Brasil",
+    "file": "bb.ico",
+    "website": "https://www.bb.com.br/",
+    "source": "https://www.bb.com.br/favicon.ico",
+    "sha256": "849f21961b049dbd44f842fea3bec7f389c8ef4454fc142bf5b346613d9f810b"
+  },
+  {
+    "bank": "Bradesco",
+    "file": "bradesco.ico",
+    "website": "https://banco.bradesco/",
+    "source": "https://banco.bradesco/favicon.ico",
+    "sha256": "cb7489dd3c04b8a0e5a7f411a89f1795978c9be6b0e960546b9b236c0190d111"
+  },
+  {
+    "bank": "Santander",
+    "file": "santander.ico",
+    "website": "https://www.santander.com.br/",
+    "source": "https://www.santander.com.br/favicon.ico",
+    "sha256": "4c1db2844b8d24c83fc7bc0263dc5e5ab708f6f136b8314f97052d17bcfc5b40"
+  },
+  {
+    "bank": "Inter",
+    "file": "inter.svg",
+    "website": "https://inter.co/",
+    "source": "https://inter.co/favicon.svg",
+    "sha256": "1bd8b76a80ad4d9a0bf757d90ad828fd4e9421d7a680d82857c3c415bb4e0d89"
+  },
+  {
+    "bank": "Caixa",
+    "website": "https://www.caixa.gov.br/",
+    "error": "HTTP Error 302: The HTTP server returned a redirect error that would lead to an infinite loop.\nThe last 30x error message was:\nObject Moved"
+  },
+  {
+    "bank": "C6 Bank",
+    "website": "https://www.c6bank.com.br/",
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "bank": "BTG Pactual",
+    "file": "btg.png",
+    "website": "https://banking.btgpactual.com/",
+    "source": "https://banking.btgpactual.com/favicon.png?v=1",
+    "sha256": "c8e3b7f96f2883c15fa75ee91a271851bf80bfc03b0b883b2d60f7bf00c9e4e7"
+  },
+  {
+    "bank": "Mercado Pago",
+    "file": "mercadopago.svg",
+    "website": "https://www.mercadopago.com.br/",
+    "source": "https://http2.mlstatic.com/frontend-assets/mp-web-navigation/ui-navigation/7.7.2/mercadopago/favicon.svg",
+    "sha256": "802c1e56b7d76e051c06e1310ae61257480e40918221d61f06d50e43667afe0a"
+  },
+  {
+    "bank": "PicPay",
+    "website": "https://picpay.com/",
+    "error": "Response is not a supported image"
+  }
+]

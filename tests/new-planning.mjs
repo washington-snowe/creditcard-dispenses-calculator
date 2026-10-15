@@ -91,14 +91,14 @@ export async function runNewPlanning(page) {
   await page.getByRole("button", { name: "Aparência", exact: true }).click();
   await page.getByRole("button", { name: /Ultra Dark/ }).click();
   await page.getByLabel("Cor personalizada do tema").fill("#20c7a0");
-  await page.getByLabel("Fonte da interface").selectOption("inter");
+  await expect(page.getByLabel("Fonte da interface")).toHaveCount(0);
   await page.getByLabel("Animações suaves").uncheck();
   await page
     .getByRole("button", { name: "Aplicar aparência", exact: true })
     .click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "ultra");
   await expect(page.locator("html")).toHaveAttribute("data-motion", "off");
-  await expect(page.locator("html")).toHaveAttribute("data-font", "inter");
+  await expect(page.locator("html")).not.toHaveAttribute("data-font");
   expect(
     await page.evaluate(() =>
       document.documentElement.style.getPropertyValue("--accent-base"),

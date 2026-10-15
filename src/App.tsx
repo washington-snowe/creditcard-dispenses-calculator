@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { BrandLogo } from "./components/brand";
 import {
   ArrowDownRight,
   ArrowRight,
@@ -9,7 +10,6 @@ import {
   Repeat,
   RefreshCw,
   CalendarDays,
-  ChartNoAxesCombined,
   Check,
   CheckCheck,
   ChevronLeft,
@@ -170,7 +170,7 @@ const titles: Record<Tab, [string, string]> = {
     "Seus serviços, renovações e compromissos em um só lugar.",
   ],
   updates: [
-    "Seu Saldo, sempre atual.",
+    "Seu ContaClara, sempre atual.",
     "Confira as novas versões publicadas no seu repositório GitHub.",
   ],
   overview: [
@@ -929,10 +929,7 @@ export default function App() {
   if (!loaded)
     return (
       <div className="loading-screen">
-        <span className="brand-logo">
-          <ChartNoAxesCombined size={25} />
-        </span>
-        <h1>saldo.</h1>
+        <BrandLogo />
         {loadError ? (
           <>
             <p role="alert">
@@ -955,12 +952,7 @@ export default function App() {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand">
-          <div className="brand-logo">
-            <ChartNoAxesCombined size={23} />
-          </div>
-          <span>
-            saldo<span>.</span>
-          </span>
+          <BrandLogo variant="responsive" />
           <small>{__APP_VERSION__}</small>
         </div>
         <span className="workspace-label">SEU ESPAÇO FINANCEIRO</span>
@@ -975,9 +967,6 @@ export default function App() {
             >
               <item.icon size={19} />
               <span>{item.title}</span>
-              {item.id === "anticipation" && (
-                <span className="new-pill">NOVO</span>
-              )}
             </button>
           ))}
         </nav>
@@ -1035,7 +1024,8 @@ export default function App() {
       <div className="main-wrapper">
         <header className="topbar">
           <div className="breadcrumb">
-            Meu espaço <ChevronRight size={13} />
+            <span className="brand-name">ContaClara</span>
+            <ChevronRight size={13} />
             <span>{nav.find((n) => n.id === tab)?.title}</span>
           </div>
           <div className="topbar-actions">
@@ -2327,7 +2317,7 @@ export default function App() {
           <footer className="page-footer">
             <LocalNote />
             <span>
-              Saldo {__APP_VERSION__} <i>·</i> Seu dinheiro. Suas
+              ContaClara {__APP_VERSION__} <i>·</i> Seu dinheiro. Suas
               possibilidades.
             </span>
           </footer>

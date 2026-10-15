@@ -1,4 +1,4 @@
-name: Publicar Saldo para Windows
+name: Publicar ContaClara para Windows
 
 on:
   push:
@@ -48,7 +48,7 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force downloads | Out-Null
           @'
-          SALDO - Windows de 64 bits
+          CONTACLARA - Windows de 64 bits
 
           Extraia a pasta inteira e execute saldo.exe. Não é necessário instalar Node.js.
           Não mova apenas saldo.exe: os demais arquivos também são necessários.
@@ -57,8 +57,9 @@ jobs:
           Exporte backups pelo botão de download do aplicativo para preservar uma cópia.
           '@ | Set-Content -Path release/Saldo-win32-x64/LEIA-ME.txt -Encoding utf8
           Compress-Archive -Path release/Saldo-win32-x64 -DestinationPath downloads/Saldo-Windows-x64.zip
+          Copy-Item downloads/Saldo-Windows-x64.zip downloads/ContaClara-Windows-x64.zip
           $hash = (Get-FileHash downloads/Saldo-Windows-x64.zip -Algorithm SHA256).Hash.ToLowerInvariant()
-          "$hash  Saldo-Windows-x64.zip" | Set-Content -Path downloads/SHA256SUMS.txt -Encoding utf8
+          "$hash  Saldo-Windows-x64.zip`n$hash  ContaClara-Windows-x64.zip" | Set-Content -Path downloads/SHA256SUMS.txt -Encoding utf8
 
       - name: Testar atualização, retorno e preservação de dados no Windows
         run: |
@@ -98,7 +99,7 @@ jobs:
           if ($LASTEXITCODE -eq 0) {
             Invoke-ReleaseCommand -ReleaseArguments @('release', 'edit', $releaseTag, '--repo', $env:RELEASE_REPO, '--draft=true')
           } else {
-            Invoke-ReleaseCommand -ReleaseArguments @('release', 'create', $releaseTag, '--repo', $env:RELEASE_REPO, '--verify-tag', '--draft', '--title', "Saldo $releaseTag - Windows 64 bits", '--notes-file', '.github/release-notes.md')
+            Invoke-ReleaseCommand -ReleaseArguments @('release', 'create', $releaseTag, '--repo', $env:RELEASE_REPO, '--verify-tag', '--draft', '--title', "ContaClara $releaseTag - Windows 64 bits", '--notes-file', '.github/release-notes.md')
           }
-          Invoke-ReleaseCommand -ReleaseArguments @('release', 'upload', $releaseTag, 'downloads/Saldo-Windows-x64.zip', 'downloads/SHA256SUMS.txt', '--repo', $env:RELEASE_REPO, '--clobber')
-          Invoke-ReleaseCommand -ReleaseArguments @('release', 'edit', $releaseTag, '--repo', $env:RELEASE_REPO, '--draft=false', '--latest', '--title', "Saldo $releaseTag - Windows 64 bits", '--notes-file', '.github/release-notes.md')
+          Invoke-ReleaseCommand -ReleaseArguments @('release', 'upload', $releaseTag, 'downloads/Saldo-Windows-x64.zip', 'downloads/ContaClara-Windows-x64.zip', 'downloads/SHA256SUMS.txt', '--repo', $env:RELEASE_REPO, '--clobber')
+          Invoke-ReleaseCommand -ReleaseArguments @('release', 'edit', $releaseTag, '--repo', $env:RELEASE_REPO, '--draft=false', '--latest', '--title', "ContaClara $releaseTag - Windows 64 bits", '--notes-file', '.github/release-notes.md')

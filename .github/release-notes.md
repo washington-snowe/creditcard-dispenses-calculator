@@ -1,29 +1,24 @@
-**Saldo 4.0 — rendas recorrentes, saldo entre meses, despesas e Ultra Dark.**
+**ContaClara 4.1 — identidade oficial, fontes padronizadas e melhor leitura.**
 
-Baixe **Saldo-Windows-x64.zip**, extraia a pasta inteira e abra **saldo.exe**. Windows de 64 bits; não precisa instalar Node.js.
+Baixe **ContaClara-Windows-x64.zip**, extraia a pasta inteira e abra **saldo.exe**. O aplicativo funciona offline e não exige Node.js.
 
-### Novidades
+### O que mudou
 
-- **Rendas recorrentes:** cadastre recebimentos mensais, trimestrais ou anuais, com origem, valor, dia e período. Diferencie renda prevista de dinheiro recebido e confirme a data real do recebimento. Busca e filtros por origem e situação.
-- **Saldo entre meses:** transporte sobras e déficits automaticamente depois de definir o mês e o saldo inicial. O histórico usa movimentos efetivos; meses futuros mostram a projeção. Edições e exclusões recalculam os valores.
-- **Despesas fora do cartão:** registre Pix, boleto, dinheiro, débito e transferência com categoria, favorecido, vencimento e pagamento. Filtros e indicadores mostram pendências, atrasos e valores pagos.
-- **Orçamento completo:** entradas recebidas e previstas, saldo transportado, faturas, assinaturas e despesas alimentam o cálculo de quanto sobrará. Confirmar um pagamento ou recebimento mantém a projeção coerente com o dinheiro real.
-- **Ultra Dark:** nova aparência quase preta, fontes Manrope e DM Sans, opção Inter, cartões com mais profundidade, glow e animações suaves.
-- **Personalização:** paletas prontas, seletor de cor personalizada e controles independentes de glow e movimento. Preferências persistentes e fontes incluídas para uso offline.
-- Preserva cartões, compras, gráficos, filtros globais, antecipações, assinaturas, backups e o atualizador pelo GitHub.
+- **Identidade ContaClara:** logo completa oficial na barra lateral e na abertura; símbolo original no executável Windows, favicon e navegação compacta. Cores, desenho e proporções preservados, com contraste nos temas Claro, Escuro e Ultra Dark.
+- **Fontes oficiais:** Manrope Bold (700) no nome da marca, Manrope SemiBold (600) nos títulos e Inter nos textos, menus, botões, formulários, tabelas, saldos e faturas. Valores financeiros usam números tabulares.
+- **Tipografia fixa:** removida a opção de trocar fontes. Backups antigos continuam válidos; a preferência antiga de fonte é descartada sem alterar os registros financeiros.
+- **Melhor leitura:** legendas, rótulos, informações auxiliares e tabelas maiores, com espaçamentos ajustados. Cartões e painéis se reorganizam com texto ampliado; descrições de compras podem quebrar linha.
+- **Acessibilidade:** tamanhos relativos acompanham as preferências de texto; o menu Visualizar permite aumentar, diminuir e restaurar o zoom, com os atalhos padrão. No Windows, pressione Alt para exibir o menu.
+- Mantém rendas recorrentes, saldo entre meses, despesas, cartões, compras, assinaturas, filtros, gráficos, antecipações, temas, cores, glow, animações e backups.
 
 ### Como atualizar
 
-Na versão 3.0.1, abra **Atualizações → Verificar atualizações → Baixar atualização → Reiniciar e atualizar**. O aplicativo verifica o ZIP e prepara a nova versão com backup dos dados. Mantenha a pasta do executável original, que continuará abrindo a versão atualizada.
+Nas versões 3.0.1 ou 4.0, abra **Atualizações → Verificar atualizações → Baixar atualização → Reiniciar e atualizar**. O programa prepara um backup e preserva seus dados.
 
-Para atualizar manualmente, feche o aplicativo antigo, extraia esta pasta inteira e abra o novo **saldo.exe**. Os dados das versões anteriores são preservados na mesma pasta, sem recadastro.
-
-Em **Entradas do mês → Saldo entre meses**, configure o ponto inicial para ativar o transporte automático; evite cadastrar o mesmo saldo também como entrada. Em **Aparência**, escolha seu tema e clique em **Aplicar aparência**.
-
-O atualizador usa as releases publicadas neste repositório. Mudanças em `main` entram no aplicativo quando uma nova versão com ZIP e checksum é publicada.
+Para atualizar manualmente, feche o aplicativo antigo, extraia a pasta completa e abra **saldo.exe**. A pasta de dados permanece `%APPDATA%/saldo-desktop/`; não é necessário recadastrar suas informações. O nome técnico do executável e o ZIP Saldo-Windows-x64.zip são mantidos para compatibilidade com o atualizador das versões anteriores; os dois ZIPs contêm o mesmo aplicativo ContaClara.
 
 ### Validação
 
-A publicação exige 42 testes de cálculos e validação, os fluxos do aplicativo Windows empacotado, persistência após reiniciar e compatibilidade com dados antigos. Também testa uma atualização real no Windows, preservando rendas, despesas e preferências: checksum, extração, versão interna, backup, redirecionamento do executável original, retorno automático em caso de falha e rejeição de caminhos inválidos no ZIP.
+43 testes de cálculos e validação de dados, fluxos completos de interface, tipografia e logos nos três temas, dez telas entre 320 e 1440 px e texto ampliado a 200%. No aplicativo empacotado para Windows, a publicação verifica persistência, dados antigos e zoom real a 125% e 200%, além de atualização com backup e recuperação após falha simulada.
 
-**SHA256SUMS.txt** contém o checksum do ZIP. Seus registros ficam localmente em `%APPDATA%/saldo-desktop/finances.json`. A distribuição é portátil. Marcar pagamentos apenas registra os valores; não movimenta dinheiro no banco.
+**SHA256SUMS.txt** contém os checksums dos arquivos. Seus dados financeiros continuam locais. Marcar pagamentos apenas registra valores; não movimenta dinheiro no banco.

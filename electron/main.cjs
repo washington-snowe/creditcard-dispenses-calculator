@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, net, shell } = require("electron");
+const { app, BrowserWindow, ipcMain, Menu, net, shell } = require("electron");
 const { spawn } = require("node:child_process");
 const { createUpdater, REPOSITORY } = require("./updater.cjs");
 const { createGitHubFetch } = require("./github-fetch.cjs");
@@ -60,6 +60,37 @@ app.whenReady().then(async () => {
       return;
     }
   }
+  Menu.setApplicationMenu(
+    Menu.buildFromTemplate([
+      ...(process.platform === "darwin" ? [{ role: "appMenu" }] : []),
+      {
+        label: "Arquivo",
+        submenu: [{ role: "close", label: "Fechar janela" }],
+      },
+      {
+        label: "Editar",
+        submenu: [
+          { role: "undo", label: "Desfazer" },
+          { role: "redo", label: "Refazer" },
+          { type: "separator" },
+          { role: "cut", label: "Recortar" },
+          { role: "copy", label: "Copiar" },
+          { role: "paste", label: "Colar" },
+          { role: "selectAll", label: "Selecionar tudo" },
+        ],
+      },
+      {
+        label: "Visualizar",
+        submenu: [
+          { id: "zoom-in", role: "zoomIn", label: "Aumentar zoom" },
+          { id: "zoom-out", role: "zoomOut", label: "Diminuir zoom" },
+          { id: "zoom-reset", role: "resetZoom", label: "Restaurar zoom" },
+          { type: "separator" },
+          { role: "togglefullscreen", label: "Tela cheia" },
+        ],
+      },
+    ]),
+  );
   ipcMain.handle("saldo:update:releases", (event) => {
     checkSender(event);
     return shell.openExternal(`${REPOSITORY}/releases/latest`);
@@ -134,9 +165,14 @@ app.whenReady().then(async () => {
     window = new BrowserWindow({
       width: 1440,
       height: 960,
-      minWidth: 980,
-      minHeight: 700,
-      title: "Saldo",
+      minWidth: 640,
+      minHeight: 480,
+      title: "ContaClara",
+      icon: path.join(
+        __dirname,
+        "../dist/brand",
+        process.platform === "win32" ? "icon.ico" : "icon.png",
+      ),
       backgroundColor: "#f5f7fb",
       autoHideMenuBar: true,
       webPreferences: {
@@ -153,6 +189,7 @@ app.whenReady().then(async () => {
     window.webContents.session.setPermissionRequestHandler(
       (_contents, _permission, callback) => callback(false),
     );
+    window.webContents.setVisualZoomLevelLimits(1, 3);
     window.loadURL(index);
   };
   createWindow();

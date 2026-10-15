@@ -6,6 +6,7 @@ import { runFlow } from "./flow.mjs";
 import { runEnhancements } from "./enhancements.mjs";
 import { runNewPlanning } from "./new-planning.mjs";
 import { runMoney } from "./money.mjs";
+import { verifyPageLayout, verifyTypography } from "./identity.mjs";
 const directory = await mkdtemp(join(tmpdir(), "saldo-desktop-test-"));
 let app;
 const executablePath = process.env.SALDO_EXECUTABLE;
@@ -46,6 +47,36 @@ try {
   expect(expanded.incomeReceipts).toHaveLength(1);
   expect(expanded.expenses).toHaveLength(1);
   expect(expanded.settings.accent).toBe("#20c7a0");
+  await page.getByRole("button", { name: "Visão geral", exact: true }).click();
+  await verifyTypography(page);
+  const zoomRoles = await app.evaluate(({ Menu }) => {
+    const menu = Menu.getApplicationMenu();
+    return ["zoom-in", "zoom-out", "zoom-reset"].map(
+      (id) => menu.getMenuItemById(id)?.role,
+    );
+  });
+  expect(zoomRoles).toEqual(["zoomin", "zoomout", "resetzoom"]);
+  for (const factor of [1.25, 2]) {
+    await app.evaluate(({ BrowserWindow }, zoom) => {
+      BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(zoom);
+    }, factor);
+    for (const tab of [
+      "Visão geral",
+      "Minhas compras",
+      "Meus cartões",
+      "Entradas do mês",
+      "Aparência",
+    ]) {
+      await page.getByRole("button", { name: tab, exact: true }).click();
+      await verifyPageLayout(page, `Electron / zoom ${factor * 100}% / ${tab}`);
+    }
+  }
+  await app.evaluate(({ BrowserWindow }) => {
+    BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(1);
+  });
+  console.log(
+    "Fontes oficiais, controles nativos e layout com zoom real a 125% e 200% verificados no Electron.",
+  );
   expect(await page.evaluate(() => typeof window.saldo?.save)).toBe("function");
   expect(await page.evaluate(() => typeof window.require)).toBe("undefined");
   await app.close();

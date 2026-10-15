@@ -1,0 +1,217 @@
+/* ContaClara: the only font families and type weights used by the interface.
+   Relative sizes follow browser text preferences, OS scaling and desktop zoom. */
+:root {
+  --font-interface: Inter, "Segoe UI", sans-serif;
+  --font-heading: Manrope, Inter, "Segoe UI", sans-serif;
+  --font-brand: Manrope, Inter, "Segoe UI", sans-serif;
+  --weight-brand: 700;
+  --weight-heading: 600;
+  --text-caption: 0.92857rem;
+  --text-label: 1rem;
+  --text-body: 1rem;
+  font-family: var(--font-interface);
+  font-size: 87.5%;
+  line-height: 1.5;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-interface);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-heading);
+  overflow-wrap: break-word;
+}
+
+.brand > span,
+.brand-name,
+.loading-screen > h1 {
+  font-family: var(--font-brand);
+  font-weight: var(--weight-brand);
+}
+
+.brand-name {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.brand > .brand-name {
+  font-size: 1.78571rem;
+  letter-spacing: -0.04em;
+}
+
+/* Amounts and bills use Inter, including large balance displays. */
+table,
+.stat-card > strong,
+.preview-stat > strong,
+.balance-ribbon strong,
+.budget-breakdown,
+.recharts-wrapper {
+  font-family: var(--font-interface);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+small,
+.stat-foot,
+.field-hint {
+  line-height: 1.6;
+}
+
+.button,
+.text-button {
+  height: auto;
+  min-height: 2.75em;
+  padding-block: 0.65em;
+  line-height: 1.35;
+}
+
+.stats-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+}
+
+.mini-cards {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+}
+
+.card-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+}
+
+.charts-grid,
+.planning-grid,
+.cash-grid,
+.updates-layout,
+.appearance-layout,
+.anticipation-layout {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 25rem), 1fr));
+}
+
+.form-layout {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+}
+
+.form-row {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+}
+
+.carry-fields {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+}
+
+.mini-card-bottom,
+.plastic-top,
+.plastic-brand,
+.plastic-bottom,
+.card-digits,
+.chart-legend,
+.brand {
+  flex-wrap: wrap;
+}
+
+.plastic-brand > span {
+  flex-shrink: 0;
+  width: 2.4em;
+  height: 2.4em;
+}
+
+.plastic-card.compact {
+  min-height: 11.28571rem;
+}
+
+.donut-wrap {
+  width: 15.35714rem;
+  height: 12.5rem;
+  max-width: 100%;
+}
+
+.global-filters select {
+  flex: 1 1 12rem;
+  max-width: 100%;
+}
+
+.global-filters .search {
+  flex: 2 1 15rem;
+  min-width: min(100%, 15rem);
+}
+
+.stat-card > strong {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.nav-item > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.nav-item {
+  gap: 9px;
+  padding-inline: 10px;
+}
+
+.badge {
+  height: auto;
+  line-height: 1.5;
+}
+
+.panel-heading > div,
+.dialog-heading > div,
+.page-heading > div,
+.stat-card,
+.balance-ribbon > div {
+  min-width: 0;
+}
+
+.panel-heading,
+.dialog-footer,
+.ledger-filters,
+.effects-choices {
+  flex-wrap: wrap;
+}
+
+.stat-title,
+.stat-foot,
+.panel-heading p {
+  overflow-wrap: break-word;
+}
+
+.balance-ribbon strong {
+  overflow-wrap: anywhere;
+}
+
+.purchase-name {
+  min-width: 10rem;
+  max-width: 18rem;
+}
+
+.purchase-name strong,
+.purchase-name small,
+.cell-small {
+  max-width: 18rem;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: break-word;
+}
+
+/* Keep every menu item reachable when larger text consumes more height. */
+.sidebar nav {
+  flex: 1 1 auto;
+}
+
+@media (max-width: 700px) {
+  .topbar,
+  .dialog-footer {
+    gap: 0.75rem;
+  }
+}

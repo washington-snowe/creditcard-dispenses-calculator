@@ -26,13 +26,13 @@ import {
 } from "../domain";
 import { subscriptionMonth } from "../finance";
 import { Empty } from "./ui";
-const axis = { fill: "var(--muted)", fontSize: 11 };
+const axis = { fill: "var(--muted)", fontSize: "var(--text-caption)" };
 const tooltip = {
   borderRadius: 14,
   background: "var(--surface)",
   border: "1px solid var(--border)",
   color: "var(--text)",
-  fontSize: 12,
+  fontSize: "var(--text-body)",
   boxShadow: "var(--shadow)",
 };
 const tickMoney = (cents: number) =>
@@ -107,7 +107,7 @@ export function MonthlyChart({
               axisLine={false}
               tickLine={false}
               tick={axis}
-              width={53}
+              width="auto"
             />
             <Tooltip
               cursor={{ fill: "var(--hover)" }}
@@ -304,7 +304,7 @@ export function SimulationChart({
             tick={axis}
             axisLine={false}
             tickLine={false}
-            width={53}
+            width="auto"
           />
           <Tooltip
             labelFormatter={(l) => monthLabel(String(l))}
@@ -318,7 +318,7 @@ export function SimulationChart({
             formatter={(name) =>
               name === "before" ? "Sem antecipar" : "Após quitar selecionadas"
             }
-            wrapperStyle={{ fontSize: 11, paddingTop: 12 }}
+            wrapperStyle={{ fontSize: "var(--text-caption)", paddingTop: 12 }}
           />
           <Area
             isAnimationActive={false}

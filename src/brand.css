@@ -1,0 +1,78 @@
+/* The official PNG is rendered in its original colours and aspect ratio.
+   The black frame provides contrast in every theme; only blank margins sit
+   outside the frame. No filters, overlays or image reconstruction are used. */
+.brand {
+  padding: 0 0 24px;
+}
+
+.brand-lockup {
+  position: relative;
+  width: 100%;
+  height: 4.28571rem;
+  overflow: hidden;
+  border-radius: 9px;
+  background: #000;
+  flex-shrink: 0;
+}
+
+.brand-full {
+  position: absolute;
+  width: 125%;
+  max-width: none;
+  height: auto;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  object-fit: contain;
+  user-select: none;
+}
+
+.brand-full.brand-name {
+  max-width: none;
+}
+
+.brand-lockup.symbol {
+  width: 44px;
+  height: 44px;
+}
+
+.brand-symbol {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+}
+
+.brand-lockup.responsive .brand-symbol {
+  display: none;
+}
+
+.preview-plastic .brand-lockup.symbol {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+}
+
+.brand > small {
+  margin: 0;
+}
+
+.loading-screen .brand-lockup {
+  width: min(100%, 320px);
+  height: 100px;
+}
+
+@media (max-width: 1020px) {
+  .sidebar .brand-lockup.responsive {
+    width: 44px;
+    height: 44px;
+    margin-inline: auto;
+  }
+  .sidebar .brand-lockup.responsive .brand-full {
+    display: none;
+  }
+  .sidebar .brand-lockup.responsive .brand-symbol {
+    display: block;
+  }
+}

@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from "react";
 import { Check, Moon, Sparkles, Sun } from "lucide-react";
 import type { Settings } from "../domain";
+import { BrandLogo } from "./brand";
 import { Panel } from "./ui";
 export const ACCENTS = [
   "#7967ff",
@@ -40,7 +41,6 @@ export function applyAppearance(settings: Settings) {
   root.dataset.theme = settings.theme;
   root.dataset.motion = settings.motion === false ? "off" : "on";
   root.dataset.glow = settings.glow === false ? "off" : "on";
-  root.dataset.font = settings.font ?? "dm";
   let ink = base;
   const bg =
     settings.theme === "ultra" ? "#0b0b13" : dark ? "#151e30" : "#ffffff";
@@ -73,7 +73,6 @@ export function AppearancePage({
 }) {
   const [theme, setTheme] = useState(settings.theme),
     [accent, setAccent] = useState(settings.accent ?? ACCENTS[0]),
-    [font, setFont] = useState(settings.font ?? "dm"),
     [glow, setGlow] = useState(settings.glow !== false),
     [motion, setMotion] = useState(settings.motion !== false);
   const themes = [
@@ -94,14 +93,14 @@ export function AppearancePage({
   return (
     <div className="appearance-layout">
       <Panel
-        title="Um Saldo com a sua identidade"
+        title="Seu ContaClara, do seu jeito"
         subtitle="Tema, cores e movimento, do seu jeito."
       >
         <form
           className="appearance-form"
           onSubmit={async (e) => {
             e.preventDefault();
-            await onSave({ ...settings, theme, accent, font, glow, motion });
+            await onSave({ ...settings, theme, accent, glow, motion });
           }}
         >
           <fieldset>
@@ -158,17 +157,6 @@ export function AppearancePage({
               </label>
             </div>
           </fieldset>
-          <label>
-            Fonte da interface
-            <select
-              aria-label="Fonte da interface"
-              value={font}
-              onChange={(e) => setFont(e.target.value as "dm" | "inter")}
-            >
-              <option value="dm">DM Sans + Manrope</option>
-              <option value="inter">Inter + Manrope</option>
-            </select>
-          </label>
           <div className="effects-choices">
             <label className="check-line">
               <input
@@ -188,7 +176,8 @@ export function AppearancePage({
             </label>
           </div>
           <p className="field-hint">
-            Fontes incluídas no aplicativo, disponíveis offline. O contraste dos
+            A identidade tipográfica usa Manrope nos títulos e Inter na
+            interface, com fontes incluídas para uso offline. O contraste dos
             textos se adapta à cor escolhida. A preferência de reduzir movimento
             do Windows é respeitada.
           </p>
@@ -208,7 +197,7 @@ export function AppearancePage({
           Seu universo.
         </h2>
         <div className={`preview-plastic ${glow ? "with-glow" : ""}`}>
-          <small>SALDO / PERSONAL</small>
+          <BrandLogo variant="symbol" />
           <Sparkles size={23} />
           <strong>•••• &nbsp; •••• &nbsp; 2026</strong>
           <span>Mais clareza. Mais possibilidades.</span>

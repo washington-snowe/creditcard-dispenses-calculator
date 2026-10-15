@@ -95,7 +95,7 @@ export function UpdatesPage() {
             <div>
               <small>Versão instalada</small>
               <strong data-testid="app-version">{info.currentVersion}</strong>
-              <p>Saldo para gestão local das suas finanças</p>
+              <p>ContaClara para gestão local das suas finanças</p>
             </div>
             <span className="badge accent-badge">Windows x64</span>
           </div>
@@ -109,7 +109,7 @@ export function UpdatesPage() {
             <div className="update-available">
               <div>
                 <small>Uma nova versão está disponível</small>
-                <h3>Saldo {info.version}</h3>
+                <h3>ContaClara {info.version}</h3>
                 <p>
                   Inclui o aplicativo completo com as alterações publicadas no
                   GitHub.

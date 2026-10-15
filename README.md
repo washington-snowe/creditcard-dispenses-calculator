@@ -1,14 +1,14 @@
-# Saldo
+# ContaClara
 
 Aplicativo desktop de finanças pessoais em **Node.js + Electron**, com interface React e TypeScript. Funciona offline após a instalação, sem conta ou servidor externo.
 
 ## Baixar para Windows
 
-[**Baixar Saldo 4.0.0 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.0.0/Saldo-Windows-x64.zip)
+[**Baixar ContaClara 4.1.0 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.1.0/ContaClara-Windows-x64.zip)
 
 Extraia a pasta inteira e abra **saldo.exe**. Não é necessário instalar Node.js. A versão foi compilada e testada no Windows, incluindo os cálculos financeiros e a persistência dos dados após reiniciar o aplicativo.
 
-A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.0.0) também contém o checksum do ZIP.
+A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.1.0) também contém o checksum do ZIP.
 
 ## Executar no computador
 
@@ -41,7 +41,7 @@ A interface no navegador usa um armazenamento local separado do aplicativo deskt
 - Abrir cada mês do planejamento para ver **todas as parcelas individuais** e os totais por cartão, até a quitação. Use as setas, o seletor de mês ou as barras dos gráficos para navegar por meses passados e futuros.
 - Exportar e restaurar backups JSON. A restauração substitui os dados atuais após confirmação; um arquivo inválido é rejeitado.
 
-- Escolher tema claro, escuro ou **Ultra Dark**, paletas prontas ou uma cor personalizada; selecionar fontes e ativar/desativar glow e animações suaves. As fontes vêm no aplicativo e as preferências são salvas no desktop e no backup.
+- Escolher tema claro, escuro ou **Ultra Dark**, paletas prontas ou uma cor personalizada; usar a tipografia oficial e ativar/desativar glow e animações suaves. As fontes vêm no aplicativo e as preferências são salvas no desktop e no backup.
 - Marcar todas as parcelas pendentes de um cartão no mês atual como pagas, com confirmação e opção de desfazer.
 - Comparar parcelas no gerenciador de antecipações por valor mensal, custo para quitar e alívio por real; sugerir uma seleção dentro do orçamento e simular o antes/depois.
 - Registrar a antecipação de uma ou mais parcelas, ou a quitação de compras inteiras.
@@ -57,7 +57,7 @@ A primeira execução começa vazia. O botão **Experimentar exemplo** carrega d
 
 ## Atualizar das versões anteriores
 
-Feche o aplicativo antigo, extraia a pasta da versão 4 inteira e execute o novo `saldo.exe`. A pasta de dados permanece a mesma; os registros das versões 1, 2 e 3 são aceitos sem recadastro. Backups antigos também continuam válidos.
+Feche o aplicativo antigo, extraia a pasta da versão 4.1 inteira e execute o novo `saldo.exe`. A pasta de dados permanece a mesma; os registros das versões 1, 2 e 3 são aceitos sem recadastro. Backups antigos também continuam válidos.
 
 A partir da versão 3, abra **Atualizações → Verificar atualizações → Baixar atualização → Reiniciar e atualizar**. O aplicativo consulta as releases estáveis de `washington-snowe/creditcard-dispenses-calculator`, baixa o ZIP por HTTPS e confere SHA-256, caminhos do arquivo e a versão interna do pacote. Não é necessário instalar Node.js ou Git. Alterações no código entram no aplicativo quando uma nova versão é publicada, com seu ZIP e checksum; um commit na branch principal sozinho não gera atualização.
 
@@ -97,9 +97,13 @@ O calendário agrupa parcelas vencidas e não pagas no mês atual e mantém as d
 
 O saldo por cartão considera somente as compras cadastradas, não a fatura real do banco. Não há integração bancária nem marcação automática de pagamentos. O limite cadastrado serve para comparar o saldo pendente com o limite informado.
 
-## Aparência
+## Identidade visual e aparência
 
-Em **Aparência**, escolha Claro, Escuro ou Ultra Dark, selecione uma paleta ou use o seletor de cor personalizada. O texto ajusta o contraste à cor escolhida. Manrope aparece nos títulos; DM Sans e Inter são opções para o corpo. As fontes estão incluídas para uso offline. Controle glow e movimento separadamente e clique em **Aplicar aparência** para salvar. O aplicativo também respeita a preferência do sistema por movimento reduzido.
+Os arquivos oficiais ficam em `public/brand/logo.png` e `public/brand/icon.png`, preservados sem filtros ou recoloração. A logo completa aparece na barra lateral e na abertura; o símbolo aparece na navegação compacta, no favicon e no ícone do aplicativo. O fundo preto preserva o contraste nos três temas. `icon.ico` inclui os tamanhos de 16 a 256 px para Windows.
+
+Em **Aparência**, escolha Claro, Escuro ou Ultra Dark, selecione uma paleta ou use o seletor de cor personalizada. O texto ajusta o contraste à cor escolhida. A tipografia é fixa: Manrope Bold (700) no nome ContaClara, Manrope SemiBold (600) nos títulos e Inter nos menus, formulários, tabelas e valores. Os valores usam números tabulares para manter o alinhamento. As fontes estão incluídas para uso offline; preferências antigas de fonte são ignoradas sem alterar os registros financeiros. Controle glow e movimento separadamente e clique em **Aplicar aparência** para salvar. O aplicativo também respeita a preferência do sistema por movimento reduzido.
+
+As definições de tipografia ficam centralizadas em `src/typography.css`. Os tamanhos relativos acompanham as preferências de texto do navegador e a escala do dispositivo. No desktop, use **Visualizar → Aumentar zoom / Diminuir zoom / Restaurar zoom**, acessível também pelo menu com a tecla Alt no Windows e pelos atalhos padrão. O conteúdo se reorganiza em janelas menores e com texto ampliado. Os nomes técnicos `saldo-desktop`, `saldo.exe` e a pasta de dados são mantidos para preservar a compatibilidade dos registros e do atualizador.
 
 ## Dados e privacidade
 
@@ -117,6 +121,7 @@ A escrita usa arquivo temporário e renomeação, com gravação sincronizada an
 npm test          # cálculos, previsão, centavos, pagamentos e validação de backups
 npm run build    # checagem TypeScript e build de produção
 npm run test:ui  # fluxos completos no Chromium, backups e layout responsivo
+npm run test:layout # dez telas, fontes oficiais, 320–1440 px e texto a 200%
 npm run test:desktop # fluxos no Electron e persistência após reiniciar
 npm run test:updater # somente Windows: extração, troca real, retorno e dados
 ```

@@ -44,7 +44,6 @@ export type Settings = {
   accent?: string;
   glow?: boolean;
   motion?: boolean;
-  font?: "dm" | "inter";
   carryover?: { startMonth: string; openingCents: number };
 };
 export type RecurringIncome = {
@@ -531,8 +530,6 @@ export function validateData(input: unknown): Data {
       (x.settings.glow !== undefined && typeof x.settings.glow !== "boolean") ||
       (x.settings.motion !== undefined &&
         typeof x.settings.motion !== "boolean") ||
-      (x.settings.font !== undefined &&
-        !["dm", "inter"].includes(x.settings.font)) ||
       (x.settings.carryover !== undefined &&
         (!x.settings.carryover ||
           !month(x.settings.carryover.startMonth) ||
@@ -759,7 +756,6 @@ export function validateData(input: unknown): Data {
             ...(x.settings.motion !== undefined
               ? { motion: x.settings.motion }
               : {}),
-            ...(x.settings.font !== undefined ? { font: x.settings.font } : {}),
             ...(x.settings.carryover
               ? {
                   carryover: {

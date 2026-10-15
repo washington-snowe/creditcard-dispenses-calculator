@@ -36,7 +36,6 @@ const data = (): Data => ({
     accent: "#20c7a0",
     glow: true,
     motion: false,
-    font: "dm",
     carryover: { startMonth: previous, openingCents: 10000 },
   },
   recurringIncomes: [rule],
@@ -162,6 +161,15 @@ test("backup aceita novos campos e rejeita datas inválidas, referências e valo
       },
     }),
   );
+});
+test("preferência de fonte antiga é descartada sem alterar registros ou outras preferências", () => {
+  const original = data();
+  const legacy = {
+    ...original,
+    settings: { ...original.settings, font: "dm" },
+  };
+  assert.deepEqual(validateData(legacy), original);
+  assert.equal("font" in validateData(legacy).settings!, false);
 });
 test("despesas vencidas aparecem no mês atual, sem se acumular artificialmente nos futuros", () => {
   assert.equal(expenseMonth(data(), now).length, 1);

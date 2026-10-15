@@ -9,6 +9,15 @@ import { runEnhancements } from "./enhancements.mjs";
 import { runNewPlanning } from "./new-planning.mjs";
 import { runMoney } from "./money.mjs";
 import { verifyPageLayout, verifyTypography } from "./identity.mjs";
+// Surface native test failures in Actions annotations, including packaged-only
+// failures whose logs require an authenticated GitHub session to view.
+process.on("uncaughtExceptionMonitor", (error) => {
+  const detail = String(error.stack ?? error)
+    .replaceAll("%", "%25")
+    .replaceAll("\r", "%0D")
+    .replaceAll("\n", "%0A");
+  console.error(`::error title=Desktop validation::${detail}`);
+});
 const directory = await mkdtemp(join(tmpdir(), "saldo-desktop-test-"));
 let app;
 const executablePath = process.env.SALDO_EXECUTABLE;

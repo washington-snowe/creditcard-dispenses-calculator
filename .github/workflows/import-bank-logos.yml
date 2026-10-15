@@ -1,0 +1,25 @@
+name: Importar logos oficiais dos bancos
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/import-bank-logos.yml', 'scripts/import-bank-logos.py']
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - name: Obter imagens sem alterar os arquivos de origem
+        run: python scripts/import-bank-logos.py
+      - name: Salvar imagens e procedência
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/banks
+          if ! git diff --cached --quiet; then
+            git commit -m 'Import bank icons from official websites with source hashes'
+            git push origin HEAD:main
+          fi

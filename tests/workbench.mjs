@@ -133,15 +133,29 @@ export async function runWorkbench(page) {
     })
     .click();
   await expect
-    .poll(async () =>
-      (await readData(page)).purchases.some(
-        (p) =>
-          p.description === "Compra importada UI" &&
-          p.category === "Tecnologia" &&
-          p.totalCents === 3199,
-      ),
+    .poll(
+      async () => ({
+        imported: (await readData(page)).purchases
+          .filter((p) => p.description === "Compra importada UI")
+          .map((p) => ({
+            description: p.description,
+            category: p.category,
+            totalCents: p.totalCents,
+          })),
+        errors: await page.locator(".form-error").allTextContents(),
+        notice: await page.locator(".toast").allTextContents(),
+      }),
+      { timeout: 10000 },
     )
-    .toBe(true);
+    .toMatchObject({
+      imported: [
+        {
+          description: "Compra importada UI",
+          category: "Tecnologia",
+          totalCents: 3199,
+        },
+      ],
+    });
   await page.getByLabel("Arquivo de fatura ou extrato").setInputFiles({
     name: "fatura.csv",
     mimeType: "text/csv",

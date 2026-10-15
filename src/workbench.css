@@ -608,3 +608,60 @@
     grid-column: auto;
   }
 }
+/* Standalone tools use the same controls as dialogs, including dark themes. */
+:is(
+    .simulator-fields,
+    .import-controls,
+    .data-center .more-details,
+    .inline-form
+  )
+  label,
+.insight-stats + .panel > label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  color: var(--secondary);
+  font-size: var(--text-label);
+  font-weight: 500;
+}
+:is(.workbench-grid, .data-center, .inline-form, .insight-stats + .panel)
+  :is(input:not([type="checkbox"]):not([type="file"]), select) {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--input);
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+:is(.workbench-grid, .data-center, .inline-form) input::placeholder {
+  color: var(--muted);
+}
+:is(.workbench-grid, .data-center, .home-widget) .button {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  max-width: calc(100% - 48px);
+}
+.inline-form .button,
+.backup-list .button,
+.widget-settings .button {
+  max-width: 100%;
+}
+.file-drop input {
+  width: 100%;
+  font-size: var(--text-caption);
+  white-space: normal;
+}
+.file-drop input::file-selector-button {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 12px;
+  margin-right: 10px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}

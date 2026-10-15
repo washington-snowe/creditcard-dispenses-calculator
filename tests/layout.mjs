@@ -123,6 +123,25 @@ try {
     for (const tab of tabs) {
       await page.getByRole("button", { name: tab, exact: true }).click();
       await verifyPageLayout(page, `${width}px / ${tab}`);
+      if (tab === "Simular compra" || tab === "Dados e segurança") {
+        const controls = await page
+          .locator(
+            ".simulator-fields input, .simulator-fields select, .import-controls select",
+          )
+          .evaluateAll((nodes) =>
+            nodes.map((el) => ({
+              height: el.getBoundingClientRect().height,
+              radius: parseFloat(getComputedStyle(el).borderRadius),
+              font: getComputedStyle(el).fontFamily,
+            })),
+          );
+        expect(controls.length).toBeGreaterThan(0);
+        for (const control of controls) {
+          expect(control.height).toBeGreaterThanOrEqual(44);
+          expect(control.radius).toBeGreaterThanOrEqual(8);
+          expect(control.font.startsWith("Inter")).toBeTruthy();
+        }
+      }
     }
     await page
       .getByRole("button", { name: "Visão geral", exact: true })

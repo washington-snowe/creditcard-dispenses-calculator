@@ -1,6 +1,8 @@
-**ContaClara 4.5.0 — planejamento, calendário, importação e um início personalizável.**
+**ContaClara 4.5.1 — planejamento, calendário, importação e um início personalizável.**
 
 Baixe **ContaClara-Windows-x64.zip**, extraia a pasta inteira e abra **saldo.exe**. Funciona offline e não exige Node.js.
+
+Campos das novas ferramentas seguem o tema e a tipografia da interface. Botões longos se adaptam às janelas estreitas.
 
 ### Novidades
 

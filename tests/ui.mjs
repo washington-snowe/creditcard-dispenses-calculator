@@ -67,6 +67,9 @@ try {
   ).toBeVisible();
   await page.getByRole("button", { name: "Confirmar", exact: true }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible();
+  await page
+    .getByRole("button", { name: "Opções de backup", exact: true })
+    .click();
   const download = page.waitForEvent("download");
   await page
     .getByRole("button", { name: "Exportar backup", exact: true })
@@ -88,6 +91,7 @@ try {
   await page.getByRole("button", { name: "Experimentar exemplo" }).click();
   await page.getByRole("button", { name: "Continuar", exact: true }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible();
+  await page.getByRole("button", { name: "Visão geral", exact: true }).click();
   await page.waitForTimeout(800);
   await page.mouse.move(0, 0);
   await page.getByRole("button", { name: "Fechar aviso" }).click();

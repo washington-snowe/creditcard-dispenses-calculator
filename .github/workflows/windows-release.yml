@@ -54,7 +54,7 @@ jobs:
           Não mova apenas saldo.exe: os demais arquivos também são necessários.
 
           Seus dados ficam em %APPDATA%\saldo-desktop\finances.json.
-          Exporte backups pelo botão de download do aplicativo para preservar uma cópia.
+          Exporte backups pelo menu Opções de backup no topo do aplicativo para preservar uma cópia.
           '@ | Set-Content -Path release/Saldo-win32-x64/LEIA-ME.txt -Encoding utf8
           Compress-Archive -Path release/Saldo-win32-x64 -DestinationPath downloads/Saldo-Windows-x64.zip
           Copy-Item downloads/Saldo-Windows-x64.zip downloads/ContaClara-Windows-x64.zip

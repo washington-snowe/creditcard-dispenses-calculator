@@ -1,3 +1,4 @@
+import { verifyChartTooltips, verifyNavigation } from "./design.mjs";
 import { chromium, expect } from "playwright/test";
 import { spawn } from "node:child_process";
 import { mkdir } from "node:fs/promises";
@@ -8,6 +9,7 @@ import {
 } from "./identity.mjs";
 
 const tabs = [
+  "Início",
   "Visão geral",
   "Minhas compras",
   "Meus cartões",
@@ -72,6 +74,8 @@ try {
   });
   await page.reload();
   await verifyTypography(page);
+  await verifyNavigation(page);
+  await verifyChartTooltips(page);
   await mkdir(".runtime", { recursive: true });
   for (const theme of ["Escuro", "Ultra Dark", "Claro"]) {
     await page.getByRole("button", { name: "Aparência", exact: true }).click();
@@ -83,6 +87,14 @@ try {
       .getByRole("button", { name: "Visão geral", exact: true })
       .click();
     await verifyTypography(page);
+    await page.getByRole("button", { name: "Início", exact: true }).click();
+    await page.screenshot({
+      path: `.runtime/welcome-${theme.replaceAll(" ", "-")}.png`,
+      fullPage: true,
+    });
+    await page
+      .getByRole("button", { name: "Visão geral", exact: true })
+      .click();
     await page.screenshot({
       path: `.runtime/identity-theme-${theme.replaceAll(" ", "-")}.png`,
       fullPage: true,
@@ -91,6 +103,10 @@ try {
   for (const width of [1440, 1024, 768, 390, 320]) {
     await page.setViewportSize({ width, height: 1040 });
     await verifyBrandLayout(page);
+    if (width === 390) {
+      await verifyNavigation(page);
+      await verifyChartTooltips(page);
+    }
     for (const tab of tabs) {
       await page.getByRole("button", { name: tab, exact: true }).click();
       await verifyPageLayout(page, `${width}px / ${tab}`);
@@ -120,7 +136,7 @@ try {
   });
   expect(errors).toEqual([]);
   console.log(
-    "Tipografia oficial, números tabulares, preferências antigas e dez telas entre 320 e 1440 px, com aumento de texto a 200%, verificados.",
+    "Tipografia oficial, números tabulares, preferências antigas e onze telas entre 320 e 1440 px, com aumento de texto a 200%, verificados.",
   );
 } catch (error) {
   if (browser) {

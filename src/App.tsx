@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { WelcomePage } from "./components/welcome";
 import { BrandLogo } from "./components/brand";
 import {
+  House,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Ellipsis,
   ArrowDownRight,
   ArrowRight,
   ArrowUpRight,
@@ -94,6 +99,7 @@ import {
 } from "./finance";
 
 type Tab =
+  | "home"
   | "overview"
   | "purchases"
   | "cards"
@@ -141,6 +147,7 @@ const CLEAR: Filters = {
   status: "all",
 };
 const nav = [
+  { id: "home" as const, title: "Início", icon: House },
   { id: "overview" as const, title: "Visão geral", icon: LayoutDashboard },
   { id: "purchases" as const, title: "Minhas compras", icon: ShoppingBag },
   { id: "cards" as const, title: "Meus cartões", icon: CreditCard },
@@ -152,7 +159,20 @@ const nav = [
   { id: "appearance" as const, title: "Aparência", icon: Palette },
   { id: "updates" as const, title: "Atualizações", icon: RefreshCw },
 ];
+const navGroups = [
+  { title: "Acompanhar", ids: ["home", "overview"] },
+  {
+    title: "Organizar",
+    ids: ["cards", "purchases", "income", "expenses", "subscriptions"],
+  },
+  { title: "Planejar", ids: ["planning", "anticipation"] },
+  { title: "Preferências", ids: ["appearance", "updates"] },
+];
 const titles: Record<Tab, [string, string]> = {
+  home: [
+    "Boas-vindas ao ContaClara.",
+    "Seu mês com clareza. Escolha por onde começar.",
+  ],
   expenses: [
     "Cada conta, no seu tempo.",
     "Organize Pix, boletos, dinheiro e débito, com vencimento e pagamento.",
@@ -355,7 +375,7 @@ export default function App() {
     [loadError, setLoadError] = useState("");
   const [saving, setSaving] = useState(false),
     savingLock = useRef(false);
-  const [tab, setTab] = useState<Tab>("overview");
+  const [tab, setTab] = useState<Tab>("home");
   const [filters, setFilters] = useState<Filters>(CLEAR);
   const [month, setMonth] = useState(currentMonth());
   const [modal, setModal] = useState<Modal>(null);
@@ -365,6 +385,52 @@ export default function App() {
   const [sort, setSort] = useState("largest");
   const [budget, setBudget] = useState("");
   const [selectedPayoffs, setSelectedPayoffs] = useState<string[]>([]);
+  const [compactViewport, setCompactViewport] = useState(
+    () => window.matchMedia("(max-width: 1020px)").matches,
+  );
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const toolsRef = useRef<HTMLDivElement>(null);
+  const menuToggleRef = useRef<HTMLButtonElement>(null);
+  const collapsed = compactViewport
+    ? !mobileMenuOpen
+    : !!data.settings?.sidebarCollapsed;
+  const navigate = (next: Tab) => {
+    setTab(next);
+    setMobileMenuOpen(false);
+    setToolsOpen(false);
+  };
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 1020px)");
+    const update = () => {
+      setCompactViewport(query.matches);
+      setMobileMenuOpen(false);
+    };
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+  useEffect(() => {
+    const dismiss = (event: PointerEvent) => {
+      if (!toolsRef.current?.contains(event.target as Node))
+        setToolsOpen(false);
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        if (toolsOpen) toolsRef.current?.querySelector("button")?.focus();
+        setToolsOpen(false);
+        if (mobileMenuOpen) {
+          setMobileMenuOpen(false);
+          menuToggleRef.current?.focus();
+        }
+      }
+    };
+    document.addEventListener("pointerdown", dismiss);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("pointerdown", dismiss);
+      document.removeEventListener("keydown", escape);
+    };
+  }, [mobileMenuOpen, toolsOpen]);
   const importRef = useRef<HTMLInputElement>(null);
   const today = currentMonth(),
     theme = data.settings?.theme ?? "light";
@@ -469,6 +535,7 @@ export default function App() {
       recurring.filter((i) => i.paid).reduce((s, i) => s + i.amount, 0),
   };
   const hasPurchaseFilters = ![
+    "home",
     "income",
     "subscriptions",
     "updates",
@@ -949,41 +1016,81 @@ export default function App() {
       </div>
     );
   return (
-    <div className="app-shell">
-      <aside className="sidebar">
+    <div
+      className={`app-shell ${collapsed ? "sidebar-collapsed" : "sidebar-expanded"} ${mobileMenuOpen ? "mobile-menu-open" : ""}`}
+    >
+      {compactViewport && mobileMenuOpen && (
+        <button
+          className="sidebar-backdrop"
+          aria-label="Fechar menu lateral"
+          onClick={() => {
+            setMobileMenuOpen(false);
+            menuToggleRef.current?.focus();
+          }}
+        />
+      )}
+      <aside className="sidebar" aria-label="Menu lateral">
         <div className="brand">
           <BrandLogo variant="responsive" />
           <small>{__APP_VERSION__}</small>
         </div>
-        <span className="workspace-label">SEU ESPAÇO FINANCEIRO</span>
-        <nav aria-label="Navegação principal">
-          {nav.map((item) => (
-            <button
-              key={item.id}
-              aria-label={item.title}
-              className={`nav-item ${tab === item.id ? "active" : ""}`}
-              aria-current={tab === item.id ? "page" : undefined}
-              onClick={() => setTab(item.id)}
-            >
-              <item.icon size={19} />
-              <span>{item.title}</span>
-            </button>
+        <button
+          ref={menuToggleRef}
+          className="sidebar-toggle"
+          aria-label={
+            collapsed ? "Expandir menu lateral" : "Recolher menu lateral"
+          }
+          title={collapsed ? "Expandir menu lateral" : "Recolher menu lateral"}
+          aria-expanded={!collapsed}
+          aria-controls="main-navigation"
+          disabled={saving}
+          onClick={() => {
+            if (compactViewport) setMobileMenuOpen(!mobileMenuOpen);
+            else
+              void commit(
+                {
+                  ...data,
+                  settings: {
+                    ...data.settings,
+                    theme,
+                    sidebarCollapsed: !collapsed,
+                  },
+                },
+                collapsed ? "Menu expandido." : "Menu recolhido.",
+                false,
+              );
+          }}
+        >
+          {collapsed ? (
+            <PanelLeftOpen size={19} />
+          ) : (
+            <PanelLeftClose size={19} />
+          )}
+          <span>Recolher menu</span>
+        </button>
+        <nav id="main-navigation" aria-label="Navegação principal">
+          {navGroups.map((group) => (
+            <div className="nav-group" key={group.title}>
+              <span className="nav-group-label">{group.title}</span>
+              {group.ids.map((id) => {
+                const item = nav.find((item) => item.id === id)!;
+                return (
+                  <button
+                    key={item.id}
+                    aria-label={item.title}
+                    title={collapsed ? item.title : undefined}
+                    className={`nav-item ${tab === item.id ? "active" : ""}`}
+                    aria-current={tab === item.id ? "page" : undefined}
+                    onClick={() => navigate(item.id)}
+                  >
+                    <item.icon size={19} />
+                    <span>{item.title}</span>
+                  </button>
+                );
+              })}
+            </div>
           ))}
         </nav>
-        <div className="sidebar-tip">
-          <span className="tip-symbol">
-            <Zap size={20} />
-          </span>
-          <h3>
-            Mais espaço
-            <br />
-            no seu orçamento.
-          </h3>
-          <p>Descubra quais compras vale a pena quitar primeiro.</p>
-          <button onClick={() => setTab("anticipation")}>
-            Simular antecipação <ArrowRight size={14} />
-          </button>
-        </div>
         <div className="sidebar-bottom">
           <button
             className="theme-switch"
@@ -1044,24 +1151,48 @@ export default function App() {
                 <Undo2 size={17} />
               </button>
             )}
-            <button
-              className="icon-button"
-              disabled={saving}
-              aria-label="Exportar backup"
-              title="Exportar backup"
-              onClick={exportBackup}
-            >
-              <Download size={18} />
-            </button>
-            <button
-              className="icon-button"
-              disabled={saving}
-              aria-label="Importar backup"
-              title="Importar backup"
-              onClick={() => importRef.current?.click()}
-            >
-              <FileUp size={18} />
-            </button>
+            <div className="topbar-tools" ref={toolsRef}>
+              <button
+                className="icon-button"
+                aria-label="Opções de backup"
+                title="Opções de backup"
+                aria-expanded={toolsOpen}
+                aria-controls="backup-options"
+                onClick={() => setToolsOpen(!toolsOpen)}
+              >
+                <Ellipsis size={20} />
+              </button>
+              {toolsOpen && (
+                <div
+                  id="backup-options"
+                  className="backup-options"
+                  aria-label="Cópias de segurança"
+                >
+                  <strong>Cópias de segurança</strong>
+                  <button
+                    disabled={saving}
+                    onClick={() => {
+                      exportBackup();
+                      setToolsOpen(false);
+                    }}
+                  >
+                    <Download size={17} />
+                    Exportar backup
+                  </button>
+                  <button
+                    disabled={saving}
+                    onClick={() => {
+                      importRef.current?.click();
+                      setToolsOpen(false);
+                    }}
+                  >
+                    <FileUp size={17} />
+                    Importar backup
+                  </button>
+                  <small>Seus dados ficam apenas neste dispositivo.</small>
+                </div>
+              )}
+            </div>
             <input
               ref={importRef}
               type="file"
@@ -1084,7 +1215,7 @@ export default function App() {
               <h1>{titles[tab][0]}</h1>
               <p>{titles[tab][1]}</p>
             </div>
-            {tab !== "updates" && tab !== "appearance" && (
+            {tab !== "home" && tab !== "updates" && tab !== "appearance" && (
               <button
                 className="button primary"
                 disabled={saving}
@@ -1317,42 +1448,28 @@ export default function App() {
             </div>
           )}
 
+          {tab === "home" && (
+            <WelcomePage
+              data={data}
+              month={month}
+              onNavigate={navigate}
+              onStart={() => setModal({ type: "card" })}
+              onDemo={() =>
+                confirm(
+                  "Carregar exemplo?",
+                  "Os dados fictícios substituirão todos os seus registros atuais. Você pode desfazer a alteração.",
+                  () =>
+                    commit(
+                      demoData(theme),
+                      "Dados de exemplo carregados. São fictícios.",
+                    ),
+                )
+              }
+            />
+          )}
+
           {tab === "overview" && (
             <>
-              {!data.purchases.length &&
-                !data.cashEntries?.length &&
-                !data.subscriptions?.length &&
-                !data.recurringIncomes?.length &&
-                !data.expenses?.length && (
-                  <div className="welcome-banner">
-                    <span>
-                      <Sparkles size={23} />
-                    </span>
-                    <div>
-                      <h3>Sua tranquilidade começa com o primeiro passo.</h3>
-                      <p>
-                        Cadastre um cartão e uma compra, ou explore com dados
-                        fictícios.
-                      </p>
-                    </div>
-                    <button
-                      className="button secondary"
-                      onClick={() =>
-                        confirm(
-                          "Carregar exemplo?",
-                          "Os dados fictícios substituirão todos os seus registros atuais, incluindo entradas, rendas, despesas e assinaturas. Você pode desfazer a alteração.",
-                          () =>
-                            commit(
-                              demoData(theme),
-                              "Dados de exemplo carregados. São fictícios.",
-                            ),
-                        )
-                      }
-                    >
-                      Experimentar exemplo <ArrowRight size={15} />
-                    </button>
-                  </div>
-                )}
               <div className="charts-grid">
                 <Panel
                   title="Um mês de cada vez"

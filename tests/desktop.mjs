@@ -1,3 +1,4 @@
+import { verifyChartTooltips, verifyNavigation } from "./design.mjs";
 import { _electron as electron, expect } from "playwright/test";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -49,6 +50,7 @@ try {
   expect(expanded.settings.accent).toBe("#20c7a0");
   await page.getByRole("button", { name: "Visão geral", exact: true }).click();
   await verifyTypography(page);
+  await verifyNavigation(page);
   const zoomRoles = await app.evaluate(({ Menu }) => {
     const menu = Menu.getApplicationMenu();
     return ["zoom-in", "zoom-out", "zoom-reset"].map(
@@ -61,6 +63,7 @@ try {
       BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(zoom);
     }, factor);
     for (const tab of [
+      "Início",
       "Visão geral",
       "Minhas compras",
       "Meus cartões",
@@ -70,6 +73,7 @@ try {
       await page.getByRole("button", { name: tab, exact: true }).click();
       await verifyPageLayout(page, `Electron / zoom ${factor * 100}% / ${tab}`);
     }
+    await verifyChartTooltips(page);
   }
   await app.evaluate(({ BrowserWindow }) => {
     BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(1);
@@ -88,12 +92,15 @@ try {
   });
   const restarted = await app.firstWindow();
   await expect(
-    restarted.getByRole("heading", { name: "Tudo sob controle." }),
+    restarted.getByRole("heading", { name: "Boas-vindas ao ContaClara." }),
   ).toBeVisible();
   await expect(restarted.locator("html")).toHaveAttribute(
     "data-theme",
     "ultra",
   );
+  await restarted
+    .getByRole("button", { name: "Visão geral", exact: true })
+    .click();
   await expect(restarted.getByTestId("total-debt")).toHaveText(/1\.900,00/);
   await restarted
     .getByRole("button", { name: "Entradas do mês", exact: true })
@@ -135,6 +142,9 @@ try {
     env: { ...process.env, SALDO_DATA_DIR: directory },
   });
   const upgraded = await app.firstWindow();
+  await upgraded
+    .getByRole("button", { name: "Visão geral", exact: true })
+    .click();
   await expect(upgraded.getByTestId("total-debt")).toHaveText(/66,66/);
   expect(await readFile(join(directory, "finances.json"), "utf8")).toBe(
     legacyJson,

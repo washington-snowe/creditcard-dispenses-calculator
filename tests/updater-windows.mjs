@@ -174,7 +174,7 @@ async function launchOriginal() {
     env: { ...process.env, SALDO_DATA_DIR: userData },
   });
   const page = await app.firstWindow();
-  await expect(page.getByTestId("total-debt")).toBeVisible();
+  await expect(page.getByTestId("welcome-pending")).toBeVisible();
   return await app.evaluate(() => process.pid);
 }
 async function journal() {

@@ -16,7 +16,7 @@ export async function verifyTypography(page) {
       body: style("body"),
       brand: style(".brand .brand-name"),
       heading: style("main h1"),
-      balance: style(".stat-card > strong"),
+      balance: style(".stat-card > strong, .welcome-balance > strong"),
       manrope: document.fonts.check("600 14px Manrope"),
       manropeBold: document.fonts.check("700 14px Manrope"),
       inter: document.fonts.check("400 14px Inter"),
@@ -31,21 +31,19 @@ export async function verifyTypography(page) {
   expect(fonts.heading.weight).toBe("600");
   expect(fonts.manrope && fonts.manropeBold && fonts.inter).toBeTruthy();
   const logo = page.locator(".sidebar .brand-full");
-  await expect
-    .poll(() => logo.evaluate((image) => image.naturalWidth))
-    .toBe(1774);
-  const logoDetails = await logo.evaluate((image) => ({
-    height: image.naturalHeight,
-    filter: getComputedStyle(image).filter,
-    ratio:
-      image.getBoundingClientRect().height > 0
-        ? image.getBoundingClientRect().width /
-          image.getBoundingClientRect().height
-        : null,
+  const details = await logo.evaluate((element) => ({
+    mask: getComputedStyle(element).maskImage,
+    mode: getComputedStyle(element).maskMode,
+    background: getComputedStyle(element.parentElement).backgroundColor,
+    ratio: element.getBoundingClientRect().height
+      ? element.getBoundingClientRect().width /
+        element.getBoundingClientRect().height
+      : null,
   }));
-  expect(logoDetails.height).toBe(887);
-  expect(logoDetails.filter).toBe("none");
-  if (logoDetails.ratio !== null) expect(logoDetails.ratio).toBeCloseTo(2, 4);
+  expect(details.mask).toContain("brand/logo.png");
+  expect(details.mode).toBe("luminance");
+  expect(details.background).toBe("rgba(0, 0, 0, 0)");
+  if (details.ratio !== null) expect(details.ratio).toBeCloseTo(2, 4);
   await verifyBrandLayout(page);
   await expect(page).toHaveTitle(/ContaClara/);
   const widths = await page.evaluate(() => {
@@ -70,18 +68,17 @@ export async function verifyTypography(page) {
 
 export async function verifyBrandLayout(page) {
   const symbol = page.locator(".sidebar .brand-symbol");
-  await expect
-    .poll(() => symbol.evaluate((image) => image.naturalWidth))
-    .toBe(1254);
-  const details = await symbol.evaluate((image) => ({
-    height: image.naturalHeight,
-    filter: getComputedStyle(image).filter,
-    width: image.getBoundingClientRect().width,
-    renderedHeight: image.getBoundingClientRect().height,
+  const details = await symbol.evaluate((element) => ({
+    mask: getComputedStyle(element).maskImage,
+    mode: getComputedStyle(element).maskMode,
+    width: element.getBoundingClientRect().width,
+    renderedHeight: element.getBoundingClientRect().height,
   }));
-  expect(details.height).toBe(1254);
-  expect(details.filter).toBe("none");
-  const compact = await page.evaluate(() => window.innerWidth <= 1020);
+  expect(details.mask).toContain("brand/icon.png");
+  expect(details.mode).toBe("luminance");
+  const compact = await page
+    .locator(".app-shell")
+    .evaluate((element) => element.classList.contains("sidebar-collapsed"));
   if (compact) {
     await expect(symbol).toBeVisible();
     await expect(page.locator(".sidebar .brand-full")).toBeHidden();

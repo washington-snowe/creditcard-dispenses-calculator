@@ -111,6 +111,19 @@ export async function runNewPlanning(page) {
     .getByRole("button", { name: "Entradas do mês", exact: true })
     .click();
   await expect(page.getByTestId("cash-remaining")).toHaveText(/5\.450,00/);
+  await page.getByRole("button", { name: "Início", exact: true }).click();
+  await expect(page.getByTestId("welcome-pending")).toHaveText(/0,00/);
+  await expect(page.getByTestId("welcome-paid")).toContainText("950,00");
+  await expect(
+    page.getByRole("progressbar", { name: "Compromissos do mês pagos" }),
+  ).toHaveAttribute("aria-valuenow", "100");
+  await page.getByRole("button", { name: "Próximo mês", exact: true }).click();
+  await expect(page.getByTestId("welcome-pending")).toHaveText(/1\.060,00/);
+  await expect(page.getByTestId("welcome-paid")).toHaveCount(0);
+  await page.getByRole("button", { name: /Voltar ao mês atual/ }).click();
+  await page
+    .getByRole("button", { name: "Entradas do mês", exact: true })
+    .click();
   console.log(
     "Novidades verificadas: rendas previstas/recebidas, saldo inicial e próximo mês, despesas e filtros, Ultra Dark, cores, fontes, movimento e persistência.",
   );

@@ -1,3 +1,5 @@
+import { useRef } from "react";
+import { ChartTooltip, tooltipLayer } from "./chart-tooltip";
 import {
   Area,
   AreaChart,
@@ -27,14 +29,6 @@ import {
 import { subscriptionMonth } from "../finance";
 import { Empty } from "./ui";
 const axis = { fill: "var(--muted)", fontSize: "var(--text-caption)" };
-const tooltip = {
-  borderRadius: 14,
-  background: "var(--surface)",
-  border: "1px solid var(--border)",
-  color: "var(--text)",
-  fontSize: "var(--text-body)",
-  boxShadow: "var(--shadow)",
-};
 const tickMoney = (cents: number) =>
   cents >= 100000
     ? `${(cents / 100000).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} mil`
@@ -56,6 +50,7 @@ export function MonthlyChart({
   subscriptions?: Subscription[];
   subscriptionPayments?: SubscriptionPayment[];
 }) {
+  const chartRef = useRef<HTMLDivElement>(null);
   const rows = Array.from({ length: count }, (_, i) => {
     const month = addMonths(start, i),
       base = monthSnapshot(purchases, payments, month);
@@ -83,7 +78,7 @@ export function MonthlyChart({
     );
   return (
     <>
-      <div className="chart chart-monthly">
+      <div ref={chartRef} className="chart chart-monthly">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={rows}
@@ -111,12 +106,9 @@ export function MonthlyChart({
             />
             <Tooltip
               cursor={{ fill: "var(--hover)" }}
-              contentStyle={tooltip}
-              labelFormatter={(label) => monthLabel(String(label))}
-              formatter={(value, name) => [
-                money(Number(value)),
-                name === "paid" ? "Valores pagos" : "Ainda a pagar",
-              ]}
+              portal={document.body}
+              wrapperStyle={tooltipLayer}
+              content={<ChartTooltip chartRef={chartRef} />}
             />
             <Bar
               isAnimationActive={false}
@@ -159,6 +151,7 @@ export function DistributionChart({
 }: {
   cards: (Card & { debt: number })[];
 }) {
+  const chartRef = useRef<HTMLDivElement>(null);
   const rows = cards.filter((c) => c.debt > 0),
     total = rows.reduce((sum, c) => sum + c.debt, 0);
   if (!rows.length)
@@ -170,7 +163,7 @@ export function DistributionChart({
     );
   return (
     <>
-      <div className="donut-wrap">
+      <div ref={chartRef} className="donut-wrap">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -190,8 +183,9 @@ export function DistributionChart({
               ))}
             </Pie>
             <Tooltip
-              formatter={(value) => money(Number(value))}
-              contentStyle={tooltip}
+              portal={document.body}
+              wrapperStyle={tooltipLayer}
+              content={<ChartTooltip chartRef={chartRef} mode="distribution" />}
             />
           </PieChart>
         </ResponsiveContainer>
@@ -262,6 +256,7 @@ export function SimulationChart({
   selected: string[];
   start: string;
 }) {
+  const chartRef = useRef<HTMLDivElement>(null);
   const rows = Array.from({ length: 8 }, (_, i) => {
     const month = addMonths(start, i);
     return {
@@ -275,7 +270,7 @@ export function SimulationChart({
     };
   });
   return (
-    <div className="chart simulation-chart">
+    <div ref={chartRef} className="chart simulation-chart">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
           data={rows}
@@ -307,12 +302,9 @@ export function SimulationChart({
             width="auto"
           />
           <Tooltip
-            labelFormatter={(l) => monthLabel(String(l))}
-            formatter={(v, name) => [
-              money(Number(v)),
-              name === "before" ? "Sem antecipar" : "Após quitar selecionadas",
-            ]}
-            contentStyle={tooltip}
+            portal={document.body}
+            wrapperStyle={tooltipLayer}
+            content={<ChartTooltip chartRef={chartRef} mode="simulation" />}
           />
           <Legend
             formatter={(name) =>

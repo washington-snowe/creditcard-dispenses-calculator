@@ -2,6 +2,14 @@ import { expect } from "playwright/test";
 
 export async function runFlow(page) {
   await expect(
+    page.getByRole("heading", { name: "Boas-vindas ao ContaClara." }),
+  ).toBeVisible();
+  await expect(page.getByTestId("welcome-pending")).toHaveText(/0,00/);
+  await expect(page.getByTestId("welcome-paid")).toHaveCount(0);
+  await page
+    .getByRole("button", { name: "Explorar Visão geral", exact: true })
+    .click();
+  await expect(
     page.getByRole("heading", { name: "Tudo sob controle." }),
   ).toBeVisible();
   await expect(page.getByTestId("total-debt")).toHaveText(/0,00/);
@@ -98,6 +106,7 @@ export async function runFlow(page) {
     "Passagem",
   );
   await page.reload();
+  await page.getByRole("button", { name: "Visão geral", exact: true }).click();
   await expect(page.getByTestId("total-debt")).toHaveText(/666,66/);
   await page
     .getByRole("button", { name: "Minhas compras", exact: true })

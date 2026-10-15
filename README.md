@@ -4,11 +4,11 @@ Aplicativo desktop de finanças pessoais em **Node.js + Electron**, com interfac
 
 ## Baixar para Windows
 
-[**Baixar ContaClara 4.1.0 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.1.0/ContaClara-Windows-x64.zip)
+[**Baixar ContaClara 4.2.0 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.2.0/ContaClara-Windows-x64.zip)
 
 Extraia a pasta inteira e abra **saldo.exe**. Não é necessário instalar Node.js. A versão foi compilada e testada no Windows, incluindo os cálculos financeiros e a persistência dos dados após reiniciar o aplicativo.
 
-A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.1.0) também contém o checksum do ZIP.
+A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.2.0) também contém o checksum do ZIP.
 
 ## Executar no computador
 
@@ -31,15 +31,19 @@ A interface no navegador usa um armazenamento local separado do aplicativo deskt
 
 ## O que você pode fazer
 
+- Abrir **Início** para ver quanto falta pagar no mês e, quando houver pagamentos, o total já pago e o progresso. O resumo inclui parcelas de cartões, assinaturas e despesas, independentemente dos filtros das compras. Pagamentos seguem a data real do desembolso, incluindo antecipações.
+- Conhecer cada função em cards interativos na tela de boas-vindas, com atalhos acessíveis pelo teclado.
+- Recolher ou expandir o menu lateral. A escolha fica salva em janelas maiores; em janelas pequenas, o menu pode ser aberto sobre o conteúdo e fechado com Esc. As funções estão agrupadas em Acompanhar, Organizar, Planejar e Preferências.
+
 - Cadastrar vários cartões de qualquer banco, com apelido, últimos quatro dígitos, cor, vencimento e limite opcional.
 - Cadastrar compras escolhendo banco e cartão; informar **valor total ou valor de cada parcela**, número de parcelas, parcelas já pagas, categoria e mês da próxima parcela.
 - Consultar saldo devedor, pagamentos do mês, total já pago e última parcela prevista.
 - Editar ou excluir compras, registrar um pagamento e corrigir pagamentos pelo formulário de edição.
 - Filtrar globalmente por descrição, banco, cartão, categoria e status; totais, gráficos e planejamento seguem os mesmos filtros.
 - Consultar o histórico de compras, saldo e parcelas mensais de cada cartão e o total de todos.
-- Explorar gráficos de distribuição por cartão, previsão mensal e comparação de saldos.
+- Explorar gráficos de distribuição por cartão, previsão mensal e comparação de saldos. As caixas de valores aparecem acima dos gráficos, fora do recorte dos painéis, e se ajustam às bordas da janela.
 - Abrir cada mês do planejamento para ver **todas as parcelas individuais** e os totais por cartão, até a quitação. Use as setas, o seletor de mês ou as barras dos gráficos para navegar por meses passados e futuros.
-- Exportar e restaurar backups JSON. A restauração substitui os dados atuais após confirmação; um arquivo inválido é rejeitado.
+- Exportar e restaurar backups JSON pelo menu **Opções de backup (•••)** no topo. A restauração substitui os dados atuais após confirmação; um arquivo inválido é rejeitado.
 
 - Escolher tema claro, escuro ou **Ultra Dark**, paletas prontas ou uma cor personalizada; usar a tipografia oficial e ativar/desativar glow e animações suaves. As fontes vêm no aplicativo e as preferências são salvas no desktop e no backup.
 - Marcar todas as parcelas pendentes de um cartão no mês atual como pagas, com confirmação e opção de desfazer.
@@ -57,7 +61,7 @@ A primeira execução começa vazia. O botão **Experimentar exemplo** carrega d
 
 ## Atualizar das versões anteriores
 
-Feche o aplicativo antigo, extraia a pasta da versão 4.1 inteira e execute o novo `saldo.exe`. A pasta de dados permanece a mesma; os registros das versões 1, 2 e 3 são aceitos sem recadastro. Backups antigos também continuam válidos.
+Feche o aplicativo antigo, extraia a pasta da versão 4.2 inteira e execute o novo `saldo.exe`. A pasta de dados permanece a mesma; os registros das versões 1, 2 e 3 são aceitos sem recadastro. Backups antigos também continuam válidos.
 
 A partir da versão 3, abra **Atualizações → Verificar atualizações → Baixar atualização → Reiniciar e atualizar**. O aplicativo consulta as releases estáveis de `washington-snowe/creditcard-dispenses-calculator`, baixa o ZIP por HTTPS e confere SHA-256, caminhos do arquivo e a versão interna do pacote. Não é necessário instalar Node.js ou Git. Alterações no código entram no aplicativo quando uma nova versão é publicada, com seu ZIP e checksum; um commit na branch principal sozinho não gera atualização.
 
@@ -99,7 +103,7 @@ O saldo por cartão considera somente as compras cadastradas, não a fatura real
 
 ## Identidade visual e aparência
 
-Os arquivos oficiais ficam em `public/brand/logo.png` e `public/brand/icon.png`, preservados sem filtros ou recoloração. A logo completa aparece na barra lateral e na abertura; o símbolo aparece na navegação compacta, no favicon e no ícone do aplicativo. O fundo preto preserva o contraste nos três temas. `icon.ico` inclui os tamanhos de 16 a 256 px para Windows.
+Os arquivos oficiais ficam em `public/brand/logo.png` e `public/brand/icon.png`, preservados no repositório. Dentro da interface, uma máscara de luminância usa o desenho original e remove visualmente o fundo preto, sem redesenhar a marca. A logo acompanha a cor de texto de cada tema para manter contraste; a versão completa aparece na barra lateral expandida e na abertura, e o símbolo aparece na navegação compacta. `icon.ico` inclui os tamanhos de 16 a 256 px para Windows.
 
 Em **Aparência**, escolha Claro, Escuro ou Ultra Dark, selecione uma paleta ou use o seletor de cor personalizada. O texto ajusta o contraste à cor escolhida. A tipografia é fixa: Manrope Bold (700) no nome ContaClara, Manrope SemiBold (600) nos títulos e Inter nos menus, formulários, tabelas e valores. Os valores usam números tabulares para manter o alinhamento. As fontes estão incluídas para uso offline; preferências antigas de fonte são ignoradas sem alterar os registros financeiros. Controle glow e movimento separadamente e clique em **Aplicar aparência** para salvar. O aplicativo também respeita a preferência do sistema por movimento reduzido.
 

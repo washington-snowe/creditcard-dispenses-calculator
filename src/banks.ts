@@ -7,8 +7,8 @@ const BANK_FILES: Record<string, string> = {
   santander: "santander.ico",
   inter: "inter.svg",
   caixa: "caixa.png",
-  c6bank: "c6.png",
-  btgpactual: "btg.png",
+  c6bank: "c6.svg",
+  btgpactual: "btg.svg",
   mercadopago: "mercadopago.svg",
   picpay: "picpay.png",
 };

@@ -138,7 +138,13 @@ export type Month = {
   byCard: Record<string, number>;
   items: { purchase: Purchase; amount: number; installment: number }[];
 };
-export const EMPTY: Data = { version: 1, cards: [], purchases: [] };
+// Only fresh data gets the new default; existing settings and legacy backups stay intact.
+export const EMPTY: Data = {
+  version: 1,
+  cards: [],
+  purchases: [],
+  settings: { theme: "ultra" },
+};
 export const COLORS = [
   "#2563eb",
   "#8b5cf6",

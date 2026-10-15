@@ -97,6 +97,17 @@ try {
       .getByRole("button", { name: "Aplicar aparência", exact: true })
       .click();
     await goTo(page, "Visão geral");
+    const marks = await page.locator(".bank-mark").evaluateAll((nodes) =>
+      nodes.map((node) => {
+        const style = getComputedStyle(node);
+        return { background: style.backgroundColor, border: style.borderWidth };
+      }),
+    );
+    expect(marks.length).toBeGreaterThan(0);
+    for (const mark of marks) {
+      expect(mark.background).toBe("rgba(0, 0, 0, 0)");
+      expect(mark.border).toBe("0px");
+    }
     await verifyTypography(page);
     await goTo(page, "Início");
     await page.screenshot({

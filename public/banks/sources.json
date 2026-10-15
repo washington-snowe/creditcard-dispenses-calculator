@@ -50,17 +50,17 @@
   },
   {
     "bank": "C6 Bank",
-    "file": "c6.png",
+    "file": "c6.svg",
     "website": "https://www.c6bank.com.br/",
-    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://www.c6bank.com.br&size=128",
-    "sha256": "9f07f267fc589f775dff4967c6f9029ebbb83d792d81586c83ae97429f4aa026"
+    "source": "https://raw.githubusercontent.com/Tgentil/Bancos-em-SVG/fe1d43f0cf379135bd01c987bc147a04fdf48c6d/Banco%20C6%20S.A/c6%20bank-%20branco.svg",
+    "sha256": "75e3dc3228217ae9f17f1727dd4de09c9318e1aea18668796a214613626a796d"
   },
   {
     "bank": "BTG Pactual",
-    "file": "btg.png",
+    "file": "btg.svg",
     "website": "https://banking.btgpactual.com/",
-    "source": "https://banking.btgpactual.com/favicon.png?v=1",
-    "sha256": "c8e3b7f96f2883c15fa75ee91a271851bf80bfc03b0b883b2d60f7bf00c9e4e7"
+    "source": "https://raw.githubusercontent.com/Tgentil/Bancos-em-SVG/fe1d43f0cf379135bd01c987bc147a04fdf48c6d/Bancos%20Escuros%20%28logos%20negativadas%29/banco%20btg%20pacutal/btg-pactual.svg",
+    "sha256": "d1e5f5cdd0907eb3fa446d9f05c479785aea289bfcf90b3d4b90bbf25f65648b"
   },
   {
     "bank": "Mercado Pago",

@@ -10,6 +10,12 @@ export async function runEnhancements(page) {
     date.setMonth(date.getMonth() + 1, 1);
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
   });
+  // Fresh installs start in Ultra Dark; an explicit saved light choice survives reload.
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "ultra");
+  await page.getByRole("button", { name: "Ativar tema claro" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   await page.getByRole("button", { name: "Ativar tema escuro" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.reload();

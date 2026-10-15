@@ -36,6 +36,11 @@ try {
   page.setDefaultTimeout(10000);
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
+  expect(
+    await app.evaluate(({ BrowserWindow }) =>
+      BrowserWindow.getAllWindows()[0].getBackgroundColor().toLowerCase(),
+    ),
+  ).toBe("#040409");
   await runFlow(page);
   await runEnhancements(page);
   const saved = JSON.parse(
@@ -262,6 +267,11 @@ try {
     env: { ...process.env, SALDO_DATA_DIR: directory },
   });
   const upgraded = await app.firstWindow();
+  expect(
+    await app.evaluate(({ BrowserWindow }) =>
+      BrowserWindow.getAllWindows()[0].getBackgroundColor().toLowerCase(),
+    ),
+  ).toBe("#f5f6fb");
   await goTo(upgraded, "Visão geral");
   await expect(upgraded.getByTestId("total-debt")).toHaveText(/66,66/);
   expect(await readFile(join(directory, "finances.json"), "utf8")).toBe(

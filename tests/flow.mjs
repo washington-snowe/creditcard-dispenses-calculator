@@ -5,6 +5,7 @@ export async function runFlow(page) {
   await expect(
     page.getByRole("heading", { name: "Resumo do mês" }),
   ).toBeVisible();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "ultra");
   await expect(page.getByTestId("welcome-pending")).toHaveText(/0,00/);
   await expect(page.getByTestId("welcome-paid")).toHaveCount(0);
   await page

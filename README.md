@@ -4,11 +4,11 @@ Aplicativo desktop de finanças pessoais em **Node.js + Electron**, com interfac
 
 ## Baixar para Windows
 
-[**Baixar ContaClara 4.6.0 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.6.0/ContaClara-Windows-x64.zip)
+[**Baixar ContaClara 4.6.1 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.6.1/ContaClara-Windows-x64.zip)
 
 Extraia a pasta inteira e abra **saldo.exe**. Não é necessário instalar Node.js. A versão foi compilada e testada no Windows, incluindo os cálculos financeiros e a persistência dos dados após reiniciar o aplicativo.
 
-A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.6.0) também contém o checksum do ZIP.
+A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.6.1) também contém o checksum do ZIP.
 
 ## Executar no computador
 
@@ -143,7 +143,9 @@ Os nomes de compras, assinaturas, despesas, entradas, rendas e cartões oferecem
 
 Ao criar uma compra, assinatura ou despesa, o nome pode selecionar uma categoria provável: por exemplo, Notebook → Tecnologia, Netflix → Lazer, Conta de luz → Casa e Uber → Transporte. Correspondências com registros existentes usam a categoria mais frequente do mesmo nome; em empate, prevalece o cadastro mais recente. **A seleção é uma sugestão e pode precisar de correção.** Ao escolher uma categoria manualmente, a detecção para naquele formulário. Use **Detectar pelo nome** para retomá-la. Ao editar um registro, a categoria existente é preservada até você escolher alterá-la ou pedir a detecção.
 
-Os cartões, incluindo suas prévias, mostram os símbolos reais dos 11 bancos da lista. As imagens são incluídas no aplicativo, com cores e proporções originais, sobre uma base clara para manter contraste nos três temas. Bancos personalizados sem imagem correspondente usam um ícone neutro e o nome informado. As fontes e checksums das imagens ficam em `public/banks/sources.json`; parte dos favicons foi obtida do cache público dos sites oficiais. O aplicativo não consulta esse serviço durante o uso. As marcas pertencem às respectivas instituições.
+A primeira abertura de uma instalação nova usa **Ultra Dark**, inclusive no fundo inicial da janela. Escolhas de tema já salvas são preservadas, assim como o comportamento de arquivos antigos sem configuração de tema.
+
+Os cartões, incluindo suas prévias, mostram os símbolos reais dos 11 bancos da lista. As imagens são incluídas no aplicativo, com cores e proporções originais, sem moldura, borda ou fundo adicional, tanto nos cartões quanto nas prévias de cadastro. Bancos personalizados sem imagem correspondente usam um ícone neutro e o nome informado. As fontes e checksums das imagens ficam em `public/banks/sources.json`; parte dos favicons foi obtida do cache público dos sites oficiais. C6 e BTG usam versões vetoriais brancas com fundo transparente, obtidas da coleção Bancos-em-SVG e com a revisão de origem registrada. O aplicativo não consulta esses serviços durante o uso. As marcas pertencem às respectivas instituições.
 
 ## Desempenho e avisos
 

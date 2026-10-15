@@ -162,9 +162,15 @@ export async function runFormAssistance(page) {
     const details = await logo.evaluate((img) => ({
       local: !img.src.startsWith("https://"),
       filter: getComputedStyle(img).filter,
+      background: getComputedStyle(img.parentElement).backgroundColor,
+      border: getComputedStyle(img.parentElement).borderWidth,
+      padding: getComputedStyle(img.parentElement).padding,
     }));
     expect(details.local).toBeTruthy();
     expect(details.filter).toBe("none");
+    expect(details.background).toBe("rgba(0, 0, 0, 0)");
+    expect(details.border).toBe("0px");
+    expect(details.padding).toBe("0px");
   }
   await bank.selectOption("Outro");
   await page.getByLabel("Nome do banco", { exact: true }).fill("Banco pessoal");

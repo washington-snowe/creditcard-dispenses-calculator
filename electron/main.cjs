@@ -17,10 +17,20 @@ const dataPath = () => path.join(app.getPath("userData"), "finances.json");
 // Electron requires this decision before ready. The same validated preference
 // lives in finances.json, so backups and updates preserve the user's choice.
 let hardwareEnabledAtLaunch = true;
+const themeBackgrounds = {
+  light: "#f5f6fb",
+  dark: "#0c1220",
+  ultra: "#040409",
+};
+let backgroundAtLaunch = themeBackgrounds.ultra;
 try {
   if (fsSync.statSync(dataPath()).size <= 5_000_000) {
     const saved = JSON.parse(fsSync.readFileSync(dataPath(), "utf8"));
     hardwareEnabledAtLaunch = saved?.settings?.hardwareAcceleration !== false;
+    // Old files without settings used the light theme. Never replace a saved choice.
+    const savedTheme = saved?.settings?.theme ?? "light";
+    if (Object.hasOwn(themeBackgrounds, savedTheme))
+      backgroundAtLaunch = themeBackgrounds[savedTheme];
   }
 } catch {
   /* Missing or corrupt financial data is handled by saldo:load. */
@@ -263,7 +273,7 @@ app.whenReady().then(async () => {
         "../dist/brand",
         process.platform === "win32" ? "icon.ico" : "icon.png",
       ),
-      backgroundColor: "#f5f7fb",
+      backgroundColor: backgroundAtLaunch,
       autoHideMenuBar: true,
       webPreferences: {
         preload: path.join(__dirname, "preload.cjs"),

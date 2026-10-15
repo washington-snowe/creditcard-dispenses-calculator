@@ -1,6 +1,6 @@
 {
   "name": "saldo-desktop",
-  "version": "4.7.0",
+  "version": "4.7.1",
   "private": true,
   "description": "Gestão local de cartões, compras parceladas e planejamento financeiro.",
   "type": "module",

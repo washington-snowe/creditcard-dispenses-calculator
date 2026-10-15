@@ -44,6 +44,18 @@ export function Dialog({
       element?.close();
       requestAnimationFrame(() => {
         if (document.querySelector("dialog[open]")) return;
+        // A user may already be typing elsewhere before this frame runs.
+        const focused = document.activeElement;
+        if (
+          focused instanceof HTMLElement &&
+          focused !== document.body &&
+          focused !== document.documentElement &&
+          focused !== opener &&
+          focused.isConnected &&
+          focused.checkVisibility() &&
+          !element?.contains(focused)
+        )
+          return;
         if (
           opener?.isConnected &&
           !opener.closest("dialog") &&

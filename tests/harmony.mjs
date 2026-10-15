@@ -194,7 +194,24 @@ export async function verifyHarmony(page) {
   await expect(digits).toHaveAttribute("aria-invalid", "true");
   await digits.fill("1234");
   await expect(digits).not.toHaveAttribute("aria-invalid", "true");
+  await page.getByRole("dialog").evaluate((el) => {
+    el.addEventListener(
+      "close",
+      () =>
+        document.querySelector('input[aria-label="Buscar compras"]').focus(),
+      { once: true },
+    );
+  });
   await page.getByRole("button", { name: "Cancelar", exact: true }).click();
+  await page.evaluate(
+    () =>
+      new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve)),
+      ),
+  );
+  await expect(
+    page.getByLabel("Buscar compras", { exact: true }),
+  ).toBeFocused();
   const after = await page.evaluate(async () =>
     window.saldo
       ? await window.saldo.load()

@@ -1,4 +1,4 @@
-**ContaClara 4.7.0 — uma interface mais limpa, coesa e organizada.**
+**ContaClara 4.7.1 — uma interface mais limpa, coesa e organizada.**
 
 Baixe **ContaClara-Windows-x64.zip**, extraia a pasta inteira e abra **saldo.exe**.
 
@@ -11,7 +11,7 @@ Baixe **ContaClara-Windows-x64.zip**, extraia a pasta inteira e abra **saldo.exe
 - **Cores com significado:** verde para pago, amarelo para pendente e vermelho para atraso, com texto ou ícone. O gráfico mensal segue a mesma convenção; roxo fica nas ações.
 - **Ações agrupadas:** edição e exclusão de cartões, entradas, rendas, despesas e assinaturas ficam em **Mais opções**. Cada tela mantém uma ação principal de cadastro.
 - **Formulários organizados:** validações junto ao campo, explicações secundárias recolhidas, abertura automática de seções com erro e foco no primeiro campo inválido. Manrope e Inter oficiais, números tabulares e aumento de texto foram mantidos.
-- **Correções de navegação:** menus com rolagem não fecham ao rolar seu próprio conteúdo; setas, Home e End navegam pelas ações. O foco volta ao botão correto após fechar formulários e ao remover etiquetas.
+- **Correções de navegação:** menus com rolagem não fecham ao rolar seu próprio conteúdo; setas, Home e End navegam pelas ações. O foco volta ao botão correto após fechar formulários e ao remover etiquetas, sem interromper um campo que o usuário já começou a usar.
 
 ### Consistência dos valores
 

@@ -227,16 +227,19 @@ export function SubscriptionForm({
               onChange={(e) => setStart(e.target.value)}
             />
           </label>
-          <label>
-            Último mês de cobrança <small>opcional</small>
-            <input
-              type="month"
-              min={start}
-              max="2199-12"
-              value={end}
-              onChange={(e) => setEnd(e.target.value)}
-            />
-          </label>
+          <details className="more-details" open={!!subscription || undefined}>
+            <summary>Encerrar cobranças</summary>{" "}
+            <label>
+              Último mês de cobrança <small>opcional</small>
+              <input
+                type="month"
+                min={start}
+                max="2199-12"
+                value={end}
+                onChange={(e) => setEnd(e.target.value)}
+              />
+            </label>
+          </details>
         </div>
         <p className="field-hint">
           No cartão, a cobrança será incluída na fatura cadastrada. Não cadastre

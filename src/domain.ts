@@ -5,6 +5,7 @@ export type Card = {
   last4: string;
   color: string;
   dueDay: number;
+  closingDay?: number;
   limitCents: number;
 };
 export type Purchase = {
@@ -16,6 +17,7 @@ export type Purchase = {
   installments: number;
   paid: number;
   nextMonth: string;
+  importKey?: string;
 };
 export type Payment = {
   id: string;
@@ -46,6 +48,11 @@ export type Settings = {
   motion?: boolean;
   sidebarCollapsed?: boolean;
   hardwareAcceleration?: boolean;
+  reserveCents?: number;
+  privacy?: boolean;
+  density?: "compact" | "comfortable";
+  automaticBackups?: boolean;
+  homeWidgets?: string[];
   carryover?: { startMonth: string; openingCents: number };
 };
 export type RecurringIncome = {
@@ -84,6 +91,7 @@ export type CashEntry = {
   date: string;
   amountCents: number;
   kind: "income" | "deduction";
+  importKey?: string;
   status?: "received" | "planned";
 };
 export type Subscription = {
@@ -164,10 +172,18 @@ export const CATEGORIES = [
   "Tecnologia",
   "Outros",
 ];
+let financialPrivacy = false;
+export const setFinancialPrivacy = (enabled: boolean) => {
+  financialPrivacy = enabled;
+};
+export const isFinancialPrivate = () => financialPrivacy;
 export const money = (cents: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
-    cents / 100,
-  );
+  financialPrivacy
+    ? "R$ ••••"
+    : new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      }).format(cents / 100);
 export function currentMonth(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
@@ -497,6 +513,7 @@ export function validateData(input: unknown): Data {
       !/^(\d{4})?$/.test(c.last4) ||
       !/^#[0-9a-fA-F]{6}$/.test(c.color) ||
       !number(c.dueDay, 1, 31) ||
+      (c.closingDay !== undefined && !number(c.closingDay, 1, 31)) ||
       !number(c.limitCents, 0, 100_000_000_000)
     )
       return fail();
@@ -509,6 +526,7 @@ export function validateData(input: unknown): Data {
       !text(p.id) ||
       purchaseIds.has(p.id) ||
       !text(p.description) ||
+      (p.importKey !== undefined && !text(p.importKey, 200)) ||
       !ids.has(p.cardId) ||
       !CATEGORIES.includes(p.category) ||
       !number(p.totalCents, 1, 100_000_000_000) ||
@@ -536,6 +554,29 @@ export function validateData(input: unknown): Data {
         typeof x.settings.hardwareAcceleration !== "boolean") ||
       (x.settings.sidebarCollapsed !== undefined &&
         typeof x.settings.sidebarCollapsed !== "boolean") ||
+      (x.settings.reserveCents !== undefined &&
+        !number(x.settings.reserveCents, 0, 100_000_000_000)) ||
+      (x.settings.privacy !== undefined &&
+        typeof x.settings.privacy !== "boolean") ||
+      (x.settings.automaticBackups !== undefined &&
+        typeof x.settings.automaticBackups !== "boolean") ||
+      (x.settings.density !== undefined &&
+        !["compact", "comfortable"].includes(x.settings.density)) ||
+      (x.settings.homeWidgets !== undefined &&
+        (!Array.isArray(x.settings.homeWidgets) ||
+          x.settings.homeWidgets.length > 5 ||
+          new Set(x.settings.homeWidgets).size !==
+            x.settings.homeWidgets.length ||
+          x.settings.homeWidgets.some(
+            (w) =>
+              ![
+                "summary",
+                "available",
+                "attention",
+                "comparison",
+                "functions",
+              ].includes(w),
+          ))) ||
       (x.settings.carryover !== undefined &&
         (!x.settings.carryover ||
           !month(x.settings.carryover.startMonth) ||
@@ -595,6 +636,7 @@ export function validateData(input: unknown): Data {
         !text(entry.id) ||
         entries.has(entry.id) ||
         !text(entry.description) ||
+        (entry.importKey !== undefined && !text(entry.importKey, 200)) ||
         !text(entry.source, 80) ||
         !validDate(entry.date) ||
         !number(entry.amountCents, 1, 100_000_000_000) ||
@@ -739,6 +781,7 @@ export function validateData(input: unknown): Data {
       last4: c.last4,
       color: c.color,
       dueDay: c.dueDay,
+      ...(c.closingDay !== undefined ? { closingDay: c.closingDay } : {}),
       limitCents: c.limitCents,
     })),
     purchases: x.purchases.map((p) => ({
@@ -750,11 +793,27 @@ export function validateData(input: unknown): Data {
       installments: p.installments,
       paid: p.paid,
       nextMonth: p.nextMonth,
+      ...(p.importKey ? { importKey: p.importKey } : {}),
     })),
     ...(x.settings
       ? {
           settings: {
             theme: x.settings.theme,
+            ...(x.settings.reserveCents !== undefined
+              ? { reserveCents: x.settings.reserveCents }
+              : {}),
+            ...(x.settings.privacy !== undefined
+              ? { privacy: x.settings.privacy }
+              : {}),
+            ...(x.settings.density !== undefined
+              ? { density: x.settings.density }
+              : {}),
+            ...(x.settings.automaticBackups !== undefined
+              ? { automaticBackups: x.settings.automaticBackups }
+              : {}),
+            ...(x.settings.homeWidgets !== undefined
+              ? { homeWidgets: [...x.settings.homeWidgets] }
+              : {}),
             ...(x.settings.accent !== undefined
               ? { accent: x.settings.accent }
               : {}),
@@ -801,6 +860,7 @@ export function validateData(input: unknown): Data {
             date: e.date,
             amountCents: e.amountCents,
             kind: e.kind,
+            ...(e.importKey ? { importKey: e.importKey } : {}),
             ...(e.status ? { status: e.status } : {}),
           })),
         }

@@ -1,3 +1,4 @@
+import type { PurchaseDraft } from "./workbench";
 import { SuggestionInput } from "./suggestion-input";
 import { CategoryHint, useSmartCategory } from "./smart-category";
 import { EXAMPLES, nameOptions, categoryHistory } from "../suggestions";
@@ -52,6 +53,7 @@ export function CardForm({
   const [customBank, setCustomBank] = useState(card?.bank ?? "");
   const [last4, setLast4] = useState(card?.last4 ?? "");
   const [color, setColor] = useState(card?.color ?? COLORS[0]);
+  const [closing, setClosing] = useState(String(card?.closingDay ?? ""));
   const [due, setDue] = useState(String(card?.dueDay ?? 10));
   const [limit, setLimit] = useState(
     card?.limitCents ? moneyInput(card.limitCents) : "",
@@ -64,6 +66,7 @@ export function CardForm({
     last4,
     color,
     dueDay: Number(due),
+    ...(closing ? { closingDay: Number(closing) } : {}),
     limitCents: 0,
   };
   return (
@@ -149,16 +152,6 @@ export function CardForm({
             )}
             <div className="form-row">
               <label>
-                Últimos 4 dígitos <small>opcional</small>
-                <input
-                  value={last4}
-                  maxLength={4}
-                  inputMode="numeric"
-                  onChange={(e) => setLast4(e.target.value.replace(/\D/g, ""))}
-                  placeholder="0000"
-                />
-              </label>
-              <label>
                 Dia de vencimento
                 <input
                   type="number"
@@ -171,35 +164,63 @@ export function CardForm({
               </label>
             </div>
             <label>
-              Limite do cartão <small>opcional</small>
-              <div className="money-field">
-                <span>R$</span>
-                <input
-                  inputMode="decimal"
-                  value={limit}
-                  onChange={(e) => setLimit(e.target.value)}
-                  placeholder="0,00"
-                />
-              </div>
+              Dia de fechamento <small>opcional</small>
+              <input
+                aria-label="Dia de fechamento"
+                type="number"
+                min={1}
+                max={31}
+                value={closing}
+                onChange={(e) => setClosing(e.target.value)}
+                placeholder="Confira no banco"
+              />
+              <span className="field-hint">
+                Permite sugerir o melhor cartão para cada dia.
+              </span>
             </label>
-            <fieldset className="color-field">
-              <legend>Escolha a cor</legend>
-              <div className="color-options">
-                {COLORS.map((c) => (
-                  <button
-                    type="button"
-                    key={c}
-                    className={`color-option ${color === c ? "selected" : ""}`}
-                    aria-label={`Cor ${c}`}
-                    aria-pressed={color === c}
-                    style={{ background: c }}
-                    onClick={() => setColor(c)}
-                  >
-                    {color === c && <Check size={16} />}
-                  </button>
-                ))}
-              </div>
-            </fieldset>
+            <details className="more-details" open={!!card || undefined}>
+              <summary>Mais opções do cartão</summary>
+              <label>
+                Últimos 4 dígitos <small>opcional</small>
+                <input
+                  value={last4}
+                  maxLength={4}
+                  inputMode="numeric"
+                  onChange={(e) => setLast4(e.target.value.replace(/\D/g, ""))}
+                  placeholder="0000"
+                />
+              </label>
+              <label>
+                Limite do cartão <small>opcional</small>
+                <div className="money-field">
+                  <span>R$</span>
+                  <input
+                    inputMode="decimal"
+                    value={limit}
+                    onChange={(e) => setLimit(e.target.value)}
+                    placeholder="0,00"
+                  />
+                </div>
+              </label>
+              <fieldset className="color-field">
+                <legend>Escolha a cor</legend>
+                <div className="color-options">
+                  {COLORS.map((c) => (
+                    <button
+                      type="button"
+                      key={c}
+                      className={`color-option ${color === c ? "selected" : ""}`}
+                      aria-label={`Cor ${c}`}
+                      aria-pressed={color === c}
+                      style={{ background: c }}
+                      onClick={() => setColor(c)}
+                    >
+                      {color === c && <Check size={16} />}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+            </details>
           </div>
           <aside className="form-summary card-preview">
             <span className="eyebrow">PRÉVIA DO SEU CARTÃO</span>
@@ -250,6 +271,7 @@ export function PurchaseForm({
   cardId,
   saving,
   hasHistory = false,
+  draft,
   onSave,
   onClose,
 }: {
@@ -259,6 +281,7 @@ export function PurchaseForm({
   cardId?: string;
   saving: boolean;
   hasHistory?: boolean;
+  draft?: PurchaseDraft;
   onSave: (p: Purchase) => Promise<boolean>;
   onClose: () => void;
 }) {
@@ -268,14 +291,20 @@ export function PurchaseForm({
   const [bank, setBank] = useState(initial.bank);
   const [selectedCard, setSelectedCard] = useState(initial.id);
   const [total, setTotal] = useState(
-    purchase ? moneyInput(purchase.totalCents) : "",
+    purchase
+      ? moneyInput(purchase.totalCents)
+      : draft
+        ? moneyInput(draft.totalCents)
+        : "",
   );
   const [mode, setMode] = useState("total");
   const [installments, setInstallments] = useState(
-    String(purchase?.installments ?? 1),
+    String(purchase?.installments ?? draft?.installments ?? 1),
   );
   const [paid, setPaid] = useState(String(purchase?.paid ?? 0));
-  const [month, setMonth] = useState(purchase?.nextMonth ?? currentMonth());
+  const [month, setMonth] = useState(
+    purchase?.nextMonth ?? draft?.nextMonth ?? currentMonth(),
+  );
   const history = useMemo(() => categoryHistory(data, "purchase"), [data]);
   const names = useMemo(
     () =>
@@ -345,6 +374,9 @@ export function PurchaseForm({
             if (
               await onSave({
                 ...preview,
+                ...(purchase?.importKey
+                  ? { importKey: purchase.importKey }
+                  : {}),
                 id: purchase?.id ?? uid(),
                 description: description.trim(),
               })
@@ -489,17 +521,20 @@ export function PurchaseForm({
                   onChange={(e) => setInstallments(e.target.value)}
                 />
               </label>
-              <label>
-                Parcelas já pagas
-                <input
-                  type="number"
-                  required
-                  min={0}
-                  max={Number(installments)}
-                  value={paid}
-                  onChange={(e) => setPaid(e.target.value)}
-                />
-              </label>
+              <details className="more-details" open={!!purchase || undefined}>
+                <summary>Já pagou parcelas?</summary>
+                <label>
+                  Parcelas já pagas
+                  <input
+                    type="number"
+                    required
+                    min={0}
+                    max={Number(installments)}
+                    value={paid}
+                    onChange={(e) => setPaid(e.target.value)}
+                  />
+                </label>
+              </details>
             </div>
             <label>
               Mês da próxima parcela

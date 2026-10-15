@@ -16,6 +16,7 @@ export async function runFlow(page) {
   await page.getByRole("button", { name: "Novo cartão", exact: true }).click();
   await page.getByLabel("Nome do cartão").fill("Principal");
   await page.getByLabel("Banco", { exact: true }).selectOption("Nubank");
+  await page.getByText("Mais opções do cartão", { exact: true }).click();
   await page.getByLabel(/Últimos 4 dígitos/).fill("1234");
   await page.getByLabel(/Limite do cartão/).fill("1000,00");
   await page
@@ -26,6 +27,8 @@ export async function runFlow(page) {
   await page.getByLabel("Descrição da compra").fill("Teste de centavos");
   await page.getByLabel("Valor total da compra").fill("100,00");
   await page.getByLabel("Número de parcelas").fill("3");
+  if (!(await page.getByLabel("Parcelas já pagas").isVisible()))
+    await page.getByText("Já pagou parcelas?", { exact: true }).click();
   await page.getByLabel("Parcelas já pagas").fill("1");
   await page
     .getByRole("button", { name: "Salvar compra", exact: true })
@@ -53,6 +56,7 @@ export async function runFlow(page) {
   await page.getByLabel("Como informar o valor").selectOption("installment");
   await page.getByLabel("Valor de cada parcela").fill("300,00");
   await page.getByLabel("Número de parcelas").fill("4");
+  await page.getByText("Já pagou parcelas?", { exact: true }).click();
   await page.getByLabel("Parcelas já pagas").fill("2");
   await page
     .getByRole("button", { name: "Salvar compra", exact: true })
@@ -69,6 +73,8 @@ export async function runFlow(page) {
   await page
     .getByRole("button", { name: "Editar Teste de centavos", exact: true })
     .click();
+  if (!(await page.getByLabel("Parcelas já pagas").isVisible()))
+    await page.getByText("Já pagou parcelas?", { exact: true }).click();
   await page.getByLabel("Parcelas já pagas").fill("1");
   await page
     .getByLabel("Mês da próxima parcela")

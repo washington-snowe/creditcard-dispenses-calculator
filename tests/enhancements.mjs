@@ -50,6 +50,8 @@ export async function runEnhancements(page) {
     .click();
   await expect(page.getByLabel("Escolher mês")).toHaveValue(following);
   await expect(page.getByTestId("monthly-total")).toHaveText(/900,00/);
+  await expect(page.getByRole("dialog")).toContainText("Viagem futura");
+  await page.getByRole("button", { name: "Fechar", exact: true }).click();
   await page.getByRole("button", { name: /Voltar ao mês atual/ }).click();
   await page.getByRole("button", { name: "Próximo mês", exact: true }).click();
   await expect(page.getByTestId("monthly-total")).toHaveText(/900,00/);

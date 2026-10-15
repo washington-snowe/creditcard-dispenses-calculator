@@ -1,4 +1,18 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  AvailableCard,
+  CalendarPage,
+  ComparisonPanel,
+  GlobalSearch,
+  LedgerList,
+  PendingPage,
+  SimulatorPage,
+  type PurchaseDraft,
+} from "./components/workbench";
+import { DataCenter, type ChangeRecord } from "./components/data-center";
+import { monthLedger, type Destination, type LedgerItem } from "./insights";
+import { createBackup } from "./storage";
+import { Eye, EyeOff, DatabaseBackup, Bell, Calculator } from "lucide-react";
 import { WelcomePage } from "./components/welcome";
 import { BrandLogo } from "./components/brand";
 import {
@@ -42,6 +56,7 @@ import {
   Zap,
 } from "lucide-react";
 import {
+  setFinancialPrivacy,
   COLORS,
   CATEGORIES,
   EMPTY,
@@ -101,6 +116,10 @@ import {
 } from "./finance";
 
 type Tab =
+  | "calendar"
+  | "pending"
+  | "simulator"
+  | "data"
   | "home"
   | "overview"
   | "purchases"
@@ -120,8 +139,15 @@ type Filters = {
   status: string;
 };
 type Modal =
+  | { type: "search" }
+  | { type: "drill"; rows: LedgerItem[]; title: string }
   | { type: "card"; card?: Card }
-  | { type: "purchase"; purchase?: Purchase; cardId?: string }
+  | {
+      type: "purchase";
+      purchase?: Purchase;
+      cardId?: string;
+      draft?: PurchaseDraft;
+    }
   | {
       type: "confirm";
       title: string;
@@ -149,6 +175,10 @@ const CLEAR: Filters = {
   status: "all",
 };
 const nav = [
+  { id: "calendar" as const, title: "Calendário", icon: CalendarDays },
+  { id: "pending" as const, title: "Pendências", icon: Bell },
+  { id: "simulator" as const, title: "Simular compra", icon: Calculator },
+  { id: "data" as const, title: "Dados e segurança", icon: DatabaseBackup },
   { id: "home" as const, title: "Início", icon: House },
   { id: "overview" as const, title: "Visão geral", icon: LayoutDashboard },
   { id: "purchases" as const, title: "Minhas compras", icon: ShoppingBag },
@@ -162,15 +192,31 @@ const nav = [
   { id: "updates" as const, title: "Atualizações", icon: RefreshCw },
 ];
 const navGroups = [
-  { title: "Acompanhar", ids: ["home", "overview"] },
+  { title: "Acompanhar", ids: ["home", "overview", "calendar", "pending"] },
   {
     title: "Organizar",
     ids: ["cards", "purchases", "income", "expenses", "subscriptions"],
   },
-  { title: "Planejar", ids: ["planning", "anticipation"] },
-  { title: "Preferências", ids: ["appearance", "updates"] },
+  { title: "Planejar", ids: ["planning", "anticipation", "simulator"] },
+  { title: "Preferências", ids: ["appearance", "data", "updates"] },
 ];
 const titles: Record<Tab, [string, string]> = {
+  calendar: [
+    "Cada dia, uma visão clara.",
+    "Recebimentos, vencimentos e fechamentos organizados no mês.",
+  ],
+  pending: [
+    "O próximo passo está aqui.",
+    "Veja o que falta pagar e o que merece sua atenção.",
+  ],
+  simulator: [
+    "Compre com planejamento.",
+    "Compare cartões e descubra o impacto antes de assumir uma parcela.",
+  ],
+  data: [
+    "Seus dados, bem cuidados.",
+    "Importe lançamentos, acompanhe alterações e restaure cópias de segurança.",
+  ],
   home: [
     "Boas-vindas ao ContaClara.",
     "Seu mês com clareza. Escolha por onde começar.",
@@ -391,7 +437,8 @@ export default function App() {
   ) {
     setToastState(message ? { message, tone } : null);
   }
-  const [undo, setUndo] = useState<Data | null>(null);
+  const [history, setHistory] = useState<ChangeRecord[]>([]);
+  const undo = history.at(-1)?.data;
   const [expandedMonth, setExpandedMonth] = useState<string | null>(null);
   const [sort, setSort] = useState("largest");
   const [budget, setBudget] = useState("");
@@ -445,6 +492,7 @@ export default function App() {
   const importRef = useRef<HTMLInputElement>(null);
   const today = currentMonth(),
     theme = data.settings?.theme ?? "light";
+  setFinancialPrivacy(!!data.settings?.privacy);
   useEffect(() => {
     applyAppearance(data.settings ?? { theme: "light" });
   }, [data.settings]);
@@ -474,7 +522,13 @@ export default function App() {
     try {
       const clean = validateData(next);
       await saveData(clean);
-      if (undoable) setUndo(data);
+      if (undoable)
+        setHistory((previous) =>
+          [
+            ...previous,
+            { data, message, time: new Date().toISOString() },
+          ].slice(-20),
+        );
       setData(clean);
       setToast(message);
       return true;
@@ -550,6 +604,10 @@ export default function App() {
   };
   const hasPurchaseFilters = ![
     "home",
+    "calendar",
+    "pending",
+    "simulator",
+    "data",
     "income",
     "subscriptions",
     "updates",
@@ -765,6 +823,15 @@ export default function App() {
         "Restaurar backup?",
         `Restaurar ${imported.cards.length} cartões, ${imported.purchases.length} compras, ${imported.cashEntries?.length ?? 0} movimentos de dinheiro e ${imported.subscriptions?.length ?? 0} assinaturas, ${imported.recurringIncomes?.length ?? 0} rendas recorrentes e ${imported.expenses?.length ?? 0} despesas? Isso substituirá os dados atuais. Exporte uma cópia antes para preservá-los.`,
         async () => {
+          try {
+            await createBackup(data);
+          } catch (error) {
+            setToast(
+              `Não foi possível preservar o estado atual: ${(error as Error).message}`,
+              "danger",
+            );
+            return false;
+          }
           const ok = await commit(imported, "Backup restaurado.");
           if (ok) {
             setFilters(CLEAR);
@@ -790,8 +857,115 @@ export default function App() {
         false,
       ))
     )
-      setUndo(null);
+      setHistory((previous) => previous.slice(0, -1));
   }
+  function openDestination(destination: Destination) {
+    const { kind, id } = destination;
+    if (kind === "card") {
+      const card = data.cards.find((c) => c.id === id);
+      if (card) {
+        navigate("cards");
+        setFilters(CLEAR);
+        setModal({ type: "card", card });
+      }
+    }
+    if (kind === "purchase") {
+      const purchase = data.purchases.find((p) => p.id === id);
+      if (purchase) {
+        navigate("purchases");
+        setFilters(CLEAR);
+        setModal({ type: "purchase", purchase });
+      }
+    }
+    if (kind === "subscription") {
+      const subscription = data.subscriptions?.find((s) => s.id === id);
+      if (subscription) {
+        navigate("subscriptions");
+        setModal({ type: "subscription", subscription });
+      }
+    }
+    if (kind === "expense") {
+      const expense = data.expenses?.find((e) => e.id === id);
+      if (expense) {
+        navigate("expenses");
+        setMonth(expense.dueDate.slice(0, 7));
+        setModal({ type: "expense", expense });
+      }
+    }
+    if (kind === "income") {
+      const entry = data.cashEntries?.find((e) => e.id === id);
+      if (entry) {
+        navigate("income");
+        setMonth(entry.date.slice(0, 7));
+        setModal({ type: "income", entry });
+      }
+    }
+    if (kind === "recurring") {
+      const rule = data.recurringIncomes?.find((r) => r.id === id);
+      if (rule) {
+        navigate("income");
+        setModal({ type: "recurring", rule });
+      }
+    }
+  }
+  function drillMonth(selected: string) {
+    setMonth(selected);
+    const subset = {
+      ...data,
+      purchases,
+      subscriptions: selectedSubscriptions,
+      expenses: [],
+      cashEntries: [],
+      recurringIncomes: [],
+    };
+    setModal({
+      type: "drill",
+      title: `Parcelas e assinaturas · ${monthLabel(selected)}`,
+      rows: monthLedger(subset, selected),
+    });
+  }
+  function drillBill(id: string) {
+    const rows = monthLedger(data, month).filter((r) =>
+      r.kind === "purchase"
+        ? data.purchases.find((p) => p.id === r.id)?.cardId === id
+        : r.kind === "subscription" &&
+          allRecurring.find((i) => i.subscription.id === r.id)?.cardId === id,
+    );
+    setModal({
+      type: "drill",
+      title: `Fatura de ${cardsById.get(id)?.name} · ${monthLabel(month)}`,
+      rows,
+    });
+  }
+  function drillCard(id: string) {
+    const card = cardsById.get(id)!;
+    setModal({
+      type: "drill",
+      title: `Saldo a pagar · ${card.name}`,
+      rows: purchases
+        .filter((p) => p.cardId === id && remaining(p) > 0)
+        .map((p) => ({
+          kind: "purchase",
+          id: p.id,
+          key: p.id,
+          label: p.description,
+          detail: "Saldo das parcelas restantes",
+          date: `${p.nextMonth}-01`,
+          amount: remaining(p),
+          paid: false,
+        })),
+    });
+  }
+  useEffect(() => {
+    const key = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        if (loaded && !modal) setModal({ type: "search" });
+      }
+    };
+    document.addEventListener("keydown", key);
+    return () => document.removeEventListener("keydown", key);
+  }, [loaded, modal]);
   function table(rows: Purchase[], compact = false) {
     return (
       <div className="table-scroll">
@@ -1157,6 +1331,44 @@ export default function App() {
             <span>{nav.find((n) => n.id === tab)?.title}</span>
           </div>
           <div className="topbar-actions">
+            <button
+              className="icon-button"
+              aria-label="Busca geral (Ctrl+K)"
+              title="Busca geral (Ctrl+K)"
+              onClick={() => setModal({ type: "search" })}
+            >
+              <Search size={18} />
+            </button>
+            <button
+              className="icon-button"
+              aria-label={
+                data.settings?.privacy ? "Mostrar valores" : "Ocultar valores"
+              }
+              title="Modo privacidade"
+              disabled={saving}
+              onClick={() =>
+                void commit(
+                  {
+                    ...data,
+                    settings: {
+                      ...data.settings,
+                      theme,
+                      privacy: !data.settings?.privacy,
+                    },
+                  },
+                  data.settings?.privacy
+                    ? "Valores visíveis."
+                    : "Valores ocultos.",
+                  false,
+                )
+              }
+            >
+              {data.settings?.privacy ? (
+                <EyeOff size={18} />
+              ) : (
+                <Eye size={18} />
+              )}
+            </button>
             <span className="save-status">
               <i className="dot mint" />
               {saving ? "Salvando…" : "Tudo salvo"}
@@ -1227,7 +1439,7 @@ export default function App() {
             <span className="avatar-small">EU</span>
           </div>
         </header>
-        <main>
+        <main key={tab} className="page-content">
           <div className="page-heading">
             <div>
               <span className="eyebrow">
@@ -1236,7 +1448,15 @@ export default function App() {
               <h1>{titles[tab][0]}</h1>
               <p>{titles[tab][1]}</p>
             </div>
-            {tab !== "home" && tab !== "updates" && tab !== "appearance" && (
+            {![
+              "home",
+              "updates",
+              "appearance",
+              "data",
+              "simulator",
+              "pending",
+              "calendar",
+            ].includes(tab) && (
               <button
                 className="button primary"
                 disabled={saving}
@@ -1265,7 +1485,7 @@ export default function App() {
               </button>
             )}
           </div>
-          {tab !== "updates" && tab !== "appearance" && (
+          {!["updates", "appearance", "data", "simulator"].includes(tab) && (
             <div className="month-toolbar">
               <div className="month-navigation">
                 <button
@@ -1494,6 +1714,18 @@ export default function App() {
               data={data}
               month={month}
               onNavigate={navigate}
+              saving={saving}
+              onSettings={(settings) =>
+                commit(
+                  { ...data, settings },
+                  "Página inicial personalizada.",
+                  false,
+                )
+              }
+              onOpen={openDestination}
+              onDrill={(rows, title) =>
+                setModal({ type: "drill", rows, title })
+              }
               onStart={() => setModal({ type: "card" })}
               onDemo={() =>
                 confirm(
@@ -1530,14 +1762,14 @@ export default function App() {
                     subscriptions={selectedSubscriptions}
                     subscriptionPayments={subscriptionPayments}
                     start={month}
-                    onMonth={setMonth}
+                    onMonth={drillMonth}
                   />
                 </Panel>
                 <Panel
                   title="Seu saldo, por cartão"
                   subtitle="Quanto cada cartão representa no saldo restante"
                 >
-                  <DistributionChart cards={cardData} />
+                  <DistributionChart cards={cardData} onCard={drillCard} />
                 </Panel>
               </div>
               <div className="section-heading">
@@ -1635,6 +1867,66 @@ export default function App() {
                 </div>
               )}
             </>
+          )}
+          {tab === "overview" && (
+            <ComparisonPanel
+              data={data}
+              month={month}
+              onOpen={(rows, title) => setModal({ type: "drill", rows, title })}
+            />
+          )}
+          {tab === "calendar" && (
+            <CalendarPage
+              data={data}
+              month={month}
+              onOpen={openDestination}
+              onBill={drillBill}
+            />
+          )}
+          {tab === "pending" && (
+            <PendingPage data={data} month={month} onOpen={openDestination} />
+          )}
+          {tab === "simulator" && (
+            <SimulatorPage
+              data={data}
+              onCard={(id) => openDestination({ kind: "card", id })}
+              onCreate={(draft) =>
+                setModal({ type: "purchase", cardId: draft.cardId, draft })
+              }
+            />
+          )}
+          {tab === "data" && (
+            <DataCenter
+              data={data}
+              month={month}
+              saving={saving}
+              history={history}
+              onUndo={() => void restoreUndo()}
+              onCommit={commit}
+              onSettings={(settings) =>
+                commit(
+                  { ...data, settings },
+                  "Preferência de backup salva.",
+                  false,
+                )
+              }
+              onRestore={(restored) =>
+                confirm(
+                  "Restaurar cópia de segurança?",
+                  `Substituir os dados atuais por esta cópia (${restored.cards.length} cartões, ${restored.purchases.length} compras)? Uma cópia do estado atual será criada antes.`,
+                  async () => {
+                    try {
+                      await createBackup(data);
+                    } catch (error) {
+                      setToast((error as Error).message, "danger");
+                      return false;
+                    }
+                    return commit(restored, "Cópia de segurança restaurada.");
+                  },
+                  true,
+                )
+              }
+            />
           )}
           {tab === "purchases" && (
             <Panel
@@ -1887,7 +2179,7 @@ export default function App() {
                   subscriptionPayments={subscriptionPayments}
                   start={month}
                   count={8}
-                  onMonth={setMonth}
+                  onMonth={drillMonth}
                 />
               </Panel>
               <div className="planning-grid">
@@ -1903,7 +2195,7 @@ export default function App() {
                   subtitle="Compare os saldos restantes nas compras selecionadas."
                 >
                   {cardData.length ? (
-                    <ComparisonChart cards={cardData} />
+                    <ComparisonChart cards={cardData} onCard={drillCard} />
                   ) : (
                     <Empty
                       title="Nenhum cartão nos filtros"
@@ -2482,6 +2774,29 @@ export default function App() {
           </footer>
         </main>
       </div>
+      {modal?.type === "search" && (
+        <GlobalSearch
+          data={data}
+          onOpen={openDestination}
+          onClose={() => setModal(null)}
+          onNavigate={(tab) => {
+            setModal(null);
+            navigate(tab);
+          }}
+        />
+      )}
+      {modal?.type === "drill" && (
+        <Dialog
+          title={modal.title}
+          subtitle={`Total: ${money(modal.rows.reduce((s, r) => s + r.amount, 0))}`}
+          onClose={() => setModal(null)}
+          wide
+        >
+          <div className="drill-content">
+            <LedgerList rows={modal.rows} onOpen={openDestination} />
+          </div>
+        </Dialog>
+      )}
       {modal?.type === "settlement" && (
         <Settlement
           title={modal.title}
@@ -2614,6 +2929,7 @@ export default function App() {
           key={modal.purchase?.id ?? "new-purchase"}
           purchase={modal.purchase}
           cardId={modal.cardId}
+          draft={modal.draft}
           cards={data.cards}
           hasHistory={payments.some((p) => p.purchaseId === modal.purchase?.id)}
           saving={saving}
@@ -2686,6 +3002,15 @@ export default function App() {
             )}
           </span>
           <p>{toast.message}</p>
+          {undo && (
+            <button
+              className="text-button"
+              disabled={saving}
+              onClick={() => void restoreUndo()}
+            >
+              Desfazer
+            </button>
+          )}
           <button
             className="icon-button"
             aria-label="Fechar aviso"

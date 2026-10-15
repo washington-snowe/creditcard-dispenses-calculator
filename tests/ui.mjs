@@ -1,3 +1,4 @@
+import { runWorkbench } from "./workbench.mjs";
 import { runFormAssistance } from "./form-assistance.mjs";
 import { chromium, expect } from "playwright/test";
 import { spawn } from "node:child_process";
@@ -46,6 +47,7 @@ try {
   await runMoney(page);
   await runNewPlanning(page);
   await runFormAssistance(page);
+  await runWorkbench(page);
   await mkdir(".runtime", { recursive: true });
   await page.screenshot({ path: ".runtime/income.png", fullPage: true });
   await page.getByRole("button", { name: "Assinaturas", exact: true }).click();

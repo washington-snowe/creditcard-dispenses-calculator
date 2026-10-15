@@ -22,6 +22,7 @@ const outputs = await packager({
   },
   ignore: [
     /^\/release($|\/)/,
+    /^\/downloads($|\/)/,
     /^\/tests($|\/)/,
     /^\/.git($|\/)/,
     /^\/.cache($|\/)/,

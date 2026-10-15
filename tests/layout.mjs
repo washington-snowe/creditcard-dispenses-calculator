@@ -15,6 +15,10 @@ import {
 } from "./identity.mjs";
 
 const tabs = [
+  "Calendário",
+  "Pendências",
+  "Simular compra",
+  "Dados e segurança",
   "Início",
   "Visão geral",
   "Minhas compras",
@@ -146,7 +150,7 @@ try {
   });
   expect(errors).toEqual([]);
   console.log(
-    "Tipografia oficial, números tabulares, preferências antigas e onze telas entre 320 e 1440 px, com aumento de texto a 200%, verificados.",
+    "Tipografia oficial, números tabulares, preferências antigas e quinze telas entre 320 e 1440 px, com aumento de texto a 200%, verificados.",
   );
 } catch (error) {
   if (browser) {

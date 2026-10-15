@@ -1,6 +1,6 @@
 import { useState, type CSSProperties } from "react";
 import { Check, Moon, Sparkles, Sun } from "lucide-react";
-import type { Settings } from "../domain";
+import { money, type Settings } from "../domain";
 import { PerformancePanel } from "./performance";
 import { BrandLogo } from "./brand";
 import { Panel } from "./ui";
@@ -39,6 +39,8 @@ export function applyAppearance(settings: Settings) {
   const root = document.documentElement,
     dark = settings.theme !== "light",
     base = settings.accent ?? "#7967ff";
+  root.dataset.density = settings.density ?? "comfortable";
+  root.dataset.privacy = settings.privacy ? "on" : "off";
   root.dataset.theme = settings.theme;
   root.dataset.motion = settings.motion === false ? "off" : "on";
   root.dataset.glow = settings.glow === false ? "off" : "on";
@@ -75,7 +77,8 @@ export function AppearancePage({
   const [theme, setTheme] = useState(settings.theme),
     [accent, setAccent] = useState(settings.accent ?? ACCENTS[0]),
     [glow, setGlow] = useState(settings.glow !== false),
-    [motion, setMotion] = useState(settings.motion !== false);
+    [motion, setMotion] = useState(settings.motion !== false),
+    [density, setDensity] = useState(settings.density ?? "comfortable");
   const themes = [
     { id: "light" as const, name: "Claro", text: "Leve e luminoso", icon: Sun },
     {
@@ -102,7 +105,14 @@ export function AppearancePage({
             className="appearance-form"
             onSubmit={async (e) => {
               e.preventDefault();
-              await onSave({ ...settings, theme, accent, glow, motion });
+              await onSave({
+                ...settings,
+                theme,
+                accent,
+                glow,
+                motion,
+                density,
+              });
             }}
           >
             <fieldset>
@@ -159,6 +169,19 @@ export function AppearancePage({
                 </label>
               </div>
             </fieldset>
+            <label>
+              Densidade das listas
+              <select
+                aria-label="Densidade da interface"
+                value={density}
+                onChange={(e) =>
+                  setDensity(e.target.value as "comfortable" | "compact")
+                }
+              >
+                <option value="comfortable">Confortável</option>
+                <option value="compact">Compacta</option>
+              </select>
+            </label>
             <div className="effects-choices">
               <label className="check-line">
                 <input
@@ -208,7 +231,7 @@ export function AppearancePage({
         </div>
         <div className="preview-stat">
           <small>Um próximo passo, mais leve</small>
-          <strong>R$ 4.850,00</strong>
+          <strong>{money(485000)}</strong>
           <span className="preview-line" />
         </div>
         <p>

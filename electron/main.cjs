@@ -11,6 +11,8 @@ let writes = Promise.resolve();
 // A separate data path is useful for automated tests; normal runs use Electron userData.
 if (process.env.SALDO_DATA_DIR)
   app.setPath("userData", path.resolve(process.env.SALDO_DATA_DIR));
+const { createBackups } = require("./backups.cjs");
+const backups = createBackups(app.getPath("userData"));
 const dataPath = () => path.join(app.getPath("userData"), "finances.json");
 // Electron requires this decision before ready. The same validated preference
 // lives in finances.json, so backups and updates preserve the user's choice.
@@ -166,6 +168,33 @@ app.whenReady().then(async () => {
       );
     }
   });
+  ipcMain.handle("saldo:backups:list", async (event) => {
+    checkSender(event);
+    await writes;
+    return backups.list();
+  });
+  ipcMain.handle("saldo:backups:read", async (event, id) => {
+    checkSender(event);
+    await writes;
+    return backups.read(id);
+  });
+  ipcMain.handle("saldo:backups:create", async (event) => {
+    checkSender(event);
+    const task = writes
+      .catch(() => {})
+      .then(async () => {
+        let json;
+        try {
+          json = await fs.readFile(dataPath(), "utf8");
+        } catch (error) {
+          if (error.code !== "ENOENT") throw error;
+          json = JSON.stringify({ version: 1, cards: [], purchases: [] });
+        }
+        await backups.snapshot(json, true);
+      });
+    writes = task;
+    await task;
+  });
   ipcMain.handle("saldo:save", async (event, data) => {
     checkSender(event);
     const json = JSON.stringify(data);
@@ -181,6 +210,16 @@ app.whenReady().then(async () => {
       .catch(() => {})
       .then(async () => {
         await fs.mkdir(app.getPath("userData"), { recursive: true });
+        if (data.settings?.automaticBackups !== false) {
+          try {
+            await backups.snapshot(await fs.readFile(dataPath(), "utf8"));
+          } catch (error) {
+            if (error.code !== "ENOENT")
+              throw new Error(
+                "Não foi possível criar a cópia automática. Confira o espaço disponível ou ajuste os backups em Dados e segurança.",
+              );
+          }
+        }
         const temp = dataPath() + ".tmp";
         const file = await fs.open(temp, "w", 0o600);
         try {
@@ -194,6 +233,24 @@ app.whenReady().then(async () => {
     writes = write;
     await write;
   });
+  const periodicBackup = () => {
+    const task = writes
+      .catch(() => {})
+      .then(async () => {
+        try {
+          const json = await fs.readFile(dataPath(), "utf8");
+          const data = JSON.parse(json);
+          if (data.settings?.automaticBackups !== false)
+            await backups.snapshot(json);
+        } catch {
+          /* Never replace unreadable data. Saving reports backup failures to the interface. */
+        }
+      });
+    writes = task;
+  };
+  periodicBackup();
+  const backupTimer = setInterval(periodicBackup, 60 * 60 * 1000);
+  backupTimer.unref();
   const createWindow = () => {
     window = new BrowserWindow({
       width: 1440,

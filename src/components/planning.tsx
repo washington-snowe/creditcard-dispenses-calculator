@@ -248,16 +248,19 @@ export function RecurringForm({
               onChange={(e) => setStart(e.target.value)}
             />
           </label>
-          <label>
-            Fim da renda (opcional)
-            <input
-              type="month"
-              min={start}
-              max="2199-12"
-              value={end}
-              onChange={(e) => setEnd(e.target.value)}
-            />
-          </label>
+          <details className="more-details" open={!!rule || undefined}>
+            <summary>Definir fim da renda</summary>{" "}
+            <label>
+              Fim da renda (opcional)
+              <input
+                type="month"
+                min={start}
+                max="2199-12"
+                value={end}
+                onChange={(e) => setEnd(e.target.value)}
+              />
+            </label>
+          </details>
         </div>
         <p className="field-hint">
           A previsão se repete automaticamente. Recebimentos já registrados

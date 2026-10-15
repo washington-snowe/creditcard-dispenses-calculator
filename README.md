@@ -4,11 +4,11 @@ Aplicativo desktop de finanças pessoais em **Node.js + Electron**, com interfac
 
 ## Baixar para Windows
 
-[**Baixar ContaClara 4.4.1 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.4.1/ContaClara-Windows-x64.zip)
+[**Baixar ContaClara 4.5.0 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.5.0/ContaClara-Windows-x64.zip)
 
 Extraia a pasta inteira e abra **saldo.exe**. Não é necessário instalar Node.js. A versão foi compilada e testada no Windows, incluindo os cálculos financeiros e a persistência dos dados após reiniciar o aplicativo.
 
-A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.4.1) também contém o checksum do ZIP.
+A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.5.0) também contém o checksum do ZIP.
 
 ## Executar no computador
 
@@ -91,13 +91,31 @@ Em **Antecipações**, a classificação por maior parcela mostra o maior valor 
 
 Você também pode antecipar as próximas N parcelas em Minhas compras. A próxima cobrança avança N meses; quitar a compra elimina todos os compromissos futuros dela. O botão Desfazer reverte a última alteração de dados na sessão. Alterar o valor ou o total de parcelas no formulário de edição recalcula o histórico da compra.
 
+## Planejamento e ferramentas
+
+- **Quanto posso gastar?** separa o saldo com renda recebida da projeção com renda prevista e desconta compromissos pendentes e a reserva mensal configurável. O saldo entre meses segue a configuração de Entradas do mês; sem ela, o cálculo considera o próprio mês. A reserva é um valor reservado no planejamento, não uma movimentação bancária.
+- **Calendário** mostra entradas, despesas, assinaturas fora do cartão, faturas e fechamentos. As faturas agrupam compras e assinaturas do cartão sem duplicar valores. Clique em um dia e em um lançamento para abrir os detalhes.
+- **Simular compra** compara prazos conforme o dia de fechamento e de vencimento e permite conferir o impacto de todas as parcelas nas faturas e no saldo projetado após a reserva. A primeira fatura deve ser neste mês ou depois. A simulação não grava uma compra; o botão de continuar preenche um formulário para revisão. Configure o fechamento no cartão. Compras no fechamento são consideradas na fatura desse dia; confirme datas e limites no banco.
+- **Pendências** reúne vencidas, próximos sete dias, renovações e categorias “Outros” para revisar. Os avisos seguem os dados cadastrados e o mês selecionado.
+- **Busca geral** abre pela lupa ou por **Ctrl + K**, incluindo compras, cartões, assinaturas, despesas, entradas e rendas recorrentes. Use setas e Enter para abrir um resultado.
+- Clique nas barras mensais, nos setores e legendas por cartão e nas categorias da comparação para ver os lançamentos e valores correspondentes. Os detalhes mensais também têm botões acessíveis pelo teclado. A comparação considera despesas pelo mês de cobrança, separadamente do fluxo de caixa por data de pagamento.
+- **Personalizar início** permite ocultar, mostrar e reordenar os cards usando as setas. O botão do olho oculta valores também em gráficos e dicas; isso é uma proteção visual, sem criptografar os arquivos. Em Aparência, escolha listas compactas ou confortáveis. Formulários revelam opções adicionais conforme necessário e abrem detalhes existentes ao editar.
+
+## Importar faturas e proteger os dados
+
+Em **Dados e segurança**, importe arquivos **CSV** com cabeçalho ou **OFX** (até 5 MB e 1.000 lançamentos). A prévia mostra datas, valores, categorias, erros e possíveis duplicatas. CSV aceita separador por vírgula, ponto e vírgula ou tabulação, datas brasileiras/ISO e valores brasileiros ou decimais com ponto. Se necessário, escolha as colunas manualmente.
+
+Para faturas, selecione o cartão, o mês da fatura e o sinal usado nas compras. Cada linha selecionada vira uma compra de uma parcela. Quando o arquivo trouxer uma parcela individual, importe apenas a fatura desejada e ajuste o parcelamento manualmente se quiser projetar as demais; não importe novamente compras já cadastradas. Créditos/estornos e possíveis duplicatas são bloqueados na prévia. Para extratos, os valores positivos viram entradas recebidas e os negativos, ajustes de saída. Exclua da seleção os pagamentos de fatura e outras saídas já cadastradas para evitar dupla contagem. Confirme somente os registros desejados. A importação pode ser desfeita em uma única ação.
+
+Backups automáticos ficam na subpasta **backups** dos dados do aplicativo. Uma cópia é criada ao usar/salvar o aplicativo quando passaram 24 horas desde a última; são mantidas até **30 versões**. Também é possível criar uma cópia imediatamente e restaurar uma versão pela lista. A restauração exige confirmação e cria uma cópia do estado atual antes da troca. Erros ao preservar essa cópia impedem a restauração. O histórico para desfazer mantém até 20 alterações durante a sessão e preserva as preferências atuais. No navegador, há até cinco cópias sujeitas à quota do armazenamento local. Para proteção contra perda do dispositivo, exporte cópias para outro local.
+
 ## Como os cálculos funcionam
 
 Todos os valores são armazenados em centavos inteiros. O valor informado deve incluir eventuais juros: o aplicativo não calcula taxas bancárias. Para compras com valor total, os centavos restantes da divisão são distribuídos nas primeiras parcelas. Por exemplo, R$ 100,00 em 3 parcelas fica em R$ 33,34 + R$ 33,33 + R$ 33,33; com a primeira paga, restam R$ 66,66.
 
 O mês informado é o da **próxima parcela não paga**. Registrar um pagamento aumenta o número de parcelas pagas e avança esse mês em um. Ao corrigir o número de parcelas pagas manualmente, informe também o mês correto da próxima parcela.
 
-O calendário agrupa parcelas vencidas e não pagas no mês atual e mantém as demais no mês previsto. Um mês sem parcelas tem total zero. Compras quitadas permanecem no histórico e saem da previsão. O vencimento do cartão é informativo; o planejamento é mensal.
+O calendário agrupa parcelas vencidas e não pagas no mês atual e mantém as demais no mês previsto. Um mês sem parcelas tem total zero. Compras quitadas permanecem no histórico e saem da previsão. O planejamento das parcelas é mensal; o calendário distribui as faturas pelo vencimento cadastrado e mostra fechamentos quando informados.
 
 O saldo por cartão considera somente as compras cadastradas, não a fatura real do banco. Não há integração bancária nem marcação automática de pagamentos. O limite cadastrado serve para comparar o saldo pendente com o limite informado.
 

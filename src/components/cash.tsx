@@ -101,6 +101,7 @@ export function CashForm({
               );
             if (
               await onSave({
+                ...(entry?.importKey ? { importKey: entry.importKey } : {}),
                 id: entry?.id ?? crypto.randomUUID(),
                 description: description.trim(),
                 source: source.trim(),

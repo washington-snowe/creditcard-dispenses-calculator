@@ -16,6 +16,7 @@ import {
   YAxis,
 } from "recharts";
 import {
+  isFinancialPrivate,
   addMonths,
   money,
   monthLabel,
@@ -30,9 +31,11 @@ import { subscriptionMonth } from "../finance";
 import { Empty } from "./ui";
 const axis = { fill: "var(--muted)", fontSize: "var(--text-caption)" };
 const tickMoney = (cents: number) =>
-  cents >= 100000
-    ? `${(cents / 100000).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} mil`
-    : `${cents / 100}`;
+  isFinancialPrivate()
+    ? "•••"
+    : cents >= 100000
+      ? `${(cents / 100000).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} mil`
+      : `${cents / 100}`;
 export function MonthlyChart({
   purchases,
   payments,
@@ -132,6 +135,20 @@ export function MonthlyChart({
           </BarChart>
         </ResponsiveContainer>
       </div>
+      <details className="chart-month-links">
+        <summary>Abrir detalhes de um mês</summary>
+        <div>
+          {rows.map((r) => (
+            <button
+              className="text-button"
+              key={r.month}
+              onClick={() => onMonth?.(r.month)}
+            >
+              {monthLabel(r.month, true)}
+            </button>
+          ))}
+        </div>
+      </details>
       <div className="chart-legend">
         <span>
           <i className="dot accent" />
@@ -148,8 +165,10 @@ export function MonthlyChart({
 }
 export function DistributionChart({
   cards,
+  onCard,
 }: {
   cards: (Card & { debt: number })[];
+  onCard?: (id: string) => void;
 }) {
   const chartRef = useRef<HTMLDivElement>(null);
   const rows = cards.filter((c) => c.debt > 0),
@@ -168,6 +187,8 @@ export function DistributionChart({
           <PieChart>
             <Pie
               data={rows}
+              onClick={(_entry, index) => onCard?.(rows[index].id)}
+              cursor={onCard ? "pointer" : "default"}
               dataKey="debt"
               nameKey="name"
               innerRadius="76%"
@@ -197,7 +218,11 @@ export function DistributionChart({
       </div>
       <div className="donut-legend">
         {rows.map((c) => (
-          <div key={c.id}>
+          <button
+            className="donut-legend-row"
+            key={c.id}
+            onClick={() => onCard?.(c.id)}
+          >
             <span className="dot" style={{ background: c.color }} />
             <span>
               {c.bank}
@@ -207,7 +232,7 @@ export function DistributionChart({
               {money(c.debt)}
               <small>{Math.round((c.debt / total) * 100)}% do saldo</small>
             </strong>
-          </div>
+          </button>
         ))}
       </div>
     </>
@@ -215,15 +240,21 @@ export function DistributionChart({
 }
 export function ComparisonChart({
   cards,
+  onCard,
 }: {
   cards: (Card & { debt: number })[];
+  onCard?: (id: string) => void;
 }) {
   return (
     <div className="comparison-rows">
       {cards.map((c) => {
         const highest = Math.max(1, ...cards.map((card) => card.debt));
         return (
-          <div key={c.id}>
+          <button
+            className="comparison-row-button"
+            key={c.id}
+            onClick={() => onCard?.(c.id)}
+          >
             <div className="comparison-label">
               <span>
                 <i className="dot" style={{ background: c.color }} />
@@ -239,7 +270,7 @@ export function ComparisonChart({
                 }}
               />
             </div>
-          </div>
+          </button>
         );
       })}
     </div>

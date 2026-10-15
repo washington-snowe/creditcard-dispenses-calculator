@@ -1,24 +1,25 @@
-**ContaClara 4.4.1 — sugestões com Tab, categorias pelo nome e marcas reais dos bancos.**
+**ContaClara 4.5.0 — planejamento, calendário, importação e um início personalizável.**
 
 Baixe **ContaClara-Windows-x64.zip**, extraia a pasta inteira e abra **saldo.exe**. Funciona offline e não exige Node.js.
 
-### O que mudou
+### Novidades
 
-- **Sugestões discretas:** ao digitar nomes de compras, assinaturas, despesas, entradas, rendas e cartões, aparece uma continuação opaca. Fornecedores, origens e favorecidos também aproveitam o histórico local. Pressione **Tab** para aceitar; o próximo Tab avança normalmente. **Esc** dispensa a sugestão, e Shift+Tab continua voltando entre os campos.
-- **Categorias pelo nome:** novos registros de compra, assinatura e despesa recebem uma categoria provável pelo nome e por correspondências do histórico. Notebook sugere Tecnologia; Netflix, Lazer; Conta de luz, Casa; Uber, Transporte. Você pode corrigir a categoria. Escolher manualmente interrompe a detecção naquele formulário; **Detectar pelo nome** permite retomá-la. Categorias existentes são preservadas ao editar.
-- **Logos reais nos cartões:** símbolos originais de Nubank, Itaú, Banco do Brasil, Bradesco, Santander, Inter, Caixa, C6 Bank, BTG Pactual, Mercado Pago e PicPay. As imagens ficam incluídas no aplicativo e funcionam offline. Bancos personalizados desconhecidos mantêm o nome e um ícone neutro.
-- **Privacidade e acessibilidade:** sugestões calculadas localmente, sem enviar lançamentos a terceiros. O preenchimento respeita limites de caracteres, seleção do texto, composição de teclado e navegação por Tab. Layout conferido também com texto ampliado.
-- O aviso de reinício do hardware aparece após a gravação da preferência.
-- Mantém hardware opcional, menu fluido, avisos por cor, boas-vindas, gráficos, identidade visual, temas, rendas, saldo entre meses, despesas, cartões, parcelas, assinaturas, filtros, antecipações e backups.
+- **Disponível para gastar:** saldo após compromissos e reserva mensal, com renda recebida separada da prevista.
+- **Calendário e pendências:** vencimentos, recebimentos, fechamentos, renovações e categorias para revisar.
+- **Melhor cartão e simulador:** compare prazos pelo fechamento/vencimento e veja cada parcela nas faturas e no saldo projetado antes de cadastrar a compra.
+- **Busca geral com Ctrl + K:** encontre e abra registros de qualquer área.
+- **Gráficos com detalhes e comparação mensal:** abra os lançamentos por mês, cartão ou categoria; compare diferenças em reais e porcentagem.
+- **Desfazer até 20 alterações:** histórico desta sessão, disponível no topo e em Dados e segurança.
+- **Importar CSV e OFX:** prévia com seleção, categorias editáveis, erros e possíveis duplicatas bloqueadas. Cada linha de fatura vira uma compra de uma parcela no mês escolhido; extratos geram entradas e ajustes de saída. Revise pagamentos de fatura e saídas já cadastradas para evitar duplicação.
+- **Backups automáticos locais:** cópias a cada 24 horas com uso do aplicativo, até 30 versões, criação manual e restauração com confirmação e cópia do estado atual.
+- **Interface:** cards do início configuráveis e ordenáveis, modo privacidade, densidade compacta/confortável, detalhes progressivos em formulários, transições suaves e cores com significado acompanhadas de texto e ícones.
 
-### Como atualizar
+Prazos, limites e previsões dependem dos dados cadastrados. Confirme datas no banco; a simulação não movimenta dinheiro. A reserva não é descontada de uma conta real. O modo privacidade oculta valores na tela; os arquivos continuam locais, sem criptografia adicional. Mantém fontes oficiais, Ultra Dark, cores, hardware opcional, sugestões com Tab, categorias automáticas e marcas reais dos bancos.
 
-Abra **Atualizações → Verificar atualizações → Baixar atualização → Reiniciar e atualizar**. O programa prepara um backup e preserva os dados.
+### Atualizar
 
-Para atualizar manualmente, feche o aplicativo antigo, extraia a pasta completa e abra **saldo.exe**. A pasta de dados permanece `%APPDATA%/saldo-desktop/`; não é necessário recadastrar informações. Os nomes técnicos saldo.exe e Saldo-Windows-x64.zip permanecem para compatibilidade; os dois ZIPs contêm o mesmo ContaClara.
+Em **Atualizações**, use **Verificar atualizações → Baixar atualização → Reiniciar e atualizar**. Para atualizar manualmente, feche a versão antiga, extraia a pasta inteira e abra saldo.exe. Dados existentes permanecem em `%APPDATA%/saldo-desktop/`. Os dois nomes de ZIP contêm o mesmo aplicativo e preservam a compatibilidade do atualizador.
 
 ### Validação
 
-50 testes de cálculos, persistência, classificação, sugestões e procedência das imagens. Fluxos completos de interface verificam Tab, segundo Tab, Shift+Tab, Esc, cursor, composição, prioridade do histórico, categoria manual, edição preservada e leitura local das 11 marcas. Onze telas verificadas de 320 a 1440 px, nos três temas, com texto a 200%. A publicação Windows verifica também persistência, hardware, zoom, atualização com backup e recuperação após falha.
-
-**SHA256SUMS.txt** contém os checksums dos arquivos. Seus dados financeiros continuam locais. Marcar pagamentos apenas registra valores; não movimenta dinheiro no banco.
+Testes dos cálculos financeiros, datas de fechamento, simulação, importação CSV/OFX, duplicatas e backups. Fluxos completos de interface e desktop verificam os novos recursos, múltiplos desfazeres e restauração real. Quinze telas verificadas entre 320 e 1440 px, com texto ampliado a 200%. A publicação Windows verifica persistência, hardware, zoom, atualização e recuperação após falha. **SHA256SUMS.txt** contém os checksums dos arquivos.

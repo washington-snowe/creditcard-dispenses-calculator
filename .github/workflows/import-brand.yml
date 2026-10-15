@@ -29,7 +29,7 @@ jobs:
             $content = [Text.Encoding]::UTF8.GetString($prefix)
             if ($content.TrimStart().StartsWith('{') -or $content.TrimStart().StartsWith('[')) {
               $json = $content | ConvertFrom-Json
-              $properties = ($json.PSObject.Properties | ForEach-Object { "$($_.Name):$($_.Value.GetType().Name)" }) -join ', '
+              $properties = ($json.PSObject.Properties | ForEach-Object { "$($_.Name):$(if ($null -eq $_.Value) { 'null' } else { $_.Value.GetType().Name })" }) -join ', '
               Write-Output "::notice title=Resposta JSON::$properties"
               $target = @($json.downloadUrl, $json.download_url, $json.signedUrl, $json.url, $json.data.downloadUrl, $json.data.url) | Where-Object { $_ -is [string] -and $_.StartsWith('https://') } | Select-Object -First 1
               if ($target) {
@@ -37,32 +37,44 @@ jobs:
                 if ((Get-Item $download).Length -gt 64MB) { throw 'O arquivo excede 64 MB.' }
               }
             }
-            Add-Type -AssemblyName System.IO.Compression
-            Add-Type -AssemblyName System.IO.Compression.FileSystem
-            $archive = [System.IO.Compression.ZipFile]::OpenRead($download)
-            try {
-              $wanted = @{'iconepng' = 'icon.png'; 'logocompletapng' = 'logo.png'}
-              $found = @{}
-              $destination = Join-Path $PWD 'public/brand'
-              New-Item -ItemType Directory -Force $destination | Out-Null
-              foreach ($entry in $archive.Entries) {
-                $leaf = ($entry.FullName -split '[/\\]')[-1]
-                $key = ($leaf.Normalize([Text.NormalizationForm]::FormD) -replace '\p{Mn}', '' -replace '[^a-zA-Z0-9]', '').ToLowerInvariant()
-                if (-not $wanted.ContainsKey($key)) { continue }
-                if ($found.ContainsKey($key)) { throw 'O ZIP contém nomes de logo duplicados.' }
-                if ($entry.Length -gt 16MB -or $entry.Length -lt 24) { throw 'Tamanho do PNG inválido.' }
-                $source = $entry.Open()
-                $memory = [IO.MemoryStream]::new()
-                try { $source.CopyTo($memory); $bytes = $memory.ToArray() } finally { $source.Dispose(); $memory.Dispose() }
-                if ([BitConverter]::ToString($bytes[0..7]) -ne '89-50-4E-47-0D-0A-1A-0A') { throw 'O arquivo de marca não é um PNG.' }
-                [IO.File]::WriteAllBytes((Join-Path $destination $wanted[$key]), $bytes)
-                $found[$key] = $true
-              }
-              if ($found.Count -ne 2) { throw 'O ZIP não contém Icone.png e Logo Completa.png.' }
-            } finally { $archive.Dispose() }
+            $prefix = [IO.File]::ReadAllBytes($download)
+            $destination = Join-Path $PWD 'public/brand'
+            New-Item -ItemType Directory -Force $destination | Out-Null
+            if ($prefix.Length -ge 24 -and [BitConverter]::ToString($prefix[0..7]) -eq '89-50-4E-47-0D-0A-1A-0A') {
+              $width = $prefix[16] * 16777216 + $prefix[17] * 65536 + $prefix[18] * 256 + $prefix[19]
+              $height = $prefix[20] * 16777216 + $prefix[21] * 65536 + $prefix[22] * 256 + $prefix[23]
+              if ($width -le 0 -or $height -le 0 -or $width -gt 16384 -or $height -gt 16384 -or $prefix.Length -gt 16MB) { throw 'Dimensões ou tamanho do PNG inválidos.' }
+              $filename = if ($width -eq $height) { 'icon.png' } elseif ($width -gt $height) { 'logo.png' } else { throw 'Proporção inesperada para os arquivos oficiais.' }
+              [IO.File]::WriteAllBytes((Join-Path $destination $filename), $prefix)
+              Write-Output "::notice title=PNG original::$filename recebido com dimensões $width x $height."
+            } else {
+              Add-Type -AssemblyName System.IO.Compression
+              Add-Type -AssemblyName System.IO.Compression.FileSystem
+              $archive = [System.IO.Compression.ZipFile]::OpenRead($download)
+              try {
+                $wanted = @{'iconepng' = 'icon.png'; 'logocompletapng' = 'logo.png'}
+                $found = @{}
+                $destination = Join-Path $PWD 'public/brand'
+                New-Item -ItemType Directory -Force $destination | Out-Null
+                foreach ($entry in $archive.Entries) {
+                  $leaf = ($entry.FullName -split '[/\\]')[-1]
+                  $key = ($leaf.Normalize([Text.NormalizationForm]::FormD) -replace '\p{Mn}', '' -replace '[^a-zA-Z0-9]', '').ToLowerInvariant()
+                  if (-not $wanted.ContainsKey($key)) { continue }
+                  if ($found.ContainsKey($key)) { throw 'O ZIP contém nomes de logo duplicados.' }
+                  if ($entry.Length -gt 16MB -or $entry.Length -lt 24) { throw 'Tamanho do PNG inválido.' }
+                  $source = $entry.Open()
+                  $memory = [IO.MemoryStream]::new()
+                  try { $source.CopyTo($memory); $bytes = $memory.ToArray() } finally { $source.Dispose(); $memory.Dispose() }
+                  if ([BitConverter]::ToString($bytes[0..7]) -ne '89-50-4E-47-0D-0A-1A-0A') { throw 'O arquivo de marca não é um PNG.' }
+                  [IO.File]::WriteAllBytes((Join-Path $destination $wanted[$key]), $bytes)
+                  $found[$key] = $true
+                }
+                if ($found.Count -ne 2) { throw 'O ZIP não contém Icone.png e Logo Completa.png.' }
+              } finally { $archive.Dispose() }
+            }
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add -- public/brand/icon.png public/brand/logo.png
+            git add -- public/brand
             git diff --cached --quiet
             if ($LASTEXITCODE -eq 1) {
               git commit -m 'Import original ContaClara PNG identity assets'

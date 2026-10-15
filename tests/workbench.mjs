@@ -33,7 +33,7 @@ export async function runWorkbench(page) {
   ).toHaveCount(0);
   await nav(page, "Mover Disponível para gastar para baixo");
   await expect
-    .poll(async () => (await readData(page)).settings.homeWidgets?.[1])
+    .poll(async () => (await readData(page)).settings.homeWidgets?.[2])
     .toBe("available");
   await nav(page, "Restaurar organização padrão");
   await expect(
@@ -63,6 +63,7 @@ export async function runWorkbench(page) {
   await page.getByLabel("Filtrar pendências").selectOption("all");
   await page.keyboard.press("Control+k");
   await expect(page.getByLabel("Busca geral", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Busca geral", { exact: true })).toBeFocused();
   await page.getByLabel("Busca geral", { exact: true }).fill("Geladeira");
   await page.keyboard.press("ArrowDown");
   await page.keyboard.press("Enter");
@@ -103,7 +104,7 @@ export async function runWorkbench(page) {
   await nav(page, "Ocultar valores");
   await expect(page.getByTestId("total-debt")).toHaveText("R$ ••••");
   await page
-    .locator('.chart-monthly path.recharts-rectangle[fill="var(--accent)"]')
+    .locator('.chart-monthly path.recharts-rectangle[fill="var(--warning)"]')
     .filter({ visible: true })
     .first()
     .hover();

@@ -118,7 +118,7 @@ export async function verifyPageLayout(page, context) {
       overflow,
       clippedAmounts: [
         ...document.querySelectorAll(
-          ".stat-card > strong, .mini-card-bottom strong, .managed-card-amount > strong, .plastic-brand strong, .card-digits, .plastic-bottom strong, .purchase-name strong",
+          ".stat-card > strong, .mini-card-bottom strong, .managed-card-amount > strong, .cards-overview strong, .card-tile-balance strong, .card-tile-limit strong, .plastic-brand strong, .card-digits, .plastic-bottom strong, .purchase-name strong",
         ),
       ]
         .filter((el) => {

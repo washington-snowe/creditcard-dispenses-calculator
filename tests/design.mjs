@@ -44,7 +44,7 @@ export async function verifyChartTooltips(page) {
   });
   if (await clear.isVisible()) await clear.click();
   const bar = page
-    .locator('.chart-monthly path.recharts-rectangle[fill="var(--accent)"]')
+    .locator('.chart-monthly path.recharts-rectangle[fill="var(--warning)"]')
     .filter({ visible: true })
     .first();
   await bar.hover();

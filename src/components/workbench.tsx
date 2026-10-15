@@ -75,7 +75,13 @@ export function LedgerList({
               <strong>{r.label}</strong>
               <small>
                 {r.date.split("-").reverse().join("/")} · {r.detail} ·{" "}
-                {r.paid ? "Confirmado" : r.income ? "A receber" : "Pendente"}
+                {r.paid
+                  ? "Confirmado"
+                  : r.income
+                    ? "A receber"
+                    : r.date < localDate()
+                      ? "Em atraso"
+                      : "Pendente"}
               </small>
             </span>
             <strong>

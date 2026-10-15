@@ -1,3 +1,5 @@
+import { ActionMenu } from "./action-menu";
+import { Field, useFieldFeedback } from "./field";
 import { useViewFilter } from "../view-state";
 import { SuggestionInput } from "./suggestion-input";
 import { CategoryHint, useSmartCategory } from "./smart-category";
@@ -44,6 +46,7 @@ export function Settlement({
 }) {
   const [date, setDate] = useState(localDate()),
     [busy, setBusy] = useState(false);
+  const feedback = useFieldFeedback();
   return (
     <Dialog
       title={title}
@@ -52,6 +55,7 @@ export function Settlement({
       }}
     >
       <form
+        {...feedback.formProps}
         className="simple-form"
         onSubmit={async (e) => {
           e.preventDefault();
@@ -63,7 +67,7 @@ export function Settlement({
           }
         }}
       >
-        <label>
+        <Field>
           Data efetiva
           <input
             aria-label="Data efetiva"
@@ -74,7 +78,7 @@ export function Settlement({
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
-        </label>
+        </Field>
         <p className="field-hint">
           O dinheiro entra ou sai no mês desta data. O registro não movimenta
           sua conta bancária.
@@ -142,6 +146,7 @@ export function RecurringForm({
       ),
     [data],
   );
+  const feedback = useFieldFeedback();
   return (
     <Dialog
       title={rule ? "Editar renda recorrente" : "Nova renda recorrente"}
@@ -149,11 +154,21 @@ export function RecurringForm({
       onClose={onClose}
     >
       <form
+        {...feedback.formProps}
         className="simple-form"
         onSubmit={async (e) => {
           e.preventDefault();
           try {
-            const cents = parseMoney(amount);
+            if (!description.trim()) {
+              feedback.fail("description", "Descreva esta renda.");
+              return;
+            }
+            if (!source.trim()) {
+              feedback.fail("source", "Informe a origem da renda.");
+              return;
+            }
+            const cents = feedback.money("amount", amount);
+            if (cents === null) return;
             if (!cents || (end && end < start))
               throw Error("Confira o valor e o período.");
             if (
@@ -174,7 +189,7 @@ export function RecurringForm({
           }
         }}
       >
-        <label>
+        <Field data-field="description" error={feedback.issues.description}>
           Descrição da renda
           <SuggestionInput
             aria-label="Descrição da renda"
@@ -186,8 +201,8 @@ export function RecurringForm({
             suggestions={names}
             placeholder="Salário, aluguel recebido…"
           />
-        </label>
-        <label>
+        </Field>
+        <Field data-field="source" error={feedback.issues.source}>
           Origem da renda
           <SuggestionInput
             aria-label="Origem da renda"
@@ -198,9 +213,9 @@ export function RecurringForm({
             suggestions={sources}
             placeholder="Empresa, cliente, imóvel…"
           />
-        </label>
+        </Field>
         <div className="form-row">
-          <label>
+          <Field data-field="amount" error={feedback.issues.amount}>
             Valor previsto
             <input
               aria-label="Valor previsto da renda"
@@ -209,8 +224,8 @@ export function RecurringForm({
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
-          </label>
-          <label>
+          </Field>
+          <Field>
             Dia previsto
             <input
               type="number"
@@ -220,9 +235,9 @@ export function RecurringForm({
               value={day}
               onChange={(e) => setDay(Number(e.target.value))}
             />
-          </label>
+          </Field>
         </div>
-        <label>
+        <Field>
           Frequência da renda
           <select
             value={frequency}
@@ -236,9 +251,9 @@ export function RecurringForm({
               </option>
             ))}
           </select>
-        </label>
+        </Field>
         <div className="form-row">
-          <label>
+          <Field>
             Início da renda
             <input
               required
@@ -248,10 +263,10 @@ export function RecurringForm({
               value={start}
               onChange={(e) => setStart(e.target.value)}
             />
-          </label>
+          </Field>
           <details className="more-details" open={!!rule || undefined}>
             <summary>Definir fim da renda</summary>{" "}
-            <label>
+            <Field>
               Fim da renda (opcional)
               <input
                 type="month"
@@ -260,7 +275,7 @@ export function RecurringForm({
                 value={end}
                 onChange={(e) => setEnd(e.target.value)}
               />
-            </label>
+            </Field>
           </details>
         </div>
         <p className="field-hint">
@@ -468,22 +483,27 @@ export function IncomePlanning({
                               <Check size={16} />
                             </button>
                           )}
-                          <button
-                            className="icon-button"
-                            aria-label={`Editar renda ${r.description}`}
+                          <ActionMenu
+                            label={`Mais opções de ${r.description}`}
                             disabled={saving}
-                            onClick={() => onEdit(r)}
                           >
-                            <Pencil size={15} />
-                          </button>
-                          <button
-                            className="icon-button danger-text"
-                            aria-label={`Excluir renda ${r.description}`}
-                            disabled={saving}
-                            onClick={() => onDelete(r)}
-                          >
-                            <Trash2 size={15} />
-                          </button>
+                            <button
+                              className="icon-button"
+                              aria-label={`Editar renda ${r.description}`}
+                              disabled={saving}
+                              onClick={() => onEdit(r)}
+                            >
+                              <Pencil size={15} /> Editar
+                            </button>
+                            <button
+                              className="icon-button danger-text"
+                              aria-label={`Excluir renda ${r.description}`}
+                              disabled={saving}
+                              onClick={() => onDelete(r)}
+                            >
+                              <Trash2 size={15} /> Excluir
+                            </button>
+                          </ActionMenu>
                         </div>
                       </td>
                     </tr>
@@ -629,6 +649,7 @@ export function ExpenseForm({
     history,
   );
   const { category } = smart;
+  const feedback = useFieldFeedback();
   return (
     <Dialog
       title={expense ? "Editar despesa" : "Nova despesa"}
@@ -636,11 +657,21 @@ export function ExpenseForm({
       onClose={onClose}
     >
       <form
+        {...feedback.formProps}
         className="simple-form"
         onSubmit={async (e) => {
           e.preventDefault();
           try {
-            const cents = parseMoney(amount);
+            if (!description.trim()) {
+              feedback.fail("description", "Descreva esta despesa.");
+              return;
+            }
+            if (!payee.trim()) {
+              feedback.fail("payee", "Informe o destino ou favorecido.");
+              return;
+            }
+            const cents = feedback.money("amount", amount);
+            if (cents === null) return;
             if (!cents) throw Error("Informe um valor maior que zero.");
             if (
               await onSave({
@@ -660,7 +691,7 @@ export function ExpenseForm({
           }
         }}
       >
-        <label>
+        <Field data-field="description" error={feedback.issues.description}>
           Descrição da despesa
           <SuggestionInput
             aria-label="Descrição da despesa"
@@ -675,8 +706,8 @@ export function ExpenseForm({
             suggestions={names}
             placeholder="Aluguel, mercado, conta de luz…"
           />
-        </label>
-        <label>
+        </Field>
+        <Field data-field="payee" error={feedback.issues.payee}>
           Destino / favorecido
           <SuggestionInput
             aria-label="Destino / favorecido"
@@ -686,9 +717,9 @@ export function ExpenseForm({
             onValueChange={setPayee}
             suggestions={payees}
           />
-        </label>
+        </Field>
         <div className="form-row">
-          <label>
+          <Field data-field="amount" error={feedback.issues.amount}>
             Valor da despesa
             <input
               required
@@ -696,8 +727,8 @@ export function ExpenseForm({
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
-          </label>
-          <label>
+          </Field>
+          <Field>
             Vencimento da despesa
             <input
               required
@@ -707,10 +738,10 @@ export function ExpenseForm({
               value={due}
               onChange={(e) => setDue(e.target.value)}
             />
-          </label>
+          </Field>
         </div>
         <div className="form-row">
-          <label>
+          <Field>
             Categoria da despesa
             <select
               aria-label="Categoria da despesa"
@@ -721,8 +752,8 @@ export function ExpenseForm({
                 <option key={c}>{c}</option>
               ))}
             </select>
-          </label>
-          <label>
+          </Field>
+          <Field>
             Forma de pagamento
             <select
               aria-label="Forma de pagamento"
@@ -735,19 +766,19 @@ export function ExpenseForm({
                 </option>
               ))}
             </select>
-          </label>
+          </Field>
         </div>
         <CategoryHint state={smart} name={description} />
-        <label className="check-line">
+        <Field className="check-line">
           <input
             type="checkbox"
             checked={paid}
             onChange={(e) => setPaid(e.target.checked)}
           />
           Já foi paga
-        </label>
+        </Field>
         {paid && (
-          <label>
+          <Field>
             Data do pagamento
             <input
               required
@@ -757,7 +788,7 @@ export function ExpenseForm({
               value={paidDate}
               onChange={(e) => setPaidDate(e.target.value)}
             />
-          </label>
+          </Field>
         )}
         <p className="field-hint">
           Despesas pendentes entram na previsão. Ao pagar, o desembolso entra na
@@ -965,22 +996,27 @@ export function ExpensesPage({
                         >
                           <Check size={16} />
                         </button>
-                        <button
-                          className="icon-button"
+                        <ActionMenu
+                          label={`Mais opções de ${e.description}`}
                           disabled={saving}
-                          aria-label={`Editar despesa ${e.description}`}
-                          onClick={() => onEdit(e)}
                         >
-                          <Pencil size={15} />
-                        </button>
-                        <button
-                          className="icon-button danger-text"
-                          disabled={saving}
-                          aria-label={`Excluir despesa ${e.description}`}
-                          onClick={() => onDelete(e)}
-                        >
-                          <Trash2 size={15} />
-                        </button>
+                          <button
+                            className="icon-button"
+                            disabled={saving}
+                            aria-label={`Editar despesa ${e.description}`}
+                            onClick={() => onEdit(e)}
+                          >
+                            <Pencil size={15} /> Editar
+                          </button>
+                          <button
+                            className="icon-button danger-text"
+                            disabled={saving}
+                            aria-label={`Excluir despesa ${e.description}`}
+                            onClick={() => onDelete(e)}
+                          >
+                            <Trash2 size={15} /> Excluir
+                          </button>
+                        </ActionMenu>
                       </div>
                     </td>
                   </tr>

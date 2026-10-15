@@ -1,4 +1,10 @@
-import { goTo, purchaseAction } from "./navigation.mjs";
+import {
+  goTo,
+  purchaseAction,
+  recordAction,
+  payCardAction,
+  openCardDetails,
+} from "./navigation.mjs";
 import { expect } from "playwright/test";
 
 export async function runFlow(page) {
@@ -93,7 +99,7 @@ export async function runFlow(page) {
   await expect(page.getByTestId("total-debt")).toHaveText(/66,66/);
   await goTo(page, "Meus cartões");
   await expect(page.locator(".card-summary tfoot")).toContainText("66,66");
-  await page.getByRole("button", { name: "Excluir cartão Principal" }).click();
+  await recordAction(page, "Excluir cartão Principal");
   await expect(page.getByRole("status")).toContainText("compras vinculadas");
   await expect(page.locator(".toast")).toHaveAttribute("data-tone", "warning");
   await expect(page.getByRole("dialog")).not.toBeVisible();

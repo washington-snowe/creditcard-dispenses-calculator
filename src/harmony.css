@@ -1,0 +1,437 @@
+/* Information hierarchy: one focal value, quiet supporting surfaces. */
+.home-widget[data-widget="summary"] .welcome-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  padding: clamp(20px, 3vw, 36px);
+}
+.home-widget .welcome-balance > strong {
+  display: block;
+  font-size: clamp(2rem, 4vw, 3rem);
+  overflow-wrap: anywhere;
+}
+.home-widget .welcome-paid {
+  border-top: 0;
+  border-left: 1px solid var(--border);
+  padding: 0 0 0 24px;
+  align-self: center;
+}
+.home-widget .welcome-paid strong {
+  font-size: 1.4rem;
+}
+.home-widget .welcome-balance:only-child {
+  grid-column: 1/-1;
+}
+.available-hero strong {
+  font-size: 1.7rem;
+  line-height: 1.5;
+}
+.home-widget .panel-heading {
+  padding-bottom: 12px;
+}
+.home-widget .budget-breakdown {
+  border: 0;
+  background: none;
+  padding-block: 12px;
+}
+@media (min-width: 1101px) {
+  .home-widget[data-widget="summary"] {
+    grid-column: 1/-1;
+  }
+  .home-widget[data-widget="available"],
+  .home-widget[data-widget="attention"] {
+    grid-column: auto;
+  }
+}
+/* A colour identifies a state, never a decorative frame around a whole panel. */
+.stat-card[data-tone] .stat-icon {
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 10%, transparent);
+}
+.card-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--tone);
+  font-size: var(--text-caption);
+}
+.card-state svg {
+  flex-shrink: 0;
+}
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  max-width: 100%;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+}
+.filter-chip span {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.filter-chip svg {
+  flex-shrink: 0;
+}
+.filter-chip:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.filter-feedback {
+  font-size: var(--text-caption);
+  line-height: 1.65;
+}
+.advanced-filters {
+  border: 0;
+  border-radius: 0;
+  border-top: 1px solid var(--border);
+  background: none;
+  padding: 16px 0 0;
+}
+.cards-overview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px 40px;
+  padding-block: 0 22px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--border);
+}
+.cards-overview > span {
+  color: var(--secondary);
+  min-width: 0;
+}
+.cards-overview strong {
+  display: block;
+  color: var(--text);
+  font-size: 1.5rem;
+  margin-top: 6px;
+  overflow-wrap: anywhere;
+}
+.card-grid {
+  align-items: start;
+}
+.managed-card.card-tile {
+  padding: 22px;
+  overflow: visible;
+}
+.card-tile-heading {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.card-tile-heading > div {
+  flex: 1;
+  min-width: 0;
+}
+.card-tile-heading h2 {
+  font-size: 1.1rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.card-tile-heading p {
+  font-size: var(--text-caption);
+  color: var(--secondary);
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+.bank-identity {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--card-color) 75%, #0c1220);
+}
+.bank-identity .bank-mark {
+  width: 32px;
+  height: 32px;
+}
+.card-tile-balance {
+  margin-block: 24px 18px;
+}
+.card-tile-balance > span,
+.card-tile-limit > span {
+  color: var(--secondary);
+  font-size: var(--text-caption);
+}
+.card-tile-balance strong {
+  display: block;
+  font-size: 1.85rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.card-tile-limit {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 12px;
+}
+.card-tile-limit strong {
+  font-size: var(--text-body);
+  overflow-wrap: anywhere;
+}
+.card-tile-footer {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.card-tile-footer .text-button {
+  min-height: 36px;
+}
+.card-comparison {
+  padding-block: 10px;
+}
+.card-comparison > summary {
+  padding-block: 8px;
+}
+.card-comparison .panel {
+  margin-block: 16px 0;
+}
+.card-details-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  align-items: start;
+  gap: 24px;
+}
+.card-details-layout > .managed-card-info {
+  padding: 0;
+  min-width: 0;
+}
+.card-details-layout .card-bill {
+  border: 0;
+  border-radius: 0;
+  padding: 16px 0 0;
+  border-top: 1px solid var(--border);
+  background: none;
+}
+.card-limit-note {
+  margin-block: 20px;
+}
+.card-records {
+  margin-top: 12px;
+  border: 0;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  padding: 14px 0;
+  background: none;
+}
+.card-records ul {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+}
+.card-records li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 12px;
+  border-top: 1px solid var(--border);
+}
+.card-records li > span {
+  min-width: 0;
+}
+.card-records li strong {
+  overflow-wrap: anywhere;
+}
+.card-records li small {
+  display: block;
+  color: var(--secondary);
+  margin-top: 4px;
+  font-size: var(--text-caption);
+}
+.card-records li > strong {
+  text-align: right;
+}
+.action-popover {
+  max-height: calc(100dvh - 16px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.form-section-title > span {
+  display: none;
+}
+.form-section-title {
+  border: 0;
+  padding: 0;
+  gap: 0;
+}
+.form-summary {
+  box-shadow: none;
+  background: var(--surface-soft);
+}
+.form-summary .summary-line,
+.form-summary .summary-card {
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+.form-summary .summary-card {
+  padding-inline: 0;
+}
+.form-field {
+  min-width: 0;
+}
+.form-field [aria-invalid="true"] {
+  border-color: var(--danger);
+  outline-color: var(--danger);
+}
+.field-error {
+  display: block;
+  font-size: var(--text-caption);
+  line-height: 1.6;
+  color: var(--danger);
+  margin-top: 4px;
+  font-weight: 500;
+}
+.form-field:has(.field-error) .money-field {
+  border-color: var(--danger);
+}
+.form-field input,
+.form-field select {
+  scroll-margin-block: 100px;
+}
+.dialog .more-details {
+  background: none;
+  border-radius: 0;
+  border-width: 0 0 1px;
+  padding-inline: 0;
+}
+.dialog-footer {
+  flex-wrap: wrap;
+}
+:is(.button, .text-button, .filter-chip, .icon-button) {
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+@media (max-width: 720px) {
+  .home-widget[data-widget="summary"] .welcome-summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .home-widget .welcome-paid {
+    border-left: 0;
+    border-top: 1px solid var(--border);
+    padding: 18px 0 0;
+  }
+  .card-details-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .card-records li {
+    flex-wrap: wrap;
+  }
+  .card-tile-heading h2 {
+    font-size: 1rem;
+  }
+  .managed-card.card-tile {
+    padding: 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.button, .text-button, .filter-chip, .icon-button) {
+    transition: none;
+  }
+}
+:root[data-motion="off"]
+  :is(.button, .text-button, .filter-chip, .icon-button) {
+  transition: none;
+}
+
+.home-widget .more-details,
+.card-comparison {
+  border: 0;
+  background: none;
+  padding-inline: 0;
+}
+.card-tile-limit[data-tone="danger"] strong {
+  color: var(--danger);
+}
+.form-summary .summary-note {
+  border: 0;
+  background: none;
+  padding-inline: 0;
+}
+.card-tile-balance strong {
+  font-size: clamp(1.3rem, 5vw, 1.85rem);
+}
+
+.dialog .form-field > .field-error {
+  font-size: var(--text-caption);
+  color: var(--danger);
+  line-height: 1.6;
+}
+.dialog .category-hint {
+  padding: 8px 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+.form-summary .preview-value strong {
+  color: var(--text);
+}
+.bank-identity {
+  color: #fff;
+}
+
+/* Reflow columns with text size as well as viewport width. */
+.card-details-body {
+  padding: 24px;
+  min-width: 0;
+}
+.card-details-layout .managed-card-amount {
+  flex-wrap: wrap;
+}
+.card-details-layout .managed-card-amount > strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.card-details-layout dd {
+  overflow-wrap: anywhere;
+  min-width: 0;
+  text-align: right;
+}
+.dialog .form-layout {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+}
+.dialog .form-row {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+}
+.form-summary .preview-value strong {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.form-summary .summary-line strong {
+  white-space: normal;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+.form-summary .summary-line > span {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.dialog-footer > .button {
+  max-width: 100%;
+  white-space: normal;
+}
+@media (max-width: 580px) {
+  .card-details-body {
+    padding: 18px;
+  }
+}

@@ -1,3 +1,5 @@
+import { ManagedCard } from "./components/managed-card";
+import { FilterChips } from "./components/filter-chips";
 import { resetViewFilters } from "./view-state";
 import { ActionMenu } from "./components/action-menu";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -612,6 +614,7 @@ export default function App() {
       const billSubscriptions = allRecurring.filter((i) => i.cardId === c.id);
       return {
         ...c,
+        usedCents: full.reduce((sum, p) => sum + remaining(p), 0),
         debt: ps.reduce((s, p) => s + remaining(p), 0),
         total: ps.reduce((s, p) => s + p.totalCents, 0),
         monthly:
@@ -1603,20 +1606,63 @@ export default function App() {
               )}
             </section>
           )}
-          {hasPurchaseFilters && filtered && (
-            <div className="filter-feedback">
-              <Filter size={13} />
-              {purchases.length} compras nos filtros · cartões, totais e
-              gráficos seguem a mesma seleção
-              <button
-                aria-label="Limpar todos os filtros globais"
-                onClick={() => setFilters(CLEAR)}
-              >
-                Limpar filtros
-              </button>
-            </div>
+          {hasPurchaseFilters && (
+            <>
+              <FilterChips
+                items={[
+                  ...Object.entries(filters)
+                    .filter(
+                      ([key, value]) => value !== CLEAR[key as keyof Filters],
+                    )
+                    .map(([key, value]) => ({
+                      key,
+                      label:
+                        key === "search"
+                          ? `Busca: ${value}`
+                          : key === "card"
+                            ? `Cartão: ${cardsById.get(value)?.name ?? value}`
+                            : key === "bank"
+                              ? `Banco: ${value}`
+                              : key === "category"
+                                ? `Categoria: ${value}`
+                                : value === "paid"
+                                  ? "Quitadas"
+                                  : "Em andamento",
+                      remove: () =>
+                        updateFilter(
+                          key as keyof Filters,
+                          CLEAR[key as keyof Filters],
+                        ),
+                    })),
+                  ...(month !== today
+                    ? [
+                        {
+                          key: "month",
+                          label: `Mês: ${monthLabel(month)}`,
+                          remove: () => setMonth(today),
+                        },
+                      ]
+                    : []),
+                ]}
+                onClear={() => {
+                  setFilters(CLEAR);
+                  setMonth(today);
+                }}
+              />
+              {(filtered || month !== today) && (
+                <p
+                  className="filter-feedback"
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
+                  {purchases.length} compras na seleção · totais e gráficos
+                  seguem os filtros. As faturas e o limite de cada cartão
+                  consideram todas as compras cadastradas.
+                </p>
+              )}
+            </>
           )}
-          {hasPurchaseFilters && tab !== "anticipation" && (
+          {hasPurchaseFilters && tab !== "anticipation" && tab !== "cards" && (
             <div className="stats-grid">
               <div
                 className="stat-card debt"
@@ -1975,122 +2021,128 @@ export default function App() {
           )}
           {tab === "cards" && (
             <>
+              <div className="cards-overview" aria-label="Totais dos cartões">
+                <span>
+                  Saldo parcelado na seleção
+                  <strong data-testid="total-debt">{money(debt)}</strong>
+                </span>
+                <span>
+                  A pagar no mês na seleção
+                  <strong data-testid="monthly-total">
+                    {money(snapshot.outstanding)}
+                  </strong>
+                </span>
+              </div>
               <div className="card-grid">
                 {cardData.map((card) => (
-                  <section className="managed-card" key={card.id}>
-                    <PlasticCard card={card} />
-                    <div className="managed-card-info">
-                      <div className="managed-card-amount">
-                        <span>
-                          Saldo a pagar {filtered && <small>nos filtros</small>}
-                        </span>
-                        <strong>{money(card.debt)}</strong>
-                      </div>
-                      <dl>
-                        <div>
-                          <dt>Total de compras</dt>
-                          <dd>{money(card.total)}</dd>
-                        </div>
-                        <div>
-                          <dt>Total já pago</dt>
-                          <dd>{money(card.total - card.debt)}</dd>
-                        </div>
-                        <div>
-                          <dt>Vencimento</dt>
-                          <dd>Dia {card.dueDay}</dd>
-                        </div>
-                      </dl>
-                      {card.limitCents > 0 && (
-                        <div className="limit">
-                          <div>
-                            <span>Saldo / limite informado</span>
-                            <strong>
-                              {Math.round((card.debt / card.limitCents) * 100)}%
-                            </strong>
-                          </div>
-                          <div className="progress">
-                            <i
-                              style={{
-                                width: `${Math.min(100, (card.debt / card.limitCents) * 100)}%`,
-                                background:
-                                  card.debt > card.limitCents
-                                    ? "var(--danger)"
-                                    : card.color,
-                              }}
-                            />
-                          </div>
-                          <small>
-                            {money(card.limitCents)} de limite · compras
-                            cadastradas
-                          </small>
-                        </div>
-                      )}
-                      <div
-                        className={`card-bill ${card.bill.total > 0 && card.bill.outstanding === 0 ? "settled" : ""}`}
-                      >
-                        <div>
+                  <ManagedCard
+                    key={card.id}
+                    card={card}
+                    data={data}
+                    month={month}
+                    today={today}
+                    saving={saving}
+                    onEdit={() => setModal({ type: "card", card })}
+                    onDelete={() => deleteCard(card)}
+                    onPurchase={() => addPurchase(card.id)}
+                  >
+                    {(closeDetails) => (
+                      <div className="managed-card-info">
+                        <div className="managed-card-amount">
                           <span>
-                            Fatura cadastrada · {monthLabel(month, true)}
+                            Saldo a pagar{" "}
+                            {filtered && <small>nos filtros</small>}
                           </span>
-                          <strong>{money(card.bill.outstanding)}</strong>
+                          <strong>{money(card.debt)}</strong>
                         </div>
-                        {card.bill.total > 0 && card.bill.outstanding === 0 ? (
-                          <span className="badge green">
-                            <CheckCheck size={13} />
-                            {month === today
-                              ? "Pago neste mês"
-                              : "Parcelas pagas"}
-                          </span>
-                        ) : (
-                          <button
-                            className="button pay-button"
-                            disabled={
-                              saving ||
-                              month !== today ||
-                              card.bill.outstanding === 0
-                            }
-                            aria-label={`Pagar cartão ${card.name} neste mês`}
-                            onClick={() => payCard(card)}
-                          >
-                            <Check size={15} />
-                            {card.bill.outstanding
-                              ? "Marcar mês como pago"
-                              : "Sem parcelas"}
-                          </button>
+                        <dl>
+                          <div>
+                            <dt>Total de compras</dt>
+                            <dd>{money(card.total)}</dd>
+                          </div>
+                          <div>
+                            <dt>Total já pago</dt>
+                            <dd>{money(card.total - card.debt)}</dd>
+                          </div>
+                          <div>
+                            <dt>Vencimento</dt>
+                            <dd>Dia {card.dueDay}</dd>
+                          </div>
+                        </dl>
+                        {card.limitCents > 0 && (
+                          <div className="limit">
+                            <div>
+                              <span>Saldo / limite informado</span>
+                              <strong>
+                                {Math.round(
+                                  (card.usedCents / card.limitCents) * 100,
+                                )}
+                                %
+                              </strong>
+                            </div>
+                            <div className="progress">
+                              <i
+                                style={{
+                                  width: `${Math.min(100, (card.usedCents / card.limitCents) * 100)}%`,
+                                  background:
+                                    card.usedCents > card.limitCents
+                                      ? "var(--danger)"
+                                      : card.color,
+                                }}
+                              />
+                            </div>
+                            <small>
+                              {money(card.limitCents)} de limite · compras
+                              cadastradas
+                            </small>
+                          </div>
+                        )}
+                        <div
+                          className={`card-bill ${card.bill.total > 0 && card.bill.outstanding === 0 ? "settled" : ""}`}
+                        >
+                          <div>
+                            <span>
+                              Fatura cadastrada · {monthLabel(month, true)}
+                            </span>
+                            <strong>{money(card.bill.outstanding)}</strong>
+                          </div>
+                          {card.bill.total > 0 &&
+                          card.bill.outstanding === 0 ? (
+                            <span className="badge green">
+                              <CheckCheck size={13} />
+                              {month === today
+                                ? "Pago neste mês"
+                                : "Parcelas pagas"}
+                            </span>
+                          ) : (
+                            <button
+                              className="button pay-button"
+                              disabled={
+                                saving ||
+                                month !== today ||
+                                card.bill.outstanding === 0
+                              }
+                              aria-label={`Pagar cartão ${card.name} neste mês`}
+                              onClick={() => {
+                                closeDetails();
+                                payCard(card);
+                              }}
+                            >
+                              <Check size={15} />
+                              {card.bill.outstanding
+                                ? "Marcar mês como pago"
+                                : "Sem parcelas"}
+                            </button>
+                          )}
+                        </div>
+                        {month !== today && (
+                          <small className="field-hint">
+                            Volte ao mês atual para registrar a fatura paga.
+                          </small>
                         )}
                       </div>
-                      {month !== today && (
-                        <small className="field-hint">
-                          Volte ao mês atual para registrar a fatura paga.
-                        </small>
-                      )}
-                      <div className="managed-card-actions">
-                        <button
-                          className="text-button"
-                          onClick={() => addPurchase(card.id)}
-                        >
-                          <Plus size={14} />
-                          Nova compra
-                        </button>
-                        <button
-                          className="icon-button"
-                          disabled={saving}
-                          aria-label={`Editar cartão ${card.name}`}
-                          onClick={() => setModal({ type: "card", card })}
-                        >
-                          <Pencil size={16} />
-                        </button>
-                        <button
-                          className="icon-button danger-text"
-                          disabled={saving}
-                          aria-label={`Excluir cartão ${card.name}`}
-                          onClick={() => deleteCard(card)}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  </section>
+                    )}
+                  </ManagedCard>
                 ))}
                 {cardData.length === 0 && (
                   <button
@@ -2105,77 +2157,80 @@ export default function App() {
                   </button>
                 )}
               </div>
-              <Panel
-                className="card-summary"
-                title="Resumo dos cartões"
-                subtitle={
-                  filtered
-                    ? "Valores das compras nos filtros globais selecionados"
-                    : "Compras cadastradas em todos os seus cartões"
-                }
-              >
-                {cardData.length ? (
-                  <div className="table-scroll">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Cartão</th>
-                          <th>Compras</th>
-                          <th>Já pago</th>
-                          <th>Saldo restante</th>
-                          <th>Mês selecionado</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {cardData.map((card) => (
-                          <tr key={card.id}>
-                            <td>
-                              <span className="card-tag">
-                                <i
-                                  className="dot"
-                                  style={{ background: card.color }}
-                                />
-                                {card.bank} · {card.name}
-                              </span>
-                            </td>
-                            <td>{money(card.total)}</td>
-                            <td>{money(card.total - card.debt)}</td>
-                            <td>
-                              <strong>{money(card.debt)}</strong>
-                            </td>
-                            <td>{money(card.monthly)}</td>
+              <details className="more-details card-comparison">
+                <summary>Comparar valores dos cartões</summary>
+                <Panel
+                  className="card-summary"
+                  title="Resumo dos cartões"
+                  subtitle={
+                    filtered
+                      ? "Valores das compras nos filtros globais selecionados"
+                      : "Compras cadastradas em todos os seus cartões"
+                  }
+                >
+                  {cardData.length ? (
+                    <div className="table-scroll">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Cartão</th>
+                            <th>Compras</th>
+                            <th>Já pago</th>
+                            <th>Saldo restante</th>
+                            <th>Mês selecionado</th>
                           </tr>
-                        ))}
-                      </tbody>
-                      <tfoot>
-                        <tr>
-                          <td>Total nos filtros</td>
-                          <td>{money(total)}</td>
-                          <td>{money(total - debt)}</td>
-                          <td>{money(debt)}</td>
-                          <td>
-                            {money(
-                              cardData.reduce((sum, c) => sum + c.monthly, 0),
-                            )}
-                          </td>
-                        </tr>
-                      </tfoot>
-                    </table>
-                  </div>
-                ) : (
-                  <Empty
-                    title="Seu primeiro cartão é o começo"
-                    text="Cadastre o banco, um apelido e o vencimento."
-                  />
-                )}
-              </Panel>
+                        </thead>
+                        <tbody>
+                          {cardData.map((card) => (
+                            <tr key={card.id}>
+                              <td>
+                                <span className="card-tag">
+                                  <i
+                                    className="dot"
+                                    style={{ background: card.color }}
+                                  />
+                                  {card.bank} · {card.name}
+                                </span>
+                              </td>
+                              <td>{money(card.total)}</td>
+                              <td>{money(card.total - card.debt)}</td>
+                              <td>
+                                <strong>{money(card.debt)}</strong>
+                              </td>
+                              <td>{money(card.monthly)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot>
+                          <tr>
+                            <td>Total nos filtros</td>
+                            <td>{money(total)}</td>
+                            <td>{money(total - debt)}</td>
+                            <td>{money(debt)}</td>
+                            <td>
+                              {money(
+                                cardData.reduce((sum, c) => sum + c.monthly, 0),
+                              )}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  ) : (
+                    <Empty
+                      title="Seu primeiro cartão é o começo"
+                      text="Cadastre o banco, um apelido e o vencimento."
+                    />
+                  )}
+                </Panel>
+              </details>
             </>
           )}
           {tab === "planning" && (
             <>
               <Panel
                 title="Seu calendário financeiro"
-                subtitle="Uma coluna por mês. Verde é pago; violeta ainda está pendente."
+                subtitle="Uma coluna por mês. Verde é pago; amarelo ainda está pendente."
               >
                 <MonthlyChart
                   purchases={purchases}

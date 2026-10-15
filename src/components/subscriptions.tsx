@@ -1,3 +1,5 @@
+import { ActionMenu } from "./action-menu";
+import { Field, useFieldFeedback } from "./field";
 import { useViewFilter } from "../view-state";
 import { SuggestionInput } from "./suggestion-input";
 import { CategoryHint, useSmartCategory } from "./smart-category";
@@ -9,7 +11,6 @@ import {
   currentMonth,
   money,
   monthLabel,
-  parseMoney,
   type Data,
   type Subscription,
 } from "../domain";
@@ -76,6 +77,7 @@ export function SubscriptionForm({
   const [start, setStart] = useState(subscription?.startMonth ?? month),
     [end, setEnd] = useState(subscription?.endMonth ?? "");
   const [error, setError] = useState("");
+  const feedback = useFieldFeedback();
   return (
     <Dialog
       title={subscription ? "Editar assinatura" : "Uma nova assinatura"}
@@ -83,12 +85,22 @@ export function SubscriptionForm({
       onClose={onClose}
     >
       <form
+        {...feedback.formProps}
         className="simple-form"
         onSubmit={async (e) => {
           e.preventDefault();
           setError("");
           try {
-            const cents = parseMoney(amount);
+            if (!name.trim()) {
+              feedback.fail("name", "Dê um nome à assinatura.");
+              return;
+            }
+            if (!provider.trim()) {
+              feedback.fail("provider", "Informe o fornecedor.");
+              return;
+            }
+            const cents = feedback.money("amount", amount);
+            if (cents === null) return;
             if (!name.trim() || !provider.trim() || !cents)
               throw new Error(
                 "Informe nome, fornecedor e valor maior que zero.",
@@ -115,7 +127,7 @@ export function SubscriptionForm({
           }
         }}
       >
-        <label>
+        <Field data-field="name" error={feedback.issues.name}>
           Nome da assinatura
           <SuggestionInput
             aria-label="Nome da assinatura"
@@ -130,8 +142,8 @@ export function SubscriptionForm({
             suggestions={names}
             placeholder="Ex.: Netflix, academia, armazenamento..."
           />
-        </label>
-        <label>
+        </Field>
+        <Field data-field="provider" error={feedback.issues.provider}>
           Fornecedor da assinatura
           <SuggestionInput
             aria-label="Fornecedor da assinatura"
@@ -142,9 +154,9 @@ export function SubscriptionForm({
             suggestions={providers}
             placeholder="Ex.: Netflix, Google, academia"
           />
-        </label>
+        </Field>
         <div className="form-row">
-          <label>
+          <Field data-field="amount" error={feedback.issues.amount}>
             Valor da cobrança
             <div className="money-field">
               <span>R$</span>
@@ -157,8 +169,8 @@ export function SubscriptionForm({
                 placeholder="0,00"
               />
             </div>
-          </label>
-          <label>
+          </Field>
+          <Field>
             Frequência
             <select
               aria-label="Frequência da assinatura"
@@ -173,10 +185,10 @@ export function SubscriptionForm({
                 </option>
               ))}
             </select>
-          </label>
+          </Field>
         </div>
         <div className="form-row">
-          <label>
+          <Field>
             Cartão da assinatura
             <select
               aria-label="Cartão da assinatura"
@@ -190,8 +202,8 @@ export function SubscriptionForm({
                 </option>
               ))}
             </select>
-          </label>
-          <label>
+          </Field>
+          <Field>
             Dia da cobrança
             <input
               type="number"
@@ -201,9 +213,9 @@ export function SubscriptionForm({
               value={due}
               onChange={(e) => setDue(e.target.value)}
             />
-          </label>
+          </Field>
         </div>
-        <label>
+        <Field>
           Categoria
           <select
             aria-label="Categoria da assinatura"
@@ -214,10 +226,10 @@ export function SubscriptionForm({
               <option key={c}>{c}</option>
             ))}
           </select>
-        </label>
+        </Field>
         <CategoryHint state={smart} name={name} />
         <div className="form-row">
-          <label>
+          <Field>
             Mês de início
             <input
               type="month"
@@ -227,10 +239,10 @@ export function SubscriptionForm({
               value={start}
               onChange={(e) => setStart(e.target.value)}
             />
-          </label>
+          </Field>
           <details className="more-details" open={!!subscription || undefined}>
             <summary>Encerrar cobranças</summary>{" "}
-            <label>
+            <Field>
               Último mês de cobrança <small>opcional</small>
               <input
                 type="month"
@@ -239,15 +251,18 @@ export function SubscriptionForm({
                 value={end}
                 onChange={(e) => setEnd(e.target.value)}
               />
-            </label>
+            </Field>
           </details>
         </div>
-        <p className="field-hint">
-          No cartão, a cobrança será incluída na fatura cadastrada. Não cadastre
-          a mesma assinatura como compra parcelada. Meses antigos não são
-          acumulados automaticamente. Valores já pagos são preservados ao editar
-          a assinatura.
-        </p>
+        <details className="more-details form-help">
+          <summary>Como as cobranças entram no orçamento</summary>{" "}
+          <p className="field-hint">
+            No cartão, a cobrança será incluída na fatura cadastrada. Não
+            cadastre a mesma assinatura como compra parcelada. Meses antigos não
+            são acumulados automaticamente. Valores já pagos são preservados ao
+            editar a assinatura.
+          </p>
+        </details>
         {error && (
           <p className="form-error" role="alert">
             {error}
@@ -496,22 +511,27 @@ export function SubscriptionsPage({
                               <Check size={16} />
                             </button>
                           )}
-                          <button
-                            className="icon-button"
+                          <ActionMenu
+                            label={`Mais opções de ${s.name}`}
                             disabled={saving}
-                            aria-label={`Editar assinatura ${s.name}`}
-                            onClick={() => onEdit(s)}
                           >
-                            <Pencil size={15} />
-                          </button>
-                          <button
-                            className="icon-button danger-text"
-                            disabled={saving}
-                            aria-label={`Excluir assinatura ${s.name}`}
-                            onClick={() => onDelete(s)}
-                          >
-                            <Trash2 size={15} />
-                          </button>
+                            <button
+                              className="icon-button"
+                              disabled={saving}
+                              aria-label={`Editar assinatura ${s.name}`}
+                              onClick={() => onEdit(s)}
+                            >
+                              <Pencil size={15} /> Editar
+                            </button>
+                            <button
+                              className="icon-button danger-text"
+                              disabled={saving}
+                              aria-label={`Excluir assinatura ${s.name}`}
+                              onClick={() => onDelete(s)}
+                            >
+                              <Trash2 size={15} /> Excluir
+                            </button>
+                          </ActionMenu>
                         </div>
                       </td>
                     </tr>

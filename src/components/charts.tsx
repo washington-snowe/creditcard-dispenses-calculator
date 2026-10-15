@@ -119,7 +119,7 @@ export function MonthlyChart({
               onClick={(_entry, index) => onMonth?.(rows[index].month)}
               cursor={onMonth ? "pointer" : "default"}
               stackId="month"
-              fill="var(--mint)"
+              fill="var(--success)"
               maxBarSize={48}
             />
             <Bar
@@ -128,7 +128,7 @@ export function MonthlyChart({
               onClick={(_entry, index) => onMonth?.(rows[index].month)}
               cursor={onMonth ? "pointer" : "default"}
               stackId="month"
-              fill="var(--accent)"
+              fill="var(--warning)"
               radius={[7, 7, 0, 0]}
               maxBarSize={48}
             />
@@ -151,11 +151,11 @@ export function MonthlyChart({
       </details>
       <div className="chart-legend">
         <span>
-          <i className="dot accent" />
+          <i className="dot" style={{ background: "var(--warning)" }} />
           Ainda a pagar
         </span>
         <span>
-          <i className="dot mint" />
+          <i className="dot" style={{ background: "var(--success)" }} />
           Valores pagos
         </span>
         <small>Valores em R$ · clique para abrir um mês</small>

@@ -1,4 +1,10 @@
-import { goTo, purchaseAction } from "./navigation.mjs";
+import {
+  goTo,
+  purchaseAction,
+  recordAction,
+  payCardAction,
+  openCardDetails,
+} from "./navigation.mjs";
 import { expect } from "playwright/test";
 export async function runEnhancements(page) {
   const today = await page.evaluate(() => {
@@ -50,7 +56,7 @@ export async function runEnhancements(page) {
   await expect(page.getByTestId("monthly-total")).toHaveText(/600,00/);
   await goTo(page, "Visão geral");
   await page
-    .locator('.chart-monthly path.recharts-rectangle[fill="var(--accent)"]')
+    .locator('.chart-monthly path.recharts-rectangle[fill="var(--warning)"]')
     .nth(1)
     .click();
   await expect(page.getByLabel("Escolher mês")).toHaveValue(following);
@@ -81,16 +87,12 @@ export async function runEnhancements(page) {
     .click();
   await page.getByLabel("Filtrar categoria").selectOption("Casa");
   await goTo(page, "Meus cartões");
-  await page
-    .getByRole("button", { name: "Pagar cartão Principal neste mês" })
-    .click();
+  await payCardAction(page, "Principal");
   await expect(page.getByRole("dialog")).toContainText("Curso");
   await expect(page.getByRole("dialog")).toContainText("600,00");
   await page.getByRole("button", { name: "Cancelar", exact: true }).click();
   await expect(page.getByTestId("total-debt")).toHaveText(/1\.200,00/);
-  await page
-    .getByRole("button", { name: "Pagar cartão Principal neste mês" })
-    .click();
+  await payCardAction(page, "Principal");
   await page.getByRole("button", { name: "Continuar", exact: true }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible();
   await expect(page.getByTestId("total-debt")).toHaveText(/800,00/);
@@ -136,15 +138,15 @@ export async function runEnhancements(page) {
   await page.getByRole("button", { name: "Próximo mês", exact: true }).click();
   await expect(page.getByTestId("monthly-total")).toHaveText(/500,00/);
   await goTo(page, "Meus cartões");
+  await openCardDetails(page, "Principal");
   await expect(
     page.getByRole("button", { name: "Pagar cartão Principal neste mês" }),
   ).toBeDisabled();
+  await page.getByRole("button", { name: "Fechar", exact: true }).click();
   await page.getByRole("button", { name: /Voltar ao mês atual/ }).click();
   await page.getByRole("button", { name: "Desfazer última alteração" }).click();
   await expect(page.getByTestId("total-debt")).toHaveText(/2\.500,00/);
-  await page
-    .getByRole("button", { name: "Pagar cartão Principal neste mês" })
-    .click();
+  await payCardAction(page, "Principal");
   await page.getByRole("button", { name: "Continuar", exact: true }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible();
   await page.reload();

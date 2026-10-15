@@ -1,3 +1,4 @@
+import { verifyHarmony } from "./harmony.mjs";
 import { verifyCohesion } from "./cohesion.mjs";
 import { goTo } from "./navigation.mjs";
 import { runWorkbench } from "./workbench.mjs";
@@ -51,6 +52,7 @@ try {
   await runFormAssistance(page);
   await runWorkbench(page);
   await verifyCohesion(page);
+  await verifyHarmony(page);
   await mkdir(".runtime", { recursive: true });
   await page.screenshot({ path: ".runtime/income.png", fullPage: true });
   await goTo(page, "Assinaturas");

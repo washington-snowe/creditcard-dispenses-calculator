@@ -4,11 +4,11 @@ Aplicativo desktop de finanças pessoais em **Node.js + Electron**, com interfac
 
 ## Baixar para Windows
 
-[**Baixar ContaClara 4.6.1 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.6.1/ContaClara-Windows-x64.zip)
+[**Baixar ContaClara 4.7.0 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.7.0/ContaClara-Windows-x64.zip)
 
 Extraia a pasta inteira e abra **saldo.exe**. Não é necessário instalar Node.js. A versão foi compilada e testada no Windows, incluindo os cálculos financeiros e a persistência dos dados após reiniciar o aplicativo.
 
-A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.6.1) também contém o checksum do ZIP.
+A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.7.0) também contém o checksum do ZIP.
 
 ## Executar no computador
 
@@ -33,13 +33,13 @@ A interface no navegador usa um armazenamento local separado do aplicativo deskt
 
 - Abrir **Início** para ver quanto falta pagar no mês e, quando houver pagamentos, o total já pago e o progresso. O resumo inclui parcelas de cartões, assinaturas e despesas, independentemente dos filtros das compras. Pagamentos seguem a data real do desembolso, incluindo antecipações.
 - Conhecer cada função em cards interativos na tela de boas-vindas, com atalhos acessíveis pelo teclado.
-- Recolher ou expandir o menu lateral. A escolha fica salva em janelas maiores; em janelas pequenas, o menu pode ser aberto sobre o conteúdo e fechado com Esc. As funções estão agrupadas em Acompanhar, Organizar, Planejar e Preferências.
+- Recolher ou expandir o menu lateral. A escolha fica salva em janelas maiores; em janelas pequenas, o menu pode ser aberto sobre o conteúdo e fechado com Esc. As funções estão agrupadas em Resumo, Movimentações, Planejamento e Configurações.
 
-- Cadastrar vários cartões de qualquer banco, com apelido, últimos quatro dígitos, cor, vencimento e limite opcional.
+- Cadastrar vários cartões de qualquer banco, com apelido, últimos quatro dígitos, cor, vencimento e limite opcional. A lista mostra fatura, limite estimado disponível e situação. Abra **Ver detalhes** para ver compras, assinaturas, pagamentos e registrar a fatura paga. Edição e exclusão ficam em **Mais opções**; a comparação entre cartões é expansível.
 - Cadastrar compras escolhendo banco e cartão; informar **valor total ou valor de cada parcela**, número de parcelas, parcelas já pagas, categoria e mês da próxima parcela.
 - Consultar saldo devedor, pagamentos do mês, total já pago e última parcela prevista.
 - Editar ou excluir compras, registrar um pagamento e corrigir pagamentos pelo formulário de edição.
-- Filtrar globalmente por descrição, banco, cartão, categoria e status; totais, gráficos e planejamento seguem os mesmos filtros.
+- Filtrar globalmente por descrição, banco, cartão, categoria e status; totais, gráficos e planejamento seguem os mesmos filtros. Etiquetas permitem remover cada seleção separadamente, incluindo voltar ao mês atual. Faturas e limite estimado dos cartões consideram todos os seus registros, mesmo com filtros de compras ativos.
 - Consultar o histórico de compras, saldo e parcelas mensais de cada cartão e o total de todos.
 - Explorar gráficos de distribuição por cartão, previsão mensal e comparação de saldos. As caixas de valores aparecem acima dos gráficos, fora do recorte dos painéis, e se ajustam às bordas da janela.
 - Abrir cada mês do planejamento para ver **todas as parcelas individuais** e os totais por cartão, até a quitação. Use as setas, o seletor de mês ou as barras dos gráficos para navegar por meses passados e futuros.
@@ -69,7 +69,7 @@ A nova versão é preparada em `%APPDATA%/saldo-desktop/updates/versions/`, pres
 
 ## Entradas, saldo entre meses e despesas
 
-Em **Entradas do mês**, registre dinheiro recebido ou previsto, com descrição, origem e data. Uma entrada prevista participa da projeção, mas só entra no saldo real ao confirmar o recebimento. Em **Rendas recorrentes**, configure descrição, origem, valor, frequência, dia, início e fim opcional. Confirme cada recebimento separadamente; a data real define o mês em que o dinheiro entrou. Editar uma recorrência preserva os valores e origens já recebidos. Para interrompê-la mantendo o histórico, informe o último mês. **Registrar redução** adiciona outros gastos ou ajustes que diminuem a disponibilidade. Você também pode corrigir valores pelo botão de edição ou remover um movimento. Os filtros alteram a listagem; os totais e a comparação por origem continuam mostrando o mês inteiro.
+Em **Entradas do mês**, registre dinheiro recebido ou previsto, com descrição, origem e data. Uma entrada prevista participa da projeção, mas só entra no saldo real ao confirmar o recebimento. Em **Rendas recorrentes**, configure descrição, origem, valor, frequência, dia, início e fim opcional. Confirme cada recebimento separadamente; a data real define o mês em que o dinheiro entrou. Editar uma recorrência preserva os valores e origens já recebidos. Para interrompê-la mantendo o histórico, informe o último mês. **Registrar redução** adiciona outros gastos ou ajustes que diminuem a disponibilidade. Você também pode corrigir valores ou remover um movimento em **Mais opções**. Os filtros alteram a listagem; os totais e a comparação por origem continuam mostrando o mês inteiro.
 
 O cálculo de **Quanto sobrará no mês** é: **saldo inicial do mês + entradas recebidas + entradas previstas − reduções − pagamentos registrados no mês − valores ainda pendentes**. Assim, pagar uma fatura apenas transfere seu valor de pendente para pago, sem aumentar artificialmente a sobra. Antecipações são descontadas no mês real do pagamento, sem repetir o desconto no futuro. O saldo previsto considera somente os registros cadastrados e pode ficar negativo. Em **Saldo entre meses**, ative **Transportar saldo automaticamente**, escolha o mês inicial e informe seu saldo disponível, positivo ou negativo. O transporte começa nesse ponto: usa os movimentos reais dos meses anteriores e as projeções dos meses futuros. O valor projetado é identificado separadamente do saldo com pagamentos e recebimentos efetivos. Alterações e exclusões recalculam o transporte automaticamente. Não registre esse mesmo saldo inicial também como entrada. Sem ativar essa configuração, cada mês continua independente.
 
@@ -85,7 +85,7 @@ Meses antigos de assinaturas não são acumulados automaticamente como atrasos n
 
 O seletor de mês altera as parcelas do período, o calendário, a situação da fatura cadastrada e os gráficos. O saldo devedor total continua sendo o saldo atualmente pendente. Os meses antigos usam as parcelas já pagas e o mês informado para estimar o histórico; os novos pagamentos registram o mês real em que foram anotados.
 
-**Marcar mês como pago** registra todas as parcelas vencidas e do mês atual daquele cartão e as assinaturas cobradas nele no período, inclusive registros ocultos por filtros. A confirmação lista os itens e o valor integral. O botão fica desabilitado fora do mês atual. Pagamentos não são enviados ao banco.
+Nos detalhes de cada cartão, **Marcar mês como pago** registra todas as parcelas vencidas e do mês atual daquele cartão e as assinaturas cobradas nele no período, inclusive registros ocultos por filtros. A confirmação lista os itens e o valor integral. O botão fica desabilitado fora do mês atual. Pagamentos não são enviados ao banco.
 
 Em **Antecipações**, a classificação por maior parcela mostra o maior valor mensal; a classificação por alívio por real compara a parcela com o custo total para quitar a compra. A sugestão de orçamento seleciona compras por essa eficiência sem exceder o valor informado; ela pode ser ajustada e não promete uma combinação matematicamente ótima. A simulação mostra as parcelas futuras antes/depois; o custo integral à vista aparece separadamente. Não há estimativa de desconto ou juros do banco.
 
@@ -136,6 +136,16 @@ Os arquivos oficiais ficam em `public/brand/logo.png` e `public/brand/icon.png`,
 Em **Aparência**, escolha Claro, Escuro ou Ultra Dark, selecione uma paleta ou use o seletor de cor personalizada. O texto ajusta o contraste à cor escolhida. A tipografia é fixa: Manrope Bold (700) no nome ContaClara, Manrope SemiBold (600) nos títulos e Inter nos menus, formulários, tabelas e valores. Os valores usam números tabulares para manter o alinhamento. As fontes estão incluídas para uso offline; preferências antigas de fonte são ignoradas sem alterar os registros financeiros. Controle glow e movimento separadamente e clique em **Aplicar aparência** para salvar. O aplicativo também respeita a preferência do sistema por movimento reduzido.
 
 As definições de tipografia ficam centralizadas em `src/typography.css`. Os tamanhos relativos acompanham as preferências de texto do navegador e a escala do dispositivo. No desktop, use **Visualizar → Aumentar zoom / Diminuir zoom / Restaurar zoom**, acessível também pelo menu com a tecla Alt no Windows e pelos atalhos padrão. O conteúdo se reorganiza em janelas menores e com texto ampliado. Os nomes técnicos `saldo-desktop`, `saldo.exe` e a pasta de dados são mantidos para preservar a compatibilidade dos registros e do atualizador.
+
+## Organização e leitura
+
+O início destaca o valor que falta pagar; o valor pago e o disponível ficam em segundo plano. As personalizações anteriores de ordem e visibilidade são preservadas. **Personalizar início → Restaurar organização padrão** coloca o resumo em primeiro lugar.
+
+As telas usam uma ação principal, divisórias discretas e menus de ações nos registros. Roxo identifica ações; verde indica pagamento concluído, amarelo pendência e vermelho atraso ou saldo negativo, sempre com texto ou ícone. A previsão mensal usa verde para pago e amarelo para a pagar, independentemente da cor de destaque escolhida.
+
+Os formulários mantêm campos opcionais em seções expansíveis e mostram erros junto aos campos, associados para leitores de tela. O primeiro campo inválido recebe foco; se estiver em uma seção recolhida, ela é aberta. Sugestões com Tab, categorias automáticas, zoom, privacidade e redução de movimento continuam disponíveis.
+
+O limite disponível de cada cartão é uma **estimativa**, calculada com o limite informado menos o saldo total das compras cadastradas, sem filtros. Valores não cadastrados e regras do banco podem alterar o limite real. Assinaturas do mês aparecem separadamente na composição da fatura.
 
 ## Sugestões de preenchimento e categorias
 

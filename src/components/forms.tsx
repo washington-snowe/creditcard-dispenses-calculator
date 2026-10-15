@@ -1,3 +1,4 @@
+import { Field, useFieldFeedback } from "./field";
 import type { PurchaseDraft } from "./workbench";
 import { SuggestionInput } from "./suggestion-input";
 import { CategoryHint, useSmartCategory } from "./smart-category";
@@ -69,6 +70,7 @@ export function CardForm({
     ...(closing ? { closingDay: Number(closing) } : {}),
     limitCents: 0,
   };
+  const feedback = useFieldFeedback();
   return (
     <Dialog
       wide
@@ -77,23 +79,36 @@ export function CardForm({
       onClose={onClose}
     >
       <form
+        {...feedback.formProps}
         onSubmit={async (e) => {
           e.preventDefault();
           setError("");
           try {
+            if (!name.trim()) {
+              feedback.fail("name", "Dê um nome ao cartão.");
+              return;
+            }
+            if (bank === "Outro" && !customBank.trim()) {
+              feedback.fail("bank", "Informe o nome do banco.");
+              return;
+            }
             if (!name.trim() || (bank === "Outro" && !customBank.trim()))
               throw new Error("Informe o nome do cartão e o banco.");
             if (last4 && !/^\d{4}$/.test(last4))
               throw new Error(
                 "Informe quatro dígitos ou deixe o campo em branco.",
               );
+            const limitCents = limit.trim()
+              ? feedback.money("limit", limit, true)
+              : 0;
+            if (limitCents === null) return;
             if (
               await onSave({
                 ...preview,
                 id: card?.id ?? uid(),
                 name: name.trim(),
                 bank: bank === "Outro" ? customBank.trim() : bank,
-                limitCents: limit.trim() ? parseMoney(limit) : 0,
+                limitCents,
               })
             )
               onClose();
@@ -111,7 +126,7 @@ export function CardForm({
                 <p>Um apelido ajuda a encontrar o cartão certo.</p>
               </div>
             </div>
-            <label>
+            <Field data-field="name" error={feedback.issues.name}>
               Nome do cartão
               <SuggestionInput
                 aria-label="Nome do cartão"
@@ -123,8 +138,8 @@ export function CardForm({
                 suggestions={names}
                 placeholder="Ex.: Meu roxinho"
               />
-            </label>
-            <label>
+            </Field>
+            <Field>
               Banco
               <select
                 aria-label="Banco"
@@ -135,9 +150,9 @@ export function CardForm({
                   <option key={b}>{b}</option>
                 ))}
               </select>
-            </label>
+            </Field>
             {bank === "Outro" && (
-              <label>
+              <Field data-field="bank" error={feedback.issues.bank}>
                 Nome do banco
                 <SuggestionInput
                   aria-label="Nome do banco"
@@ -148,10 +163,10 @@ export function CardForm({
                   suggestions={BANKS.filter((b) => b !== "Outro")}
                   placeholder="Seu banco"
                 />
-              </label>
+              </Field>
             )}
             <div className="form-row">
-              <label>
+              <Field>
                 Dia de vencimento
                 <input
                   type="number"
@@ -161,9 +176,9 @@ export function CardForm({
                   value={due}
                   onChange={(e) => setDue(e.target.value)}
                 />
-              </label>
+              </Field>
             </div>
-            <label>
+            <Field>
               Dia de fechamento <small>opcional</small>
               <input
                 aria-label="Dia de fechamento"
@@ -177,20 +192,21 @@ export function CardForm({
               <span className="field-hint">
                 Permite sugerir o melhor cartão para cada dia.
               </span>
-            </label>
+            </Field>
             <details className="more-details" open={!!card || undefined}>
               <summary>Mais opções do cartão</summary>
-              <label>
+              <Field>
                 Últimos 4 dígitos <small>opcional</small>
                 <input
                   value={last4}
+                  pattern="[0-9]{4}"
                   maxLength={4}
                   inputMode="numeric"
                   onChange={(e) => setLast4(e.target.value.replace(/\D/g, ""))}
                   placeholder="0000"
                 />
-              </label>
-              <label>
+              </Field>
+              <Field data-field="limit" error={feedback.issues.limit}>
                 Limite do cartão <small>opcional</small>
                 <div className="money-field">
                   <span>R$</span>
@@ -201,7 +217,7 @@ export function CardForm({
                     placeholder="0,00"
                   />
                 </div>
-              </label>
+              </Field>
               <fieldset className="color-field">
                 <legend>Escolha a cor</legend>
                 <div className="color-options">
@@ -354,6 +370,7 @@ export function PurchaseForm({
     preview && preview.paid < preview.installments && month
       ? addMonths(month, preview.installments - preview.paid - 1)
       : null;
+  const feedback = useFieldFeedback();
   return (
     <Dialog
       wide
@@ -362,15 +379,30 @@ export function PurchaseForm({
       onClose={onClose}
     >
       <form
+        {...feedback.formProps}
         onSubmit={async (e) => {
           e.preventDefault();
           setError("");
           try {
-            if (!description.trim()) throw new Error("Dê um nome à compra.");
-            if (Number(paid) > Number(installments))
-              throw new Error("As parcelas pagas não podem superar o total.");
-            if (!preview)
-              throw new Error("Confira o valor e o número de parcelas.");
+            if (!description.trim()) {
+              feedback.fail("description", "Dê um nome à compra.");
+              return;
+            }
+            if (feedback.money("total", total) === null) return;
+            if (Number(paid) > Number(installments)) {
+              feedback.fail(
+                "paid",
+                "As parcelas pagas não podem superar o total.",
+              );
+              return;
+            }
+            if (!preview) {
+              feedback.fail(
+                "total",
+                "Confira o valor: ele deve permitir pelo menos um centavo por parcela.",
+              );
+              return;
+            }
             if (
               await onSave({
                 ...preview,
@@ -396,7 +428,7 @@ export function PurchaseForm({
                 <p>O que você comprou e onde vai pagar.</p>
               </div>
             </div>
-            <label>
+            <Field data-field="description" error={feedback.issues.description}>
               Descrição da compra
               <SuggestionInput
                 aria-label="Descrição da compra"
@@ -411,9 +443,9 @@ export function PurchaseForm({
                 suggestions={names}
                 placeholder="Ex.: Notebook, sofá ou uma viagem"
               />
-            </label>
+            </Field>
             <div className="form-row">
-              <label>
+              <Field>
                 Banco
                 <select
                   aria-label="Banco"
@@ -429,8 +461,8 @@ export function PurchaseForm({
                     <option key={b}>{b}</option>
                   ))}
                 </select>
-              </label>
-              <label>
+              </Field>
+              <Field>
                 Cartão
                 <select
                   aria-label="Cartão"
@@ -446,10 +478,10 @@ export function PurchaseForm({
                       </option>
                     ))}
                 </select>
-              </label>
+              </Field>
             </div>
             <div className="form-row">
-              <label>
+              <Field>
                 Categoria
                 <select
                   aria-label="Categoria"
@@ -460,8 +492,8 @@ export function PurchaseForm({
                     <option key={c}>{c}</option>
                   ))}
                 </select>
-              </label>
-              <label>
+              </Field>
+              <Field>
                 Como informar o valor
                 <select
                   aria-label="Como informar o valor"
@@ -474,10 +506,10 @@ export function PurchaseForm({
                   <option value="total">Valor total da compra</option>
                   <option value="installment">Valor de cada parcela</option>
                 </select>
-              </label>
+              </Field>
             </div>
             <CategoryHint state={smart} name={description} />
-            <label>
+            <Field data-field="total" error={feedback.issues.total}>
               {mode === "total"
                 ? "Valor total da compra"
                 : "Valor de cada parcela"}
@@ -501,7 +533,7 @@ export function PurchaseForm({
                   ? "Inclua os juros no valor final, se houver."
                   : "O total será este valor multiplicado pelas parcelas."}
               </span>
-            </label>
+            </Field>
             <div className="form-section-title second">
               <span>02</span>
               <div>
@@ -510,7 +542,7 @@ export function PurchaseForm({
               </div>
             </div>
             <div className="form-row">
-              <label>
+              <Field>
                 Número de parcelas
                 <input
                   type="number"
@@ -520,10 +552,10 @@ export function PurchaseForm({
                   value={installments}
                   onChange={(e) => setInstallments(e.target.value)}
                 />
-              </label>
+              </Field>
               <details className="more-details" open={!!purchase || undefined}>
                 <summary>Já pagou parcelas?</summary>
-                <label>
+                <Field data-field="paid" error={feedback.issues.paid}>
                   Parcelas já pagas
                   <input
                     type="number"
@@ -533,10 +565,10 @@ export function PurchaseForm({
                     value={paid}
                     onChange={(e) => setPaid(e.target.value)}
                   />
-                </label>
+                </Field>
               </details>
             </div>
-            <label>
+            <Field>
               Mês da próxima parcela
               <input
                 type="month"
@@ -549,7 +581,7 @@ export function PurchaseForm({
               <span className="field-hint">
                 A primeira parcela que ainda falta pagar.
               </span>
-            </label>
+            </Field>
             {hasHistory && (
               <p className="field-hint">
                 Alterar o valor ou o número total de parcelas recalcula o

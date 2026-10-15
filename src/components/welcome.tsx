@@ -105,7 +105,7 @@ export function WelcomePage({
     data.subscriptions?.length
   );
   const defaultWidgets = hasData
-    ? ["available", "summary", "attention"]
+    ? ["summary", "available", "attention"]
     : ["summary", "functions"];
   const [widgets, setWidgets] = useState(
     data.settings?.homeWidgets ?? defaultWidgets,

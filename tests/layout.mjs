@@ -168,6 +168,45 @@ try {
     await goTo(page, tab);
     await verifyPageLayout(page, `texto 200% / ${tab}`);
   }
+  // A high balance must reflow in dialogs when the user enlarges text.
+  await page.evaluate(() => {
+    const data = JSON.parse(localStorage.getItem("saldo-data-v1"));
+    data.cards[0].name = "Cartão principal para compras e serviços";
+    data.cards[0].limitCents = 100_000_000_000;
+    data.purchases[0].totalCents = 99_999_999_999;
+    data.purchases[0].paid = 0;
+    data.settings.motion = false;
+    localStorage.setItem("saldo-data-v1", JSON.stringify(data));
+  });
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { name: "Resumo do mês", exact: true }),
+  ).toBeVisible();
+  await page.evaluate(() => {
+    document.documentElement.style.fontSize = "175%";
+  });
+  await goTo(page, "Meus cartões");
+  await page
+    .getByRole("button", { name: /^Ver detalhes do cartão/ })
+    .first()
+    .click();
+  const dialog = page.getByRole("dialog");
+  await expect
+    .poll(() => dialog.evaluate((el) => el.scrollWidth - el.clientWidth))
+    .toBeLessThanOrEqual(1);
+  await dialog.press("Escape");
+  await goTo(page, "Minhas compras");
+  await page.getByRole("button", { name: "Nova compra", exact: true }).click();
+  await page
+    .getByLabel("Descrição da compra", { exact: true })
+    .fill("Compra com valor alto para conferir a prévia ampliada");
+  await page
+    .getByLabel("Valor total da compra", { exact: true })
+    .fill("999999999,99");
+  await expect
+    .poll(() => dialog.evaluate((el) => el.scrollWidth - el.clientWidth))
+    .toBeLessThanOrEqual(1);
+  await dialog.press("Escape");
   await goTo(page, "Visão geral");
   await page.screenshot({
     path: ".runtime/identity-text-200.png",

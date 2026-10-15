@@ -1,3 +1,5 @@
+import { ActionMenu } from "./action-menu";
+import { Field, useFieldFeedback } from "./field";
 import { useViewFilter } from "../view-state";
 import { SuggestionInput } from "./suggestion-input";
 import { EXAMPLES, nameOptions } from "../suggestions";
@@ -13,13 +15,7 @@ import {
   Trash2,
   Wallet,
 } from "lucide-react";
-import {
-  currentMonth,
-  money,
-  parseMoney,
-  type CashEntry,
-  type Data,
-} from "../domain";
+import { currentMonth, money, type CashEntry, type Data } from "../domain";
 import { localDate, incomeMonth, monthlyBudget } from "../finance";
 import { Dialog, Empty, Panel } from "./ui";
 export function CashForm({
@@ -71,6 +67,7 @@ export function CashForm({
     entry?.status ?? (month > currentMonth() ? "planned" : "received"),
   );
   const [error, setError] = useState("");
+  const feedback = useFieldFeedback();
   return (
     <Dialog
       title={
@@ -84,18 +81,33 @@ export function CashForm({
       onClose={onClose}
     >
       <form
+        {...feedback.formProps}
         className="simple-form"
         onSubmit={async (e) => {
           e.preventDefault();
           setError("");
           try {
-            const cents = parseMoney(amount);
+            if (!description.trim()) {
+              feedback.fail("description", "Descreva este movimento.");
+              return;
+            }
+            if (!source.trim()) {
+              feedback.fail("source", "Informe a origem ou o motivo.");
+              return;
+            }
+            const cents = feedback.money("amount", amount);
+            if (cents === null) return;
             if (
               type === "income" &&
               status === "received" &&
               date > localDate()
-            )
-              throw new Error("Para datas futuras, escolha entrada prevista.");
+            ) {
+              feedback.fail(
+                "date",
+                "Para datas futuras, escolha entrada prevista.",
+              );
+              return;
+            }
             if (!cents || !description.trim() || !source.trim())
               throw new Error(
                 "Informe descrição, origem e um valor maior que zero.",
@@ -118,7 +130,7 @@ export function CashForm({
           }
         }}
       >
-        <label>
+        <Field data-field="description" error={feedback.issues.description}>
           Descrição do movimento
           <SuggestionInput
             aria-label="Descrição do movimento"
@@ -130,9 +142,9 @@ export function CashForm({
             suggestions={names}
             placeholder="Ex.: Salário, serviço, reembolso..."
           />
-        </label>
+        </Field>
         <div className="form-row">
-          <label>
+          <Field>
             Tipo de movimento
             <select
               aria-label="Tipo de movimento"
@@ -142,8 +154,8 @@ export function CashForm({
               <option value="income">Entrada de dinheiro</option>
               <option value="deduction">Redução / outro gasto</option>
             </select>
-          </label>
-          <label>
+          </Field>
+          <Field data-field="date" error={feedback.issues.date}>
             Data do movimento
             <input
               required
@@ -154,9 +166,9 @@ export function CashForm({
               value={date}
               onChange={(e) => setDate(e.target.value)}
             />
-          </label>
+          </Field>
         </div>
-        <label>
+        <Field data-field="source" error={feedback.issues.source}>
           Origem do dinheiro / motivo
           <SuggestionInput
             aria-label="Origem do dinheiro / motivo"
@@ -171,8 +183,8 @@ export function CashForm({
                 : "Ex.: Alimentação, saque, ajuste"
             }
           />
-        </label>
-        <label>
+        </Field>
+        <Field data-field="amount" error={feedback.issues.amount}>
           Valor do movimento
           <div className="money-field large">
             <span>R$</span>
@@ -185,9 +197,9 @@ export function CashForm({
               placeholder="0,00"
             />
           </div>
-        </label>
+        </Field>
         {type === "income" && (
-          <label>
+          <Field>
             Situação da entrada
             <select
               aria-label="Situação da entrada"
@@ -199,7 +211,7 @@ export function CashForm({
               <option value="received">Já recebida</option>
               <option value="planned">Prevista</option>
             </select>
-          </label>
+          </Field>
         )}
         <p className="field-hint">
           Entradas aumentam o dinheiro do mês. Reduções registram outros gastos
@@ -445,22 +457,27 @@ export function CashPage({
                               <Check size={15} />
                             </button>
                           )}
-                          <button
-                            className="icon-button"
+                          <ActionMenu
+                            label={`Mais opções de ${e.description}`}
                             disabled={saving}
-                            aria-label={`Editar movimento ${e.description}`}
-                            onClick={() => onEdit(e)}
                           >
-                            <Pencil size={15} />
-                          </button>
-                          <button
-                            className="icon-button danger-text"
-                            disabled={saving}
-                            aria-label={`Excluir movimento ${e.description}`}
-                            onClick={() => onDelete(e)}
-                          >
-                            <Trash2 size={15} />
-                          </button>
+                            <button
+                              className="icon-button"
+                              disabled={saving}
+                              aria-label={`Editar movimento ${e.description}`}
+                              onClick={() => onEdit(e)}
+                            >
+                              <Pencil size={15} /> Editar
+                            </button>
+                            <button
+                              className="icon-button danger-text"
+                              disabled={saving}
+                              aria-label={`Excluir movimento ${e.description}`}
+                              onClick={() => onDelete(e)}
+                            >
+                              <Trash2 size={15} /> Excluir
+                            </button>
+                          </ActionMenu>
                         </div>
                       </td>
                     </tr>

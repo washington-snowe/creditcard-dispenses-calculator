@@ -35,11 +35,20 @@ export function Dialog({
     const element = ref.current;
     const opener = document.activeElement as HTMLElement | null;
     element?.showModal();
+    element
+      ?.querySelector<HTMLElement>(
+        'input:not([type="hidden"]):not(:disabled), select:not(:disabled), textarea:not(:disabled)',
+      )
+      ?.focus({ preventScroll: true });
     return () => {
       element?.close();
       requestAnimationFrame(() => {
         if (document.querySelector("dialog[open]")) return;
-        if (opener?.isConnected && !opener.closest("dialog"))
+        if (
+          opener?.isConnected &&
+          !opener.closest("dialog") &&
+          opener.checkVisibility()
+        )
           opener.focus({ preventScroll: true });
         else
           document

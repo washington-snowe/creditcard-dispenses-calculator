@@ -1,4 +1,9 @@
-import { goTo } from "./navigation.mjs";
+import {
+  goTo,
+  recordAction,
+  payCardAction,
+  openCardDetails,
+} from "./navigation.mjs";
 import { expect } from "playwright/test";
 import { readFile } from "node:fs/promises";
 const version = JSON.parse(
@@ -41,9 +46,7 @@ export async function runMoney(page) {
   await page.getByLabel("Buscar entradas").fill("recebido");
   await expect(page.locator(".cash-table tbody tr")).toHaveCount(1);
   await page.getByLabel("Buscar entradas").fill("");
-  await page
-    .getByRole("button", { name: "Editar movimento Ajuste de caixa" })
-    .click();
+  await recordAction(page, "Editar movimento Ajuste de caixa");
   await page.getByLabel("Valor do movimento").fill("250,00");
   await page
     .getByRole("button", { name: "Salvar movimento", exact: true })
@@ -51,9 +54,7 @@ export async function runMoney(page) {
   await expect(page.getByTestId("cash-remaining")).toHaveText(/4\.150,00/);
   await page.getByRole("button", { name: "Desfazer última alteração" }).click();
   await expect(page.getByTestId("cash-remaining")).toHaveText(/4\.200,00/);
-  await page
-    .getByRole("button", { name: "Excluir movimento Ajuste de caixa" })
-    .click();
+  await recordAction(page, "Excluir movimento Ajuste de caixa");
   await page.getByRole("button", { name: "Confirmar", exact: true }).click();
   await expect(page.getByTestId("cash-remaining")).toHaveText(/4\.400,00/);
   await page.getByRole("button", { name: "Desfazer última alteração" }).click();
@@ -92,9 +93,7 @@ export async function runMoney(page) {
   await expect(page.locator(".negative-balance")).toBeVisible();
   await page.getByRole("button", { name: /Voltar ao mês atual/ }).click();
   await page.getByRole("button", { name: "Consultar as faturas" }).click();
-  await page
-    .getByRole("button", { name: "Pagar cartão Principal neste mês" })
-    .click();
+  await payCardAction(page, "Principal");
   await expect(page.getByRole("dialog")).toContainText("Streaming");
   await expect(page.getByRole("dialog")).toContainText("100,00");
   await page.getByRole("button", { name: "Continuar", exact: true }).click();
@@ -108,9 +107,7 @@ export async function runMoney(page) {
     .click();
   await page.getByRole("button", { name: "Continuar", exact: true }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible();
-  await page
-    .getByRole("button", { name: "Editar assinatura Academia", exact: true })
-    .click();
+  await recordAction(page, "Editar assinatura Academia");
   await page.getByLabel("Valor da cobrança").fill("60,00");
   await page
     .getByLabel("Cartão da assinatura")

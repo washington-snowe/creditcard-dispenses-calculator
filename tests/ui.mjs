@@ -85,6 +85,7 @@ try {
   await expect(page.getByRole("status")).toContainText(
     "Não foi possível importar",
   );
+  await expect(page.locator(".toast")).toHaveAttribute("data-tone", "danger");
   await page.getByRole("button", { name: "Visão geral", exact: true }).click();
   await page.evaluate(() => localStorage.clear());
   await page.reload();

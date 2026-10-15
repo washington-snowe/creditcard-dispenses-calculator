@@ -4,11 +4,11 @@ Aplicativo desktop de finanças pessoais em **Node.js + Electron**, com interfac
 
 ## Baixar para Windows
 
-[**Baixar ContaClara 4.2.0 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.2.0/ContaClara-Windows-x64.zip)
+[**Baixar ContaClara 4.3.0 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.3.0/ContaClara-Windows-x64.zip)
 
 Extraia a pasta inteira e abra **saldo.exe**. Não é necessário instalar Node.js. A versão foi compilada e testada no Windows, incluindo os cálculos financeiros e a persistência dos dados após reiniciar o aplicativo.
 
-A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.2.0) também contém o checksum do ZIP.
+A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.3.0) também contém o checksum do ZIP.
 
 ## Executar no computador
 
@@ -61,7 +61,7 @@ A primeira execução começa vazia. O botão **Experimentar exemplo** carrega d
 
 ## Atualizar das versões anteriores
 
-Feche o aplicativo antigo, extraia a pasta da versão 4.2 inteira e execute o novo `saldo.exe`. A pasta de dados permanece a mesma; os registros das versões 1, 2 e 3 são aceitos sem recadastro. Backups antigos também continuam válidos.
+Feche o aplicativo antigo, extraia a pasta da versão 4.3 inteira e execute o novo `saldo.exe`. A pasta de dados permanece a mesma; os registros das versões 1, 2 e 3 são aceitos sem recadastro. Backups antigos também continuam válidos.
 
 A partir da versão 3, abra **Atualizações → Verificar atualizações → Baixar atualização → Reiniciar e atualizar**. O aplicativo consulta as releases estáveis de `washington-snowe/creditcard-dispenses-calculator`, baixa o ZIP por HTTPS e confere SHA-256, caminhos do arquivo e a versão interna do pacote. Não é necessário instalar Node.js ou Git. Alterações no código entram no aplicativo quando uma nova versão é publicada, com seu ZIP e checksum; um commit na branch principal sozinho não gera atualização.
 
@@ -108,6 +108,14 @@ Os arquivos oficiais ficam em `public/brand/logo.png` e `public/brand/icon.png`,
 Em **Aparência**, escolha Claro, Escuro ou Ultra Dark, selecione uma paleta ou use o seletor de cor personalizada. O texto ajusta o contraste à cor escolhida. A tipografia é fixa: Manrope Bold (700) no nome ContaClara, Manrope SemiBold (600) nos títulos e Inter nos menus, formulários, tabelas e valores. Os valores usam números tabulares para manter o alinhamento. As fontes estão incluídas para uso offline; preferências antigas de fonte são ignoradas sem alterar os registros financeiros. Controle glow e movimento separadamente e clique em **Aplicar aparência** para salvar. O aplicativo também respeita a preferência do sistema por movimento reduzido.
 
 As definições de tipografia ficam centralizadas em `src/typography.css`. Os tamanhos relativos acompanham as preferências de texto do navegador e a escala do dispositivo. No desktop, use **Visualizar → Aumentar zoom / Diminuir zoom / Restaurar zoom**, acessível também pelo menu com a tecla Alt no Windows e pelos atalhos padrão. O conteúdo se reorganiza em janelas menores e com texto ampliado. Os nomes técnicos `saldo-desktop`, `saldo.exe` e a pasta de dados são mantidos para preservar a compatibilidade dos registros e do atualizador.
+
+## Desempenho e avisos
+
+Em **Aparência → Desempenho**, ative ou desative **Usar aceleração de hardware**. A preferência é salva imediatamente, acompanha os backups e é aplicada antes da criação da janela na próxima inicialização. Quando mudar a configuração em uso, a tela mostra **Reinício necessário** e o botão **Reiniciar para aplicar**. Também é possível fechar e abrir o programa manualmente. O reinício espera as gravações pendentes; os dados financeiros são preservados. A aceleração fica permitida por padrão. O uso efetivo da GPU depende do computador e do driver; a tela informa a configuração em uso sem prometer ganho de velocidade. No navegador, essa opção fica desativada e o próprio navegador controla a aceleração.
+
+O menu lateral anima a largura junto com o espaço do conteúdo, com entrada e saída suaves dos rótulos. A opção **Animações suaves** e a preferência do sistema por movimento reduzido continuam sendo respeitadas.
+
+As cores de situação são independentes da cor de destaque: **verde** para pagamentos, entradas e saldo positivo; **amarelo** para pendências e atenção; **vermelho** para atrasos, saldo negativo e erros; **azul** para informações. Textos e ícones acompanham as cores para explicar os avisos. Os tons se ajustam aos temas Claro, Escuro e Ultra Dark.
 
 ## Dados e privacidade
 

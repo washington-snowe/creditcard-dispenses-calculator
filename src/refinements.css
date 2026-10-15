@@ -1,0 +1,378 @@
+/* Status colours describe meaning independently of the selected accent. */
+:root {
+  --success: #08764e;
+  --warning: #926000;
+  --danger: #bd3045;
+  --info: #2563a8;
+  --menu-duration: 340ms;
+  --menu-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+:root:is([data-theme="dark"], [data-theme="ultra"]) {
+  --success: #63dfac;
+  --warning: #f5ce67;
+  --danger: #ff929f;
+  --info: #89c5ff;
+}
+[data-tone="success"] {
+  --tone: var(--success);
+}
+[data-tone="warning"] {
+  --tone: var(--warning);
+}
+[data-tone="danger"] {
+  --tone: var(--danger);
+}
+[data-tone="info"] {
+  --tone: var(--info);
+}
+.stat-card[data-tone] {
+  border-color: color-mix(in srgb, var(--tone) 23%, var(--border));
+  border-top: 3px solid var(--tone);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--tone) 6%, var(--surface)),
+    var(--surface)
+  );
+}
+.stat-card[data-tone] > strong {
+  color: var(--tone);
+}
+.welcome-balance[data-tone] .welcome-symbol svg {
+  color: inherit;
+}
+.stat-card[data-tone] .stat-icon,
+.welcome-card[data-tone] .welcome-symbol,
+.welcome-balance[data-tone] .welcome-symbol {
+  background: color-mix(in srgb, var(--tone) 12%, var(--surface));
+  color: var(--tone);
+}
+.welcome-card[data-tone]:is(:hover, :focus-visible) {
+  border-color: var(--tone);
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--tone) 13%, transparent);
+}
+.welcome-card[data-tone] .welcome-card-link {
+  color: var(--tone);
+}
+.welcome-paid {
+  border-color: color-mix(in srgb, var(--success) 30%, var(--border));
+  background: color-mix(in srgb, var(--success) 4%, var(--surface));
+}
+.welcome-paid .welcome-symbol {
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 12%, var(--surface));
+}
+.badge.green {
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 12%, var(--surface));
+}
+.badge.warning {
+  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 12%, var(--surface));
+}
+.expense-late {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, var(--surface));
+}
+.overdue {
+  color: var(--danger) !important;
+}
+.toast[data-tone] {
+  border-color: color-mix(in srgb, var(--tone) 30%, var(--border));
+}
+.toast[data-tone] > span {
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 12%, var(--surface));
+}
+.feedback-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 17px;
+  border: 1px solid color-mix(in srgb, var(--tone) 30%, var(--border));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--tone) 7%, var(--surface));
+  color: var(--secondary);
+  line-height: 1.7;
+}
+.feedback-note > svg {
+  color: var(--tone);
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.feedback-note strong {
+  color: var(--tone);
+}
+.feedback-note p {
+  margin-top: 4px;
+}
+.appearance-controls {
+  display: grid;
+  align-content: start;
+  gap: 22px;
+  min-width: 0;
+}
+.performance-settings {
+  display: grid;
+  gap: 18px;
+  padding: 16px 24px 26px;
+}
+.performance-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.performance-choice > div {
+  min-width: 0;
+}
+.performance-choice p {
+  margin-top: 8px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.performance-choice label {
+  align-items: flex-start;
+  font-weight: 600;
+  color: var(--text);
+}
+.performance-choice input {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.performance-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  color: var(--info);
+  background: color-mix(in srgb, var(--info) 12%, var(--surface));
+  border-radius: 12px;
+}
+.performance-settings > button {
+  justify-self: start;
+}
+
+/* Animate width and the content offset together. Icons retain their anchor;
+   labels fade and slide instead of abruptly appearing with display:none. */
+.app-shell {
+  --rail-width: 76px;
+  --sidebar-size: max(224px, 16rem);
+}
+.app-shell.sidebar-collapsed {
+  --sidebar-size: var(--rail-width);
+}
+.app-shell .sidebar {
+  width: var(--sidebar-size);
+  padding-inline: 18px;
+  overflow-x: clip;
+  transition:
+    width var(--menu-duration) var(--menu-ease),
+    padding-inline var(--menu-duration) var(--menu-ease);
+}
+.app-shell .main-wrapper {
+  margin-left: var(--sidebar-size);
+  width: calc(100% - var(--sidebar-size));
+  transition:
+    margin-left var(--menu-duration) var(--menu-ease),
+    width var(--menu-duration) var(--menu-ease);
+}
+.app-shell.sidebar-collapsed .sidebar {
+  padding-inline: 11px;
+}
+.app-shell .sidebar .brand {
+  min-height: 64px;
+  padding-inline: 0;
+}
+.app-shell .sidebar .brand-lockup.responsive {
+  width: 100%;
+  height: 54px;
+  margin: 0;
+}
+.app-shell .sidebar .brand-full {
+  display: block;
+  width: 232px;
+  transition:
+    opacity 140ms ease,
+    visibility 0s;
+  opacity: 1;
+  visibility: visible;
+}
+.app-shell .sidebar .brand-symbol {
+  display: block;
+  position: absolute;
+  inset: 5px auto auto 4px;
+  width: 44px;
+  height: 44px;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 150ms ease,
+    visibility 0s 150ms;
+}
+.app-shell.sidebar-collapsed .sidebar .brand-full {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 100ms ease,
+    visibility 0s 100ms;
+}
+.app-shell.sidebar-collapsed .sidebar .brand-symbol {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 150ms ease 90ms,
+    visibility 0s;
+}
+.app-shell .sidebar .nav-item,
+.app-shell .sidebar-toggle {
+  justify-content: flex-start;
+  gap: 11px;
+  min-height: 43px;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    padding-inline var(--menu-duration) var(--menu-ease),
+    gap var(--menu-duration) var(--menu-ease);
+}
+.app-shell .sidebar .nav-item {
+  padding-inline: 12px;
+}
+.app-shell .sidebar-toggle > svg {
+  flex-shrink: 0;
+}
+.app-shell .sidebar .nav-item > span,
+.app-shell .sidebar-toggle > span {
+  display: block;
+  max-width: 20rem;
+  white-space: nowrap;
+  opacity: 1;
+  visibility: visible;
+  overflow: clip;
+  transition:
+    opacity 180ms ease 90ms,
+    max-width var(--menu-duration) var(--menu-ease),
+    transform 220ms var(--menu-ease),
+    visibility 0s;
+}
+.app-shell .sidebar-toggle > span {
+  white-space: nowrap;
+}
+.app-shell.sidebar-collapsed .sidebar .nav-item > span,
+.app-shell.sidebar-collapsed .sidebar-toggle > span {
+  max-width: 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-8px);
+  transition:
+    opacity 90ms ease,
+    max-width var(--menu-duration) var(--menu-ease),
+    transform 180ms ease,
+    visibility 0s 90ms;
+}
+.app-shell.sidebar-collapsed .sidebar .nav-item,
+.app-shell.sidebar-collapsed .sidebar-toggle {
+  padding-inline: 17px;
+  gap: 0;
+}
+.app-shell .nav-group-label {
+  display: block;
+  max-height: 3.5rem;
+  overflow: clip;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    max-height var(--menu-duration) var(--menu-ease),
+    padding var(--menu-duration) var(--menu-ease),
+    opacity 160ms ease 90ms,
+    visibility 0s;
+}
+.app-shell.sidebar-collapsed .nav-group-label {
+  max-height: 0;
+  padding-block: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    max-height var(--menu-duration) var(--menu-ease),
+    padding var(--menu-duration) var(--menu-ease),
+    opacity 90ms ease,
+    visibility 0s 90ms;
+}
+.app-shell .nav-group + .nav-group {
+  border-top: 1px solid transparent;
+  padding-top: 0;
+  transition:
+    padding-top var(--menu-duration) var(--menu-ease),
+    border-color var(--menu-duration) ease;
+}
+.app-shell.sidebar-collapsed .nav-group + .nav-group {
+  border-color: var(--border);
+  padding-top: 12px;
+}
+.sidebar-backdrop {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 220ms ease,
+    visibility 0s 220ms;
+}
+.mobile-menu-open .sidebar-backdrop {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 220ms ease,
+    visibility 0s;
+}
+@media (max-width: 1020px) {
+  .app-shell .main-wrapper {
+    margin-left: var(--rail-width);
+    width: calc(100% - var(--rail-width));
+    transition: none;
+  }
+  .app-shell.mobile-menu-open {
+    --sidebar-size: min(280px, calc(100vw - 40px));
+  }
+}
+@media (max-width: 580px) {
+  .app-shell {
+    --rail-width: 58px;
+  }
+  .app-shell.sidebar-collapsed .sidebar {
+    padding-inline: 7px;
+  }
+  .app-shell.sidebar-collapsed .sidebar .nav-item,
+  .app-shell.sidebar-collapsed .sidebar-toggle {
+    padding-inline: 12px;
+  }
+  .app-shell .sidebar .brand {
+    min-height: 54px;
+  }
+  .app-shell .sidebar .brand-symbol {
+    left: 0;
+  }
+  .performance-settings {
+    padding: 14px 18px 22px;
+  }
+  .performance-choice {
+    flex-wrap: wrap;
+  }
+}
+:root[data-glow="off"] .welcome-card {
+  box-shadow: none;
+}
+:root[data-motion="off"] *,
+:root[data-motion="off"] *::before,
+:root[data-motion="off"] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

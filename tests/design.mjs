@@ -122,9 +122,11 @@ export async function verifyNavigation(page) {
       .getByRole("button", { name: "Recolher menu lateral", exact: true })
       .click();
     await expect(page.locator(".app-shell")).toHaveClass(/sidebar-collapsed/);
-    expect(
-      (await page.locator(".main-wrapper").boundingBox()).width,
-    ).toBeGreaterThan(before.width);
+    await expect
+      .poll(
+        async () => (await page.locator(".main-wrapper").boundingBox()).width,
+      )
+      .toBeGreaterThan(before.width);
     await expect(page.locator(".sidebar .brand-symbol")).toBeVisible();
     await page.reload();
     await expect(
@@ -158,5 +160,110 @@ export async function verifyNavigation(page) {
   }
   console.log(
     "Boas-vindas, atalhos por teclado, navegação agrupada e menu recolhível verificados.",
+  );
+}
+
+export async function verifyMotion(page) {
+  await page.getByRole("button", { name: "Aparência", exact: true }).click();
+  await page.getByLabel("Animações suaves", { exact: true }).check();
+  await page
+    .getByRole("button", { name: "Aplicar aparência", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Início", exact: true }).click();
+  const frames = await page.evaluate(async () => {
+    const sidebar = document.querySelector(".sidebar");
+    const main = document.querySelector(".main-wrapper");
+    const start = sidebar.getBoundingClientRect().width;
+    document.querySelector(".sidebar-toggle").click();
+    const samples = [];
+    for (let n = 0; n < 35; n++) {
+      await new Promise(requestAnimationFrame);
+      samples.push({
+        width: sidebar.getBoundingClientRect().width,
+        left: main.getBoundingClientRect().left,
+      });
+    }
+    return { start, samples };
+  });
+  const end = frames.samples.at(-1).width;
+  expect(
+    frames.samples.some(
+      (item) => item.width < frames.start - 1 && item.width > end + 1,
+    ),
+    "o menu deve passar por larguras intermediárias",
+  ).toBeTruthy();
+  for (const item of frames.samples)
+    expect(Math.abs(item.left - item.width)).toBeLessThan(1);
+  await page
+    .getByRole("button", { name: "Expandir menu lateral", exact: true })
+    .click();
+  await expect
+    .poll(() =>
+      page
+        .locator(".sidebar")
+        .evaluate((el) => el.getBoundingClientRect().width),
+    )
+    .toBeCloseTo(frames.start, 0);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  expect(
+    await page
+      .locator(".sidebar")
+      .evaluate((el) => getComputedStyle(el).transitionDuration),
+  ).toBe("0s");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.getByRole("button", { name: "Aparência", exact: true }).click();
+  await page.getByLabel("Animações suaves", { exact: true }).uncheck();
+  await page
+    .getByRole("button", { name: "Aplicar aparência", exact: true })
+    .click();
+  expect(
+    await page
+      .locator(".sidebar")
+      .evaluate((el) => getComputedStyle(el).transitionDuration),
+  ).toBe("0s");
+  await expect(
+    page.getByLabel("Usar aceleração de hardware", { exact: true }),
+  ).toBeDisabled();
+  console.log(
+    "Menu animado com conteúdo sincronizado; preferências de reduzir movimento e opção desktop de hardware verificadas.",
+  );
+}
+
+export async function verifyFeedback(page) {
+  await page.getByRole("button", { name: "Visão geral", exact: true }).click();
+  await expect(page.getByTestId("monthly-total").locator("..")).toHaveAttribute(
+    "data-tone",
+    "warning",
+  );
+  await page
+    .getByRole("button", { name: "Entradas do mês", exact: true })
+    .click();
+  await expect(
+    page.getByTestId("cash-remaining").locator(".."),
+  ).toHaveAttribute("data-tone", "danger");
+  await expect(page.getByTestId("cash-income").locator("..")).toHaveAttribute(
+    "data-tone",
+    "success",
+  );
+  await page.getByRole("button", { name: "Despesas", exact: true }).click();
+  await page.getByRole("button", { name: "Nova despesa", exact: true }).click();
+  await page
+    .getByLabel("Descrição da despesa")
+    .fill("Despesa de teste vencida");
+  await page.getByLabel("Destino / favorecido").fill("Teste");
+  await page.getByLabel("Valor da despesa").fill("90,00");
+  await page.getByLabel("Vencimento da despesa").fill("2000-01-01");
+  await page
+    .getByRole("button", { name: "Salvar despesa", exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).not.toBeVisible();
+  await expect(page.locator(".expense-late")).toHaveText("Atrasada");
+  await expect(
+    page
+      .locator(".stat-card")
+      .filter({ has: page.getByText("Atrasadas", { exact: true }) }),
+  ).toHaveAttribute("data-tone", "danger");
+  console.log(
+    "Cores de pendência, saldo negativo, entradas e atrasos verificadas com dados reais na interface.",
   );
 }

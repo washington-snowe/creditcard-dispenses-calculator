@@ -1,4 +1,9 @@
-import { verifyChartTooltips, verifyNavigation } from "./design.mjs";
+import {
+  verifyChartTooltips,
+  verifyNavigation,
+  verifyMotion,
+  verifyFeedback,
+} from "./design.mjs";
 import { chromium, expect } from "playwright/test";
 import { spawn } from "node:child_process";
 import { mkdir } from "node:fs/promises";
@@ -60,6 +65,8 @@ try {
     .click();
   await page.getByRole("button", { name: "Continuar", exact: true }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible();
+  await verifyMotion(page);
+  await verifyFeedback(page);
   // Version 4 backups may contain a user-selected font. Importing them must not
   // re-enable font selection or change the new official typefaces.
   await page.evaluate(() => {

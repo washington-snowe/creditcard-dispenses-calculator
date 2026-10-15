@@ -411,7 +411,7 @@ export function SubscriptionsPage({
                         {occurrence ? (
                           <>
                             <span
-                              className={`badge ${occurrence.paid ? "green" : "accent-badge"}`}
+                              className={`badge ${occurrence.paid ? "green" : "warning"}`}
                             >
                               {occurrence.paid ? "Paga" : "A pagar"}
                             </span>

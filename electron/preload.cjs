@@ -1,5 +1,7 @@
 const { contextBridge, ipcRenderer } = require("electron");
 contextBridge.exposeInMainWorld("saldo", {
+  performanceInfo: () => ipcRenderer.invoke("saldo:performance:info"),
+  restart: () => ipcRenderer.invoke("saldo:performance:restart"),
   load: () => ipcRenderer.invoke("saldo:load"),
   save: (data) => ipcRenderer.invoke("saldo:save", data),
   ready: () => ipcRenderer.invoke("saldo:update:ready"),

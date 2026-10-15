@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { WelcomePage } from "./components/welcome";
 import { BrandLogo } from "./components/brand";
 import {
+  TriangleAlert,
+  CircleAlert,
   House,
   PanelLeftClose,
   PanelLeftOpen,
@@ -379,7 +381,16 @@ export default function App() {
   const [filters, setFilters] = useState<Filters>(CLEAR);
   const [month, setMonth] = useState(currentMonth());
   const [modal, setModal] = useState<Modal>(null);
-  const [toast, setToast] = useState("");
+  const [toast, setToastState] = useState<{
+    message: string;
+    tone: "success" | "warning" | "danger";
+  } | null>(null);
+  function setToast(
+    message: string,
+    tone: "success" | "warning" | "danger" = "success",
+  ) {
+    setToastState(message ? { message, tone } : null);
+  }
   const [undo, setUndo] = useState<Data | null>(null);
   const [expandedMonth, setExpandedMonth] = useState<string | null>(null);
   const [sort, setSort] = useState("largest");
@@ -468,7 +479,10 @@ export default function App() {
       setToast(message);
       return true;
     } catch (error) {
-      setToast(`Não foi possível salvar: ${(error as Error).message}`);
+      setToast(
+        `Não foi possível salvar: ${(error as Error).message}`,
+        "danger",
+      );
       return false;
     } finally {
       savingLock.current = false;
@@ -713,6 +727,7 @@ export default function App() {
     ) {
       setToast(
         "Este cartão tem compras vinculadas ou assinaturas associadas. Mova ou exclua esses registros antes de removê-lo.",
+        "warning",
       );
       return;
     }
@@ -760,7 +775,10 @@ export default function App() {
         true,
       );
     } catch (error) {
-      setToast(`Não foi possível importar: ${(error as Error).message}`);
+      setToast(
+        `Não foi possível importar: ${(error as Error).message}`,
+        "danger",
+      );
     }
   }
   async function restoreUndo() {
@@ -1019,8 +1037,11 @@ export default function App() {
     <div
       className={`app-shell ${collapsed ? "sidebar-collapsed" : "sidebar-expanded"} ${mobileMenuOpen ? "mobile-menu-open" : ""}`}
     >
-      {compactViewport && mobileMenuOpen && (
+      {compactViewport && (
         <button
+          aria-hidden={!mobileMenuOpen}
+          tabIndex={mobileMenuOpen ? 0 : -1}
+          disabled={!mobileMenuOpen}
           className="sidebar-backdrop"
           aria-label="Fechar menu lateral"
           onClick={() => {
@@ -1382,7 +1403,10 @@ export default function App() {
           )}
           {hasPurchaseFilters && tab !== "anticipation" && (
             <div className="stats-grid">
-              <div className="stat-card debt">
+              <div
+                className="stat-card debt"
+                data-tone={debt > 0 ? "warning" : "success"}
+              >
                 <div className="stat-title">
                   Saldo parcelado a pagar
                   <span className="stat-icon">
@@ -1395,7 +1419,18 @@ export default function App() {
                   {active.length} compras em andamento
                 </div>
               </div>
-              <div className="stat-card">
+              <div
+                className="stat-card"
+                data-tone={
+                  snapshot.items.some(
+                    (i) => !i.paid && i.scheduledMonth < month,
+                  )
+                    ? "danger"
+                    : snapshot.outstanding > 0
+                      ? "warning"
+                      : "success"
+                }
+              >
                 <div className="stat-title">
                   A pagar no mês selecionado
                   <span className="stat-icon amber">
@@ -1414,7 +1449,10 @@ export default function App() {
                     : " · parcelas pendentes"}
                 </div>
               </div>
-              <div className="stat-card">
+              <div
+                className="stat-card"
+                data-tone={snapshot.paid > 0 ? "success" : "info"}
+              >
                 <div className="stat-title">
                   Cobranças do mês já pagas
                   <span className="stat-icon green">
@@ -1427,7 +1465,10 @@ export default function App() {
                   Total histórico de parcelas: {money(total - debt)}
                 </div>
               </div>
-              <div className="stat-card">
+              <div
+                className="stat-card"
+                data-tone={months.length ? "info" : "success"}
+              >
                 <div className="stat-title">
                   Até a última parcela
                   <span className="stat-icon purple">
@@ -1992,9 +2033,10 @@ export default function App() {
                               ids.length
                                 ? "Sugestão por alívio por real, dentro do orçamento. Você pode ajustar a seleção."
                                 : "Nenhuma compra cabe inteira nesse orçamento. Você pode antecipar parcelas individuais em Minhas compras.",
+                              ids.length ? "success" : "warning",
                             );
                           } catch (error) {
-                            setToast((error as Error).message);
+                            setToast((error as Error).message, "warning");
                           }
                         }}
                       >
@@ -2425,8 +2467,8 @@ export default function App() {
             <AppearancePage
               settings={data.settings ?? { theme: "light" }}
               saving={saving}
-              onSave={(settings) =>
-                commit({ ...data, settings }, "Aparência personalizada.", false)
+              onSave={(settings, message = "Aparência personalizada.") =>
+                commit({ ...data, settings }, message, false)
               }
             />
           )}
@@ -2628,11 +2670,17 @@ export default function App() {
         </Dialog>
       )}
       {toast && (
-        <div className="toast" role="status">
+        <div className="toast" data-tone={toast.tone} role="status">
           <span>
-            <Check size={16} />
+            {toast.tone === "danger" ? (
+              <CircleAlert size={16} />
+            ) : toast.tone === "warning" ? (
+              <TriangleAlert size={16} />
+            ) : (
+              <Check size={16} />
+            )}
           </span>
-          <p>{toast}</p>
+          <p>{toast.message}</p>
           <button
             className="icon-button"
             aria-label="Fechar aviso"

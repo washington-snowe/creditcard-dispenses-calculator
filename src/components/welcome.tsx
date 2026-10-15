@@ -106,7 +106,10 @@ export function WelcomePage({
         className="welcome-summary"
         aria-label="Resumo financeiro do mês"
       >
-        <div className="welcome-balance">
+        <div
+          className="welcome-balance"
+          data-tone={flow.pending > 0 ? "warning" : "success"}
+        >
           <span className="eyebrow">
             <span className="welcome-symbol">
               <Sparkles size={20} />
@@ -124,7 +127,11 @@ export function WelcomePage({
           </button>
         </div>
         {flow.paid > 0 && (
-          <div className="welcome-paid" data-testid="welcome-paid">
+          <div
+            className="welcome-paid"
+            data-testid="welcome-paid"
+            data-tone="success"
+          >
             <span className="welcome-symbol">
               <CheckCheck size={23} />
             </span>
@@ -179,6 +186,13 @@ export function WelcomePage({
           <button
             key={item.id}
             className="welcome-card"
+            data-tone={
+              item.id === "income" || item.id === "anticipation"
+                ? "success"
+                : item.id === "expenses" || item.id === "subscriptions"
+                  ? "warning"
+                  : "info"
+            }
             onClick={() => onNavigate(item.id)}
             aria-label={`Explorar ${item.title}`}
           >

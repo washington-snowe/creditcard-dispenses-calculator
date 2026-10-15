@@ -260,7 +260,7 @@ export function CashPage({
   return (
     <>
       <div className="stats-grid cash-stats">
-        <div className="stat-card">
+        <div className="stat-card" data-tone="success">
           <div className="stat-title">
             Entradas do mês
             <span className="stat-icon green">
@@ -272,7 +272,7 @@ export function CashPage({
             Recebidas · previstas: {money(budget.expectedIncome)}
           </div>
         </div>
-        <div className="stat-card">
+        <div className="stat-card" data-tone="warning">
           <div className="stat-title">
             Reduções e outros gastos
             <span className="stat-icon amber">
@@ -284,7 +284,10 @@ export function CashPage({
             Disponível: {money(budget.net + budget.opening)}
           </div>
         </div>
-        <div className="stat-card">
+        <div
+          className="stat-card"
+          data-tone={budget.pending > 0 ? "warning" : "success"}
+        >
           <div className="stat-title">
             Faturas, assinaturas e despesas
             <span className="stat-icon">
@@ -300,6 +303,7 @@ export function CashPage({
         </div>
         <div
           className={`stat-card debt ${budget.remaining < 0 ? "negative-balance" : ""}`}
+          data-tone={budget.remaining < 0 ? "danger" : "success"}
         >
           <div className="stat-title">
             Quanto sobrará no mês

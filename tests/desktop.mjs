@@ -83,6 +83,60 @@ try {
   );
   expect(await page.evaluate(() => typeof window.saldo?.save)).toBe("function");
   expect(await page.evaluate(() => typeof window.require)).toBe("undefined");
+  await page.getByRole("button", { name: "Aparência", exact: true }).click();
+  await expect(
+    page.getByLabel("Usar aceleração de hardware", { exact: true }),
+  ).toBeEnabled();
+  await page
+    .getByLabel("Usar aceleração de hardware", { exact: true })
+    .uncheck();
+  await expect(page.getByTestId("performance-status")).toContainText(
+    "Reinício necessário",
+  );
+  const preferenceSaved = JSON.parse(
+    await readFile(join(directory, "finances.json"), "utf8"),
+  );
+  expect(preferenceSaved.settings.hardwareAcceleration).toBe(false);
+  for (const field of [
+    "cards",
+    "purchases",
+    "payments",
+    "cashEntries",
+    "expenses",
+    "recurringIncomes",
+    "incomeReceipts",
+    "subscriptions",
+    "subscriptionPayments",
+  ])
+    expect(preferenceSaved[field]).toEqual(expanded[field]);
+  // Observe the native relaunch request without leaving an unowned child
+  // process. The next launches below exercise the real pre-ready decision.
+  await app.evaluate(({ app }) => {
+    globalThis.restartProbe = {
+      relaunch: app.relaunch,
+      quit: app.quit,
+      relaunches: 0,
+      quits: 0,
+    };
+    app.relaunch = () => {
+      globalThis.restartProbe.relaunches++;
+    };
+    app.quit = () => {
+      globalThis.restartProbe.quits++;
+    };
+  });
+  await page
+    .getByRole("button", { name: "Reiniciar para aplicar", exact: true })
+    .click();
+  await expect
+    .poll(() => app.evaluate(() => globalThis.restartProbe.quits))
+    .toBe(1);
+  expect(await app.evaluate(() => globalThis.restartProbe.relaunches)).toBe(1);
+  await app.evaluate(({ app }) => {
+    app.relaunch = globalThis.restartProbe.relaunch;
+    app.quit = globalThis.restartProbe.quit;
+    delete globalThis.restartProbe;
+  });
   await app.close();
   app = undefined;
   app = await electron.launch({
@@ -94,6 +148,15 @@ try {
   await expect(
     restarted.getByRole("heading", { name: "Boas-vindas ao ContaClara." }),
   ).toBeVisible();
+  expect(
+    await app.evaluate(({ app }) => app.isHardwareAccelerationEnabled()),
+  ).toBe(false);
+  const disabledInfo = await restarted.evaluate(() =>
+    window.saldo.performanceInfo(),
+  );
+  expect(disabledInfo.enabledAtLaunch).toBe(false);
+  expect(disabledInfo.accelerationEnabled).toBe(false);
+
   await expect(restarted.locator("html")).toHaveAttribute(
     "data-theme",
     "ultra",
@@ -115,9 +178,57 @@ try {
   await expect(restarted.locator(".purchase-table tbody")).toContainText(
     "Teste de centavos",
   );
+  await restarted
+    .getByRole("button", { name: "Aparência", exact: true })
+    .click();
+  await expect(restarted.getByTestId("performance-status")).toContainText(
+    "Aceleração desativada",
+  );
+  await expect(
+    restarted.getByRole("button", {
+      name: "Reiniciar para aplicar",
+      exact: true,
+    }),
+  ).toHaveCount(0);
+  await restarted
+    .getByLabel("Usar aceleração de hardware", { exact: true })
+    .check();
+  await expect(restarted.getByTestId("performance-status")).toContainText(
+    "Reinício necessário",
+  );
   expect(errors).toEqual([]);
   await app.close();
   app = undefined;
+  app = await electron.launch({
+    executablePath,
+    args,
+    env: { ...process.env, SALDO_DATA_DIR: directory },
+  });
+  const enabledAgain = await app.firstWindow();
+  await enabledAgain
+    .getByRole("button", { name: "Aparência", exact: true })
+    .click();
+  await expect(
+    enabledAgain.getByLabel("Usar aceleração de hardware", { exact: true }),
+  ).toBeChecked();
+  await expect(enabledAgain.getByTestId("performance-status")).toContainText(
+    "Aceleração permitida",
+  );
+  expect(
+    (await enabledAgain.evaluate(() => window.saldo.performanceInfo()))
+      .enabledAtLaunch,
+  ).toBe(true);
+  const enabledData = JSON.parse(
+    await readFile(join(directory, "finances.json"), "utf8"),
+  );
+  expect(enabledData.settings.hardwareAcceleration).toBe(true);
+  expect(enabledData.purchases).toEqual(preferenceSaved.purchases);
+  expect(enabledData.cashEntries).toEqual(preferenceSaved.cashEntries);
+  await app.close();
+  app = undefined;
+  console.log(
+    "Aceleração desativada antes de ready, reativação, botão de reinício e preservação financeira verificados no Electron.",
+  );
   const legacy = {
     version: 1,
     cards: saved.cards,

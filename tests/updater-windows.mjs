@@ -203,6 +203,7 @@ try {
       font: "inter",
       motion: false,
       glow: true,
+      hardwareAcceleration: false,
       carryover: { startMonth: month, openingCents: -12000 },
     },
     recurringIncomes: [

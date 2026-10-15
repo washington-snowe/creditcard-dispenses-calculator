@@ -175,3 +175,26 @@ test("despesas vencidas aparecem no mês atual, sem se acumular artificialmente 
   assert.equal(expenseMonth(data(), now).length, 1);
   assert.equal(expenseMonth(data(), future).length, 0);
 });
+
+test("preferência de hardware persiste no backup e rejeita valores inválidos", () => {
+  for (const hardwareAcceleration of [true, false]) {
+    const source = {
+      ...data(),
+      settings: {
+        theme: "ultra",
+        hardwareAcceleration,
+        sidebarCollapsed: true,
+      },
+    };
+    const result = validateData(source);
+    assert.equal(result.settings?.hardwareAcceleration, hardwareAcceleration);
+    assert.equal(result.settings?.sidebarCollapsed, true);
+    assert.deepEqual(result.cards, source.cards);
+  }
+  assert.throws(() =>
+    validateData({
+      ...data(),
+      settings: { theme: "light", hardwareAcceleration: "false" },
+    }),
+  );
+});

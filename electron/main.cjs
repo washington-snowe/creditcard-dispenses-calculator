@@ -3,6 +3,7 @@ const { spawn } = require("node:child_process");
 const { createUpdater, REPOSITORY } = require("./updater.cjs");
 const { createGitHubFetch } = require("./github-fetch.cjs");
 const fs = require("node:fs/promises");
+const fsSync = require("node:fs");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 let window;
@@ -11,6 +12,19 @@ let writes = Promise.resolve();
 if (process.env.SALDO_DATA_DIR)
   app.setPath("userData", path.resolve(process.env.SALDO_DATA_DIR));
 const dataPath = () => path.join(app.getPath("userData"), "finances.json");
+// Electron requires this decision before ready. The same validated preference
+// lives in finances.json, so backups and updates preserve the user's choice.
+let hardwareEnabledAtLaunch = true;
+try {
+  if (fsSync.statSync(dataPath()).size <= 5_000_000) {
+    const saved = JSON.parse(fsSync.readFileSync(dataPath(), "utf8"));
+    hardwareEnabledAtLaunch = saved?.settings?.hardwareAcceleration !== false;
+  }
+} catch {
+  /* Missing or corrupt financial data is handled by saldo:load. */
+}
+if (!hardwareEnabledAtLaunch) app.disableHardwareAcceleration();
+
 const index = pathToFileURL(path.join(__dirname, "../dist/index.html")).href;
 const updater = createUpdater({
   currentVersion: app.getVersion(),
@@ -91,6 +105,25 @@ app.whenReady().then(async () => {
       },
     ]),
   );
+  ipcMain.handle("saldo:performance:info", (event) => {
+    checkSender(event);
+    return {
+      enabledAtLaunch: hardwareEnabledAtLaunch,
+      accelerationEnabled: app.isHardwareAccelerationEnabled(),
+      gpuCompositing: app.getGPUFeatureStatus().gpu_compositing ?? "unknown",
+    };
+  });
+  let restarting = false;
+  ipcMain.handle("saldo:performance:restart", async (event) => {
+    checkSender(event);
+    await writes;
+    if (!restarting) {
+      restarting = true;
+      app.relaunch();
+      setTimeout(() => app.quit(), 200);
+    }
+    return { restarting: true };
+  });
   ipcMain.handle("saldo:update:releases", (event) => {
     checkSender(event);
     return shell.openExternal(`${REPOSITORY}/releases/latest`);

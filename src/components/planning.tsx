@@ -405,7 +405,7 @@ export function IncomePlanning({
                       </td>
                       <td>
                         <span
-                          className={`badge ${o?.receipt ? "green" : "accent-badge"}`}
+                          className={`badge ${o?.receipt ? "green" : "warning"}`}
                         >
                           {o?.receipt
                             ? "Recebida"
@@ -768,24 +768,30 @@ export function ExpensesPage({
   return (
     <>
       <div className="stats-grid">
-        <div className="stat-card debt">
+        <div className="stat-card debt" data-tone="info">
           <div className="stat-title">Despesas no período</div>
           <strong>{money(sum(period))}</strong>
           <div className="stat-foot">Inclui atrasadas no mês atual</div>
         </div>
-        <div className="stat-card">
+        <div
+          className="stat-card"
+          data-tone={pending > 0 ? "warning" : "success"}
+        >
           <div className="stat-title">Ainda falta pagar</div>
           <strong data-testid="expense-pending">{money(pending)}</strong>
           <div className="stat-foot">Contas fora dos cartões</div>
         </div>
-        <div className="stat-card">
+        <div
+          className="stat-card"
+          data-tone={period.some(late) ? "danger" : "info"}
+        >
           <div className="stat-title">Atrasadas</div>
           <strong className="danger-text">
             {money(sum(period.filter(late)))}
           </strong>
           <div className="stat-foot">Vencimento anterior a hoje</div>
         </div>
-        <div className="stat-card">
+        <div className="stat-card" data-tone="success">
           <div className="stat-title">Pagamentos neste mês</div>
           <strong>
             {money(
@@ -874,7 +880,7 @@ export function ExpensesPage({
                     <td>{e.dueDate.split("-").reverse().join("/")}</td>
                     <td>
                       <span
-                        className={`badge ${e.paidDate ? "green" : late(e) ? "expense-late" : "accent-badge"}`}
+                        className={`badge ${e.paidDate ? "green" : late(e) ? "expense-late" : "warning"}`}
                       >
                         {e.paidDate
                           ? "Paga"

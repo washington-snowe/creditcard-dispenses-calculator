@@ -89,6 +89,7 @@ export async function runFlow(page) {
   await expect(page.locator(".card-summary tfoot")).toContainText("66,66");
   await page.getByRole("button", { name: "Excluir cartão Principal" }).click();
   await expect(page.getByRole("status")).toContainText("compras vinculadas");
+  await expect(page.locator(".toast")).toHaveAttribute("data-tone", "warning");
   await expect(page.getByRole("dialog")).not.toBeVisible();
   await page.getByRole("button", { name: "Planejamento", exact: true }).click();
   await page.getByLabel("Filtrar por cartão").selectOption("all");

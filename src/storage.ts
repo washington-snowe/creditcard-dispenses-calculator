@@ -2,6 +2,8 @@ import { EMPTY, validateData, type Data } from "./domain";
 declare global {
   interface Window {
     saldo?: {
+      performanceInfo?: () => Promise<PerformanceInfo>;
+      restart?: () => Promise<{ restarting: boolean }>;
       load: () => Promise<unknown>;
       save: (data: Data) => Promise<void>;
       ready?: () => Promise<void>;
@@ -17,6 +19,11 @@ declare global {
     };
   }
 }
+export type PerformanceInfo = {
+  enabledAtLaunch: boolean;
+  accelerationEnabled: boolean;
+  gpuCompositing: string;
+};
 export type UpdateInfo = {
   currentVersion: string;
   canInstall: boolean;

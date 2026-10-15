@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from "react";
 import { Check, Moon, Sparkles, Sun } from "lucide-react";
 import type { Settings } from "../domain";
+import { PerformancePanel } from "./performance";
 import { BrandLogo } from "./brand";
 import { Panel } from "./ui";
 export const ACCENTS = [
@@ -69,7 +70,7 @@ export function AppearancePage({
 }: {
   settings: Settings;
   saving: boolean;
-  onSave: (s: Settings) => Promise<boolean>;
+  onSave: (s: Settings, message?: string) => Promise<boolean>;
 }) {
   const [theme, setTheme] = useState(settings.theme),
     [accent, setAccent] = useState(settings.accent ?? ACCENTS[0]),
@@ -92,100 +93,103 @@ export function AppearancePage({
   ];
   return (
     <div className="appearance-layout">
-      <Panel
-        title="Seu ContaClara, do seu jeito"
-        subtitle="Tema, cores e movimento, do seu jeito."
-      >
-        <form
-          className="appearance-form"
-          onSubmit={async (e) => {
-            e.preventDefault();
-            await onSave({ ...settings, theme, accent, glow, motion });
-          }}
+      <div className="appearance-controls">
+        <Panel
+          title="Seu ContaClara, do seu jeito"
+          subtitle="Tema, cores e movimento, do seu jeito."
         >
-          <fieldset>
-            <legend>Tema da interface</legend>
-            <div className="theme-choices">
-              {themes.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  aria-pressed={theme === t.id}
-                  className={`theme-choice ${t.id} ${theme === t.id ? "selected" : ""}`}
-                  onClick={() => setTheme(t.id)}
-                >
-                  <span className="theme-mini">
-                    <i />
-                    <i />
-                    <i />
-                  </span>
-                  <t.icon size={18} />
-                  <strong>{t.name}</strong>
-                  <small>{t.text}</small>
-                  {theme === t.id && (
-                    <Check className="choice-check" size={16} />
-                  )}
-                </button>
-              ))}
-            </div>
-          </fieldset>
-          <fieldset>
-            <legend>Cor de destaque</legend>
-            <div className="accent-choices">
-              {ACCENTS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  className="accent-swatch"
-                  aria-label={`Usar cor ${c}`}
-                  aria-pressed={c === accent}
-                  style={{ background: c }}
-                  onClick={() => setAccent(c)}
-                >
-                  {c === accent && <Check size={18} />}
-                </button>
-              ))}
-              <label className="custom-accent">
-                Cor personalizada
+          <form
+            className="appearance-form"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              await onSave({ ...settings, theme, accent, glow, motion });
+            }}
+          >
+            <fieldset>
+              <legend>Tema da interface</legend>
+              <div className="theme-choices">
+                {themes.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    aria-pressed={theme === t.id}
+                    className={`theme-choice ${t.id} ${theme === t.id ? "selected" : ""}`}
+                    onClick={() => setTheme(t.id)}
+                  >
+                    <span className="theme-mini">
+                      <i />
+                      <i />
+                      <i />
+                    </span>
+                    <t.icon size={18} />
+                    <strong>{t.name}</strong>
+                    <small>{t.text}</small>
+                    {theme === t.id && (
+                      <Check className="choice-check" size={16} />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Cor de destaque</legend>
+              <div className="accent-choices">
+                {ACCENTS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    className="accent-swatch"
+                    aria-label={`Usar cor ${c}`}
+                    aria-pressed={c === accent}
+                    style={{ background: c }}
+                    onClick={() => setAccent(c)}
+                  >
+                    {c === accent && <Check size={18} />}
+                  </button>
+                ))}
+                <label className="custom-accent">
+                  Cor personalizada
+                  <input
+                    aria-label="Cor personalizada do tema"
+                    type="color"
+                    value={accent}
+                    onChange={(e) => setAccent(e.target.value)}
+                  />
+                  <span>{accent.toUpperCase()}</span>
+                </label>
+              </div>
+            </fieldset>
+            <div className="effects-choices">
+              <label className="check-line">
                 <input
-                  aria-label="Cor personalizada do tema"
-                  type="color"
-                  value={accent}
-                  onChange={(e) => setAccent(e.target.value)}
+                  type="checkbox"
+                  checked={glow}
+                  onChange={(e) => setGlow(e.target.checked)}
                 />
-                <span>{accent.toUpperCase()}</span>
+                Efeitos de glow
+              </label>
+              <label className="check-line">
+                <input
+                  type="checkbox"
+                  checked={motion}
+                  onChange={(e) => setMotion(e.target.checked)}
+                />
+                Animações suaves
               </label>
             </div>
-          </fieldset>
-          <div className="effects-choices">
-            <label className="check-line">
-              <input
-                type="checkbox"
-                checked={glow}
-                onChange={(e) => setGlow(e.target.checked)}
-              />
-              Efeitos de glow
-            </label>
-            <label className="check-line">
-              <input
-                type="checkbox"
-                checked={motion}
-                onChange={(e) => setMotion(e.target.checked)}
-              />
-              Animações suaves
-            </label>
-          </div>
-          <p className="field-hint">
-            A identidade tipográfica usa Manrope nos títulos e Inter na
-            interface, com fontes incluídas para uso offline. O contraste dos
-            textos se adapta à cor escolhida. A preferência de reduzir movimento
-            do Windows é respeitada.
-          </p>
-          <button className="button primary" disabled={saving}>
-            Aplicar aparência
-          </button>
-        </form>
-      </Panel>
+            <p className="field-hint">
+              A identidade tipográfica usa Manrope nos títulos e Inter na
+              interface, com fontes incluídas para uso offline. O contraste dos
+              textos se adapta à cor escolhida. A preferência de reduzir
+              movimento do Windows é respeitada.
+            </p>
+            <button className="button primary" disabled={saving}>
+              Aplicar aparência
+            </button>
+          </form>
+        </Panel>
+        <PerformancePanel settings={settings} saving={saving} onSave={onSave} />
+      </div>
       <div
         className={`appearance-preview ${theme}`}
         style={{ "--preview-accent": accent } as CSSProperties}

@@ -45,6 +45,7 @@ export type Settings = {
   glow?: boolean;
   motion?: boolean;
   sidebarCollapsed?: boolean;
+  hardwareAcceleration?: boolean;
   carryover?: { startMonth: string; openingCents: number };
 };
 export type RecurringIncome = {
@@ -531,6 +532,8 @@ export function validateData(input: unknown): Data {
       (x.settings.glow !== undefined && typeof x.settings.glow !== "boolean") ||
       (x.settings.motion !== undefined &&
         typeof x.settings.motion !== "boolean") ||
+      (x.settings.hardwareAcceleration !== undefined &&
+        typeof x.settings.hardwareAcceleration !== "boolean") ||
       (x.settings.sidebarCollapsed !== undefined &&
         typeof x.settings.sidebarCollapsed !== "boolean") ||
       (x.settings.carryover !== undefined &&
@@ -758,6 +761,9 @@ export function validateData(input: unknown): Data {
             ...(x.settings.glow !== undefined ? { glow: x.settings.glow } : {}),
             ...(x.settings.motion !== undefined
               ? { motion: x.settings.motion }
+              : {}),
+            ...(x.settings.hardwareAcceleration !== undefined
+              ? { hardwareAcceleration: x.settings.hardwareAcceleration }
               : {}),
             ...(x.settings.sidebarCollapsed !== undefined
               ? { sidebarCollapsed: x.settings.sidebarCollapsed }

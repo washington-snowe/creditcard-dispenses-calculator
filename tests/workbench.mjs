@@ -29,7 +29,7 @@ export async function runWorkbench(page) {
   ).toHaveCount(0);
   await nav(page, "Mover Disponível para gastar para baixo");
   await expect
-    .poll(async () => (await readData(page)).settings.homeWidgets[1])
+    .poll(async () => (await readData(page)).settings.homeWidgets?.[1])
     .toBe("available");
   await nav(page, "Restaurar organização padrão");
   await expect(

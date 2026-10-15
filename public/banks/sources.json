@@ -8,8 +8,10 @@
   },
   {
     "bank": "Itaú",
+    "file": "itau.png",
     "website": "https://www.itau.com.br/",
-    "error": "HTTP Error 404: Not Found"
+    "source": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://www.itau.com.br&size=128",
+    "sha256": "14b403556fae1a69618c01f0e48d363e3138aeda853517f6cef7f0a364b982f6"
   },
   {
     "bank": "Banco do Brasil",
@@ -41,13 +43,17 @@
   },
   {
     "bank": "Caixa",
+    "file": "caixa.png",
     "website": "https://www.caixa.gov.br/",
-    "error": "HTTP Error 302: The HTTP server returned a redirect error that would lead to an infinite loop.\nThe last 30x error message was:\nObject Moved"
+    "source": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://www.caixa.gov.br&size=128",
+    "sha256": "2839fa2f57c7a61a61343acdba026948ef4ab7fbe2b9f85e60e88fa9878a41cb"
   },
   {
     "bank": "C6 Bank",
+    "file": "c6.png",
     "website": "https://www.c6bank.com.br/",
-    "error": "HTTP Error 403: Forbidden"
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://www.c6bank.com.br&size=128",
+    "sha256": "9f07f267fc589f775dff4967c6f9029ebbb83d792d81586c83ae97429f4aa026"
   },
   {
     "bank": "BTG Pactual",
@@ -65,7 +71,9 @@
   },
   {
     "bank": "PicPay",
+    "file": "picpay.png",
     "website": "https://picpay.com/",
-    "error": "Response is not a supported image"
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://picpay.com&size=128",
+    "sha256": "04b0c08abe3faca6f66fc7695bc221698da35db367134745236cf76e7f42261f"
   }
 ]

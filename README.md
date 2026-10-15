@@ -4,11 +4,11 @@ Aplicativo desktop de finanças pessoais em **Node.js + Electron**, com interfac
 
 ## Baixar para Windows
 
-[**Baixar ContaClara 4.3.0 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.3.0/ContaClara-Windows-x64.zip)
+[**Baixar ContaClara 4.4.0 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.4.0/ContaClara-Windows-x64.zip)
 
 Extraia a pasta inteira e abra **saldo.exe**. Não é necessário instalar Node.js. A versão foi compilada e testada no Windows, incluindo os cálculos financeiros e a persistência dos dados após reiniciar o aplicativo.
 
-A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.3.0) também contém o checksum do ZIP.
+A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.4.0) também contém o checksum do ZIP.
 
 ## Executar no computador
 
@@ -61,7 +61,7 @@ A primeira execução começa vazia. O botão **Experimentar exemplo** carrega d
 
 ## Atualizar das versões anteriores
 
-Feche o aplicativo antigo, extraia a pasta da versão 4.3 inteira e execute o novo `saldo.exe`. A pasta de dados permanece a mesma; os registros das versões 1, 2 e 3 são aceitos sem recadastro. Backups antigos também continuam válidos.
+Feche o aplicativo antigo, extraia a pasta da versão 4.4 inteira e execute o novo `saldo.exe`. A pasta de dados permanece a mesma; os registros das versões 1, 2 e 3 são aceitos sem recadastro. Backups antigos também continuam válidos.
 
 A partir da versão 3, abra **Atualizações → Verificar atualizações → Baixar atualização → Reiniciar e atualizar**. O aplicativo consulta as releases estáveis de `washington-snowe/creditcard-dispenses-calculator`, baixa o ZIP por HTTPS e confere SHA-256, caminhos do arquivo e a versão interna do pacote. Não é necessário instalar Node.js ou Git. Alterações no código entram no aplicativo quando uma nova versão é publicada, com seu ZIP e checksum; um commit na branch principal sozinho não gera atualização.
 
@@ -108,6 +108,14 @@ Os arquivos oficiais ficam em `public/brand/logo.png` e `public/brand/icon.png`,
 Em **Aparência**, escolha Claro, Escuro ou Ultra Dark, selecione uma paleta ou use o seletor de cor personalizada. O texto ajusta o contraste à cor escolhida. A tipografia é fixa: Manrope Bold (700) no nome ContaClara, Manrope SemiBold (600) nos títulos e Inter nos menus, formulários, tabelas e valores. Os valores usam números tabulares para manter o alinhamento. As fontes estão incluídas para uso offline; preferências antigas de fonte são ignoradas sem alterar os registros financeiros. Controle glow e movimento separadamente e clique em **Aplicar aparência** para salvar. O aplicativo também respeita a preferência do sistema por movimento reduzido.
 
 As definições de tipografia ficam centralizadas em `src/typography.css`. Os tamanhos relativos acompanham as preferências de texto do navegador e a escala do dispositivo. No desktop, use **Visualizar → Aumentar zoom / Diminuir zoom / Restaurar zoom**, acessível também pelo menu com a tecla Alt no Windows e pelos atalhos padrão. O conteúdo se reorganiza em janelas menores e com texto ampliado. Os nomes técnicos `saldo-desktop`, `saldo.exe` e a pasta de dados são mantidos para preservar a compatibilidade dos registros e do atualizador.
+
+## Sugestões de preenchimento e categorias
+
+Os nomes de compras, assinaturas, despesas, entradas, rendas e cartões oferecem uma continuação discreta após duas letras, com preferência por nomes já cadastrados. Fornecedores, origens e favorecidos também aproveitam os registros locais. Pressione **Tab** para aceitar a parte opaca; o foco permanece no campo e o próximo Tab avança normalmente. **Shift+Tab** volta ao campo anterior. **Esc** dispensa a sugestão sem fechar o formulário. Sem sugestão, ou com o cursor no meio do texto, Tab mantém a navegação normal. A continuação nunca é gravada sem ser aceita. O preenchimento funciona offline e não envia os lançamentos a serviços externos.
+
+Ao criar uma compra, assinatura ou despesa, o nome pode selecionar uma categoria provável: por exemplo, Notebook → Tecnologia, Netflix → Lazer, Conta de luz → Casa e Uber → Transporte. Correspondências com registros existentes usam a categoria mais frequente do mesmo nome; em empate, prevalece o cadastro mais recente. **A seleção é uma sugestão e pode precisar de correção.** Ao escolher uma categoria manualmente, a detecção para naquele formulário. Use **Detectar pelo nome** para retomá-la. Ao editar um registro, a categoria existente é preservada até você escolher alterá-la ou pedir a detecção.
+
+Os cartões, incluindo suas prévias, mostram os símbolos reais dos 11 bancos da lista. As imagens são incluídas no aplicativo, com cores e proporções originais, sobre uma base clara para manter contraste nos três temas. Bancos personalizados sem imagem correspondente usam um ícone neutro e o nome informado. As fontes e checksums das imagens ficam em `public/banks/sources.json`; parte dos favicons foi obtida do cache público dos sites oficiais. O aplicativo não consulta esse serviço durante o uso. As marcas pertencem às respectivas instituições.
 
 ## Desempenho e avisos
 

@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { SuggestionInput } from "./suggestion-input";
+import { CategoryHint, useSmartCategory } from "./smart-category";
+import { EXAMPLES, nameOptions, categoryHistory } from "../suggestions";
+import { useMemo, useState } from "react";
 import {
   ArrowRight,
   CalendarDays,
@@ -19,6 +22,7 @@ import {
   monthLabel,
   parseMoney,
   remaining,
+  type Data,
   type Card,
   type Purchase,
 } from "../domain";
@@ -26,16 +30,22 @@ import { Dialog, PlasticCard } from "./ui";
 const uid = () => crypto.randomUUID();
 export function CardForm({
   card,
+  data,
   saving,
   onSave,
   onClose,
 }: {
   card?: Card;
+  data?: Data;
   saving: boolean;
   onSave: (card: Card) => Promise<boolean>;
   onClose: () => void;
 }) {
   const [name, setName] = useState(card?.name ?? "");
+  const names = useMemo(
+    () => nameOptions(data?.cards.map((c) => c.name) ?? [], EXAMPLES.card),
+    [data],
+  );
   const [bank, setBank] = useState(
     card && !BANKS.includes(card.bank) ? "Outro" : (card?.bank ?? "Nubank"),
   );
@@ -100,12 +110,14 @@ export function CardForm({
             </div>
             <label>
               Nome do cartão
-              <input
+              <SuggestionInput
+                aria-label="Nome do cartão"
                 autoFocus
                 required
                 maxLength={50}
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onValueChange={setName}
+                suggestions={names}
                 placeholder="Ex.: Meu roxinho"
               />
             </label>
@@ -124,11 +136,13 @@ export function CardForm({
             {bank === "Outro" && (
               <label>
                 Nome do banco
-                <input
+                <SuggestionInput
+                  aria-label="Nome do banco"
                   required
                   maxLength={50}
                   value={customBank}
-                  onChange={(e) => setCustomBank(e.target.value)}
+                  onValueChange={setCustomBank}
+                  suggestions={BANKS.filter((b) => b !== "Outro")}
                   placeholder="Seu banco"
                 />
               </label>
@@ -231,6 +245,7 @@ export function CardForm({
 }
 export function PurchaseForm({
   purchase,
+  data,
   cards,
   cardId,
   saving,
@@ -239,6 +254,7 @@ export function PurchaseForm({
   onClose,
 }: {
   purchase?: Purchase;
+  data?: Data;
   cards: Card[];
   cardId?: string;
   saving: boolean;
@@ -260,7 +276,21 @@ export function PurchaseForm({
   );
   const [paid, setPaid] = useState(String(purchase?.paid ?? 0));
   const [month, setMonth] = useState(purchase?.nextMonth ?? currentMonth());
-  const [category, setCategory] = useState(purchase?.category ?? CATEGORIES[0]);
+  const history = useMemo(() => categoryHistory(data, "purchase"), [data]);
+  const names = useMemo(
+    () =>
+      nameOptions(
+        history.map((x) => x.name),
+        EXAMPLES.purchase,
+      ),
+    [history],
+  );
+  const smart = useSmartCategory(
+    purchase?.category ?? CATEGORIES[0]!,
+    !!purchase,
+    history,
+  );
+  const { category } = smart;
   const [error, setError] = useState("");
   const selected = cards.find((c) => c.id === selectedCard)!;
   let preview: Purchase | null = null;
@@ -336,12 +366,17 @@ export function PurchaseForm({
             </div>
             <label>
               Descrição da compra
-              <input
+              <SuggestionInput
+                aria-label="Descrição da compra"
                 autoFocus
                 required
                 maxLength={100}
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onValueChange={(value) => {
+                  setDescription(value);
+                  smart.onName(value);
+                }}
+                suggestions={names}
                 placeholder="Ex.: Notebook, sofá ou uma viagem"
               />
             </label>
@@ -387,7 +422,7 @@ export function PurchaseForm({
                 <select
                   aria-label="Categoria"
                   value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+                  onChange={(e) => smart.choose(e.target.value)}
                 >
                   {CATEGORIES.map((c) => (
                     <option key={c}>{c}</option>
@@ -409,6 +444,7 @@ export function PurchaseForm({
                 </select>
               </label>
             </div>
+            <CategoryHint state={smart} name={description} />
             <label>
               {mode === "total"
                 ? "Valor total da compra"

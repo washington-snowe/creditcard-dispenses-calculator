@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { SuggestionInput } from "./suggestion-input";
+import { CategoryHint, useSmartCategory } from "./smart-category";
+import { EXAMPLES, nameOptions, categoryHistory } from "../suggestions";
+import { useMemo, useState } from "react";
 import {
   Banknote,
   Check,
@@ -94,12 +97,14 @@ export function Settlement({
 }
 export function RecurringForm({
   rule,
+  data,
   month,
   saving,
   onSave,
   onClose,
 }: {
   rule?: RecurringIncome;
+  data?: Data;
   month: string;
   saving: boolean;
   onSave: Save<RecurringIncome>;
@@ -117,6 +122,25 @@ export function RecurringForm({
     [start, setStart] = useState(rule?.startMonth ?? month),
     [end, setEnd] = useState(rule?.endMonth ?? ""),
     [error, setError] = useState("");
+  const names = useMemo(
+    () =>
+      nameOptions(
+        (data?.recurringIncomes ?? []).map((r) => r.description),
+        EXAMPLES.income,
+      ),
+    [data],
+  );
+  const sources = useMemo(
+    () =>
+      nameOptions(
+        [
+          ...(data?.recurringIncomes ?? []).map((r) => r.source),
+          ...(data?.cashEntries ?? []).map((e) => e.source),
+        ],
+        EXAMPLES.source,
+      ),
+    [data],
+  );
   return (
     <Dialog
       title={rule ? "Editar renda recorrente" : "Nova renda recorrente"}
@@ -151,22 +175,26 @@ export function RecurringForm({
       >
         <label>
           Descrição da renda
-          <input
+          <SuggestionInput
+            aria-label="Descrição da renda"
             required
             autoFocus
             maxLength={100}
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onValueChange={setDescription}
+            suggestions={names}
             placeholder="Salário, aluguel recebido…"
           />
         </label>
         <label>
           Origem da renda
-          <input
+          <SuggestionInput
+            aria-label="Origem da renda"
             required
             maxLength={80}
             value={source}
-            onChange={(e) => setSource(e.target.value)}
+            onValueChange={setSource}
+            suggestions={sources}
             placeholder="Empresa, cliente, imóvel…"
           />
         </label>
@@ -555,12 +583,14 @@ export function IncomePlanning({
 }
 export function ExpenseForm({
   expense,
+  data,
   month,
   saving,
   onSave,
   onClose,
 }: {
   expense?: Expense;
+  data?: Data;
   month: string;
   saving: boolean;
   onSave: Save<Expense>;
@@ -571,12 +601,30 @@ export function ExpenseForm({
     [amount, setAmount] = useState(
       expense ? (expense.amountCents / 100).toFixed(2) : "",
     ),
-    [category, setCategory] = useState(expense?.category ?? "Outros"),
     [method, setMethod] = useState<Expense["method"]>(expense?.method ?? "pix"),
     [due, setDue] = useState(expense?.dueDate ?? `${month}-01`),
     [paid, setPaid] = useState(!!expense?.paidDate),
     [paidDate, setPaidDate] = useState(expense?.paidDate ?? localDate()),
     [error, setError] = useState("");
+  const history = useMemo(() => categoryHistory(data, "expense"), [data]);
+  const names = useMemo(
+    () =>
+      nameOptions(
+        history.map((e) => e.name),
+        EXAMPLES.expense,
+      ),
+    [history],
+  );
+  const payees = useMemo(
+    () => nameOptions((data?.expenses ?? []).map((e) => e.payee)),
+    [data],
+  );
+  const smart = useSmartCategory(
+    expense?.category ?? "Outros",
+    !!expense,
+    history,
+  );
+  const { category } = smart;
   return (
     <Dialog
       title={expense ? "Editar despesa" : "Nova despesa"}
@@ -610,22 +658,29 @@ export function ExpenseForm({
       >
         <label>
           Descrição da despesa
-          <input
+          <SuggestionInput
+            aria-label="Descrição da despesa"
             required
             autoFocus
             maxLength={100}
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onValueChange={(value) => {
+              setDescription(value);
+              smart.onName(value);
+            }}
+            suggestions={names}
             placeholder="Aluguel, mercado, conta de luz…"
           />
         </label>
         <label>
           Destino / favorecido
-          <input
+          <SuggestionInput
+            aria-label="Destino / favorecido"
             required
             maxLength={80}
             value={payee}
-            onChange={(e) => setPayee(e.target.value)}
+            onValueChange={setPayee}
+            suggestions={payees}
           />
         </label>
         <div className="form-row">
@@ -654,8 +709,9 @@ export function ExpenseForm({
           <label>
             Categoria da despesa
             <select
+              aria-label="Categoria da despesa"
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) => smart.choose(e.target.value)}
             >
               {CATEGORIES.map((c) => (
                 <option key={c}>{c}</option>
@@ -677,6 +733,7 @@ export function ExpenseForm({
             </select>
           </label>
         </div>
+        <CategoryHint state={smart} name={description} />
         <label className="check-line">
           <input
             type="checkbox"

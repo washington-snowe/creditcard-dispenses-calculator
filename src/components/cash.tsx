@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { SuggestionInput } from "./suggestion-input";
+import { EXAMPLES, nameOptions } from "../suggestions";
+import { useMemo, useState } from "react";
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -21,6 +23,7 @@ import { localDate, incomeMonth, monthlyBudget } from "../finance";
 import { Dialog, Empty, Panel } from "./ui";
 export function CashForm({
   entry,
+  data,
   kind = "income",
   month,
   saving,
@@ -28,15 +31,37 @@ export function CashForm({
   onClose,
 }: {
   entry?: CashEntry;
+  data?: Data;
   kind?: CashEntry["kind"];
   month: string;
   saving: boolean;
   onSave: (e: CashEntry) => Promise<boolean>;
   onClose: () => void;
 }) {
-  const [description, setDescription] = useState(entry?.description ?? "");
-  const [source, setSource] = useState(entry?.source ?? "");
   const [type, setType] = useState(entry?.kind ?? kind);
+  const [description, setDescription] = useState(entry?.description ?? "");
+  const names = useMemo(
+    () =>
+      nameOptions(
+        (data?.cashEntries ?? [])
+          .filter((e) => e.kind === type)
+          .map((e) => e.description),
+        type === "income" ? EXAMPLES.income : EXAMPLES.expense,
+      ),
+    [data, type],
+  );
+  const sources = useMemo(
+    () =>
+      nameOptions(
+        [
+          ...(data?.cashEntries ?? []).map((e) => e.source),
+          ...(data?.recurringIncomes ?? []).map((e) => e.source),
+        ],
+        EXAMPLES.source,
+      ),
+    [data],
+  );
+  const [source, setSource] = useState(entry?.source ?? "");
   const [date, setDate] = useState(entry?.date ?? `${month}-01`);
   const [amount, setAmount] = useState(
     entry ? (entry.amountCents / 100).toFixed(2).replace(".", ",") : "",
@@ -93,12 +118,14 @@ export function CashForm({
       >
         <label>
           Descrição do movimento
-          <input
+          <SuggestionInput
+            aria-label="Descrição do movimento"
             autoFocus
             required
             maxLength={100}
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onValueChange={setDescription}
+            suggestions={names}
             placeholder="Ex.: Salário, serviço, reembolso..."
           />
         </label>
@@ -129,30 +156,19 @@ export function CashForm({
         </div>
         <label>
           Origem do dinheiro / motivo
-          <input
+          <SuggestionInput
+            aria-label="Origem do dinheiro / motivo"
             required
             maxLength={80}
-            list="cash-sources"
             value={source}
-            onChange={(e) => setSource(e.target.value)}
+            onValueChange={setSource}
+            suggestions={sources}
             placeholder={
               type === "income"
                 ? "Ex.: Salário, Freelance, Vendas"
                 : "Ex.: Alimentação, saque, ajuste"
             }
           />
-          <datalist id="cash-sources">
-            {[
-              "Salário",
-              "Freelance",
-              "Vendas",
-              "Reembolso",
-              "Investimentos",
-              "Outros gastos",
-            ].map((s) => (
-              <option key={s} value={s} />
-            ))}
-          </datalist>
         </label>
         <label>
           Valor do movimento

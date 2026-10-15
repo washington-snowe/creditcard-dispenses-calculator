@@ -1,3 +1,4 @@
+import { runFormAssistance } from "./form-assistance.mjs";
 import { verifyChartTooltips, verifyNavigation } from "./design.mjs";
 import { _electron as electron, expect } from "playwright/test";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
@@ -41,6 +42,7 @@ try {
   expect(withMoney.subscriptions).toHaveLength(2);
   expect(withMoney.subscriptionPayments).toHaveLength(2);
   await runNewPlanning(page);
+  await runFormAssistance(page);
   const expanded = JSON.parse(
     await readFile(join(directory, "finances.json"), "utf8"),
   );

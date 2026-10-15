@@ -1,3 +1,4 @@
+import { BankLogo } from "./bank-logo";
 import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import {
   ChartNoAxesCombined,
@@ -119,7 +120,7 @@ export function PlasticCard({
       <div className="card-grain" />
       <div className="plastic-top">
         <div className="plastic-brand">
-          <span>{card.bank.slice(0, 2).toUpperCase()}</span>
+          <BankLogo bank={card.bank} />
           <strong>{card.bank}</strong>
         </div>
         <Radio size={23} />

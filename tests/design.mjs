@@ -267,3 +267,41 @@ export async function verifyFeedback(page) {
     "Cores de pendência, saldo negativo, entradas e atrasos verificadas com dados reais na interface.",
   );
 }
+
+export async function verifySuggestionLayout(page, context) {
+  await page
+    .getByRole("navigation")
+    .getByRole("button", { name: "Minhas compras", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Nova compra", exact: true }).click();
+  const input = page.getByLabel("Descrição da compra", { exact: true });
+  await input.fill("No");
+  await expect(page.locator(".ghost-suffix")).toBeVisible();
+  const layout = await input.evaluate((element) => {
+    const ghost = element.parentElement.querySelector(".input-ghost");
+    const prefix = ghost.querySelector(".ghost-prefix");
+    const css = getComputedStyle(element),
+      canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    ctx.font = `${css.fontStyle} ${css.fontWeight} ${css.fontSize} ${css.fontFamily}`;
+    const box = element.getBoundingClientRect(),
+      overlay = ghost.getBoundingClientRect();
+    const dialog = element.closest("dialog");
+    return {
+      alignment:
+        overlay.left -
+        (box.left +
+          parseFloat(css.borderLeftWidth) +
+          parseFloat(css.paddingLeft)),
+      textWidth: prefix.getBoundingClientRect().width,
+      measured: ctx.measureText(element.value).width,
+      overflow: dialog.scrollWidth > dialog.clientWidth + 1,
+      outside: overlay.right > box.right,
+    };
+  });
+  expect(Math.abs(layout.alignment), context).toBeLessThan(1);
+  expect(Math.abs(layout.textWidth - layout.measured), context).toBeLessThan(1);
+  expect(layout.overflow, context).toBeFalsy();
+  expect(layout.outside, context).toBeFalsy();
+  await page.getByRole("button", { name: "Cancelar", exact: true }).click();
+}

@@ -1,0 +1,123 @@
+/* A suggestion is visual assistance; it never changes the input until Tab. */
+.suggestion-input {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+.dialog .suggestion-input > input {
+  padding: 11px 54px 11px 12px;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.input-ghost {
+  position: absolute;
+  z-index: 1;
+  inset: 1px 53px 1px 13px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  pointer-events: none;
+  white-space: pre;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.input-ghost > span {
+  display: inline-block;
+  flex-shrink: 0;
+}
+.ghost-prefix {
+  color: transparent;
+}
+.ghost-suffix {
+  color: var(--text);
+  opacity: 0.4;
+}
+.suggestion-key {
+  position: absolute;
+  z-index: 2;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 1px 5px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--muted);
+  background: var(--surface);
+  font: inherit;
+  font-size: 0.78571rem;
+  line-height: 1.6;
+  pointer-events: none;
+}
+.category-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  margin: 0 0 17px;
+  border-radius: 9px;
+  border: 1px solid color-mix(in srgb, var(--info) 18%, var(--border));
+  background: color-mix(in srgb, var(--info) 5%, var(--surface));
+  color: var(--secondary);
+  font-size: var(--text-caption);
+  line-height: 1.7;
+}
+.category-hint > svg {
+  flex-shrink: 0;
+  margin-top: 4px;
+  color: var(--info);
+}
+.category-hint > span {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+.category-hint > button {
+  padding: 0;
+  border: 0;
+  color: var(--info);
+  background: transparent;
+  font-size: inherit;
+  line-height: inherit;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.bank-mark,
+.plastic-brand > .bank-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  padding: 6px;
+  border-radius: 11px;
+  background: #fff;
+  border: 1px solid #0000000c;
+  color: #526077;
+  color-scheme: light;
+}
+.bank-mark > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: none;
+}
+.plastic-card.compact .plastic-brand > .bank-mark {
+  width: 36px;
+  height: 36px;
+  padding: 5px;
+  border-radius: 9px;
+}
+@media (forced-colors: active) {
+  .ghost-suffix {
+    color: GrayText;
+    opacity: 1;
+  }
+  .bank-mark {
+    forced-color-adjust: none;
+  }
+}

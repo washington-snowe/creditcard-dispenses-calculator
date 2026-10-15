@@ -2491,6 +2491,7 @@ export default function App() {
       )}
       {modal?.type === "recurring" && (
         <RecurringForm
+          data={data}
           rule={modal.rule}
           month={month}
           saving={saving}
@@ -2514,6 +2515,7 @@ export default function App() {
       )}
       {modal?.type === "expense" && (
         <ExpenseForm
+          data={data}
           expense={modal.expense}
           month={month}
           saving={saving}
@@ -2537,6 +2539,7 @@ export default function App() {
       )}
       {modal?.type === "income" && (
         <CashForm
+          data={data}
           entry={modal.entry}
           kind={modal.kind}
           month={month}
@@ -2585,6 +2588,7 @@ export default function App() {
       )}
       {modal?.type === "card" && (
         <CardForm
+          data={data}
           key={modal.card?.id ?? "new-card"}
           card={modal.card}
           saving={saving}
@@ -2606,6 +2610,7 @@ export default function App() {
       )}
       {modal?.type === "purchase" && (
         <PurchaseForm
+          data={data}
           key={modal.purchase?.id ?? "new-purchase"}
           purchase={modal.purchase}
           cardId={modal.cardId}

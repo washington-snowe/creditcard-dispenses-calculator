@@ -1,0 +1,2 @@
+# Preserve the downloaded bank SVG bytes and their original source checksums.
+public/banks/*.svg -text

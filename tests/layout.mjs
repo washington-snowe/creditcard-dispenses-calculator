@@ -3,6 +3,7 @@ import {
   verifyNavigation,
   verifyMotion,
   verifyFeedback,
+  verifySuggestionLayout,
 } from "./design.mjs";
 import { chromium, expect } from "playwright/test";
 import { spawn } from "node:child_process";
@@ -110,6 +111,7 @@ try {
   for (const width of [1440, 1024, 768, 390, 320]) {
     await page.setViewportSize({ width, height: 1040 });
     await verifyBrandLayout(page);
+    if (width === 390) await verifySuggestionLayout(page, "Sugestão em 390 px");
     if (width === 390) {
       await verifyNavigation(page);
       await verifyChartTooltips(page);
@@ -132,6 +134,7 @@ try {
   await page.evaluate(() => {
     document.documentElement.style.fontSize = "175%";
   });
+  await verifySuggestionLayout(page, "Sugestão com texto a 200%");
   for (const tab of tabs) {
     await page.getByRole("button", { name: tab, exact: true }).click();
     await verifyPageLayout(page, `texto 200% / ${tab}`);

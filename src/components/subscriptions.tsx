@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { SuggestionInput } from "./suggestion-input";
+import { CategoryHint, useSmartCategory } from "./smart-category";
+import { EXAMPLES, nameOptions, categoryHistory } from "../suggestions";
+import { useMemo, useState } from "react";
 import { Check, Pencil, Repeat, Search, Trash2 } from "lucide-react";
 import {
   CATEGORIES,
@@ -34,9 +37,39 @@ export function SubscriptionForm({
       : "",
   );
   const [frequency, setFrequency] = useState(
-      subscription?.frequency ?? "monthly",
-    ),
-    [category, setCategory] = useState(subscription?.category ?? "Outros");
+    subscription?.frequency ?? "monthly",
+  );
+  const history = useMemo(() => categoryHistory(data, "subscription"), [data]);
+  const names = useMemo(
+    () =>
+      nameOptions(
+        history.map((x) => x.name),
+        EXAMPLES.subscription,
+      ),
+    [history],
+  );
+  const providers = useMemo(
+    () =>
+      nameOptions(
+        (data.subscriptions ?? []).map((x) => x.provider),
+        [
+          "Netflix",
+          "Spotify",
+          "Amazon",
+          "Google",
+          "Microsoft",
+          "Apple",
+          "Academia",
+        ],
+      ),
+    [data],
+  );
+  const smart = useSmartCategory(
+    subscription?.category ?? "Outros",
+    !!subscription,
+    history,
+  );
+  const { category } = smart;
   const [card, setCard] = useState(subscription?.cardId ?? ""),
     [due, setDue] = useState(String(subscription?.dueDay ?? 10));
   const [start, setStart] = useState(subscription?.startMonth ?? month),
@@ -83,22 +116,29 @@ export function SubscriptionForm({
       >
         <label>
           Nome da assinatura
-          <input
+          <SuggestionInput
+            aria-label="Nome da assinatura"
             autoFocus
             required
             maxLength={100}
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onValueChange={(value) => {
+              setName(value);
+              smart.onName(value);
+            }}
+            suggestions={names}
             placeholder="Ex.: Netflix, academia, armazenamento..."
           />
         </label>
         <label>
           Fornecedor da assinatura
-          <input
+          <SuggestionInput
+            aria-label="Fornecedor da assinatura"
             required
             maxLength={80}
             value={provider}
-            onChange={(e) => setProvider(e.target.value)}
+            onValueChange={setProvider}
+            suggestions={providers}
             placeholder="Ex.: Netflix, Google, academia"
           />
         </label>
@@ -167,13 +207,14 @@ export function SubscriptionForm({
           <select
             aria-label="Categoria da assinatura"
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            onChange={(e) => smart.choose(e.target.value)}
           >
             {CATEGORIES.map((c) => (
               <option key={c}>{c}</option>
             ))}
           </select>
         </label>
+        <CategoryHint state={smart} name={name} />
         <div className="form-row">
           <label>
             Mês de início

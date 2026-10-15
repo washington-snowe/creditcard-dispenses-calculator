@@ -1,0 +1,64 @@
+name: Importar identidade oficial ContaClara
+
+on:
+  push:
+    tags:
+      - "brand-assets-*"
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: main
+      - name: Obter somente os dois PNG oficiais
+        shell: pwsh
+        run: |
+          try {
+            $download = Join-Path $env:RUNNER_TEMP 'contaclara-brand.zip'
+            Invoke-WebRequest -Uri 'https://www.bulkshare.cloud/api/anonymous-download?id=VZ9XtPlHdz' -OutFile $download -TimeoutSec 90
+            if ((Get-Item $download).Length -gt 64MB) { throw 'O arquivo excede 64 MB.' }
+            Add-Type -AssemblyName System.IO.Compression
+            Add-Type -AssemblyName System.IO.Compression.FileSystem
+            $archive = [System.IO.Compression.ZipFile]::OpenRead($download)
+            try {
+              $wanted = @{'iconepng' = 'icon.png'; 'logocompletapng' = 'logo.png'}
+              $found = @{}
+              $destination = Join-Path $PWD 'public/brand'
+              New-Item -ItemType Directory -Force $destination | Out-Null
+              foreach ($entry in $archive.Entries) {
+                $leaf = ($entry.FullName -split '[/\\]')[-1]
+                $key = ($leaf.Normalize([Text.NormalizationForm]::FormD) -replace '\p{Mn}', '' -replace '[^a-zA-Z0-9]', '').ToLowerInvariant()
+                if (-not $wanted.ContainsKey($key)) { continue }
+                if ($found.ContainsKey($key)) { throw 'O ZIP contém nomes de logo duplicados.' }
+                if ($entry.Length -gt 16MB -or $entry.Length -lt 24) { throw 'Tamanho do PNG inválido.' }
+                $source = $entry.Open()
+                $memory = [IO.MemoryStream]::new()
+                try { $source.CopyTo($memory); $bytes = $memory.ToArray() } finally { $source.Dispose(); $memory.Dispose() }
+                if ([BitConverter]::ToString($bytes[0..7]) -ne '89-50-4E-47-0D-0A-1A-0A') { throw 'O arquivo de marca não é um PNG.' }
+                [IO.File]::WriteAllBytes((Join-Path $destination $wanted[$key]), $bytes)
+                $found[$key] = $true
+              }
+              if ($found.Count -ne 2) { throw 'O ZIP não contém Icone.png e Logo Completa.png.' }
+            } finally { $archive.Dispose() }
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add -- public/brand/icon.png public/brand/logo.png
+            git diff --cached --quiet
+            if ($LASTEXITCODE -eq 1) {
+              git commit -m 'Import original ContaClara PNG identity assets'
+              if ($LASTEXITCODE -ne 0) { throw 'Falha ao registrar os PNG.' }
+              git push origin HEAD:main
+              if ($LASTEXITCODE -ne 0) { throw 'Falha ao enviar os PNG.' }
+            }
+            Write-Output '::notice title=Identidade ContaClara::PNG originais importados sem alterar seus bytes.'
+          } catch {
+            $message = $_.Exception.Message.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Output "::error title=Importação das logos::$message"
+            exit 1
+          }

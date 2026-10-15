@@ -21,7 +21,7 @@ jobs:
         run: |
           try {
             $download = Join-Path $env:RUNNER_TEMP 'contaclara-brand.zip'
-            $response = Invoke-WebRequest -Uri 'https://www.bulkshare.cloud/api/anonymous-download?id=VZ9XtPlHdz' -OutFile $download -TimeoutSec 90 -PassThru
+            $response = Invoke-WebRequest -Uri 'https://www.bulkshare.cloud/api/anonymous-download?id=mgaiptgjq3' -OutFile $download -TimeoutSec 90 -PassThru
             if ((Get-Item $download).Length -gt 64MB) { throw 'O arquivo excede 64 MB.' }
             $prefix = [IO.File]::ReadAllBytes($download)
             $signature = [BitConverter]::ToString($prefix[0..([Math]::Min(15, $prefix.Length - 1))])

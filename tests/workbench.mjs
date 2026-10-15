@@ -1,11 +1,15 @@
 import { goTo, areas } from "./navigation.mjs";
 import { expect } from "playwright/test";
-const readData = (page) =>
-  page.evaluate(async () =>
+const readData = async (page) => {
+  // A file can become readable before its IPC response updates the renderer.
+  // Wait for the complete save, including React's data and undo history update.
+  await expect(page.locator(".save-status")).toHaveText("Tudo salvo");
+  return page.evaluate(async () =>
     window.saldo
       ? await window.saldo.load()
       : JSON.parse(localStorage.getItem("saldo-data-v1")),
   );
+};
 const nav = (page, name) =>
   areas[name]
     ? goTo(page, name)
@@ -159,6 +163,9 @@ export async function runWorkbench(page) {
         },
       ],
     });
+  await expect(page.locator(".data-center")).toContainText(
+    "Importação concluída. Você pode desfazer a alteração.",
+  );
   await page.getByLabel("Arquivo de fatura ou extrato").setInputFiles({
     name: "fatura.csv",
     mimeType: "text/csv",
@@ -179,6 +186,9 @@ export async function runWorkbench(page) {
     .locator(".topbar")
     .getByRole("button", { name: "Desfazer última alteração", exact: true })
     .click();
+  await expect(page.locator(".toast")).toContainText(
+    "Última alteração desfeita.",
+  );
   await expect
     .poll(async () =>
       (await readData(page)).purchases.some(

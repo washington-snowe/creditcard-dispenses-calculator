@@ -40,17 +40,26 @@ def fetch(url, timeout=12):
 
 def import_bank(site):
     key,name,home=site; candidates=[]; problems=[]
+    manifest=OUT/'sources.json'
+    if manifest.exists():
+        for old in json.loads(manifest.read_text(encoding='utf-8')):
+            if old.get('bank') == name and old.get('file') and (OUT/old['file']).exists():
+                return old
     try:
         html,base=fetch(home); parser=Icons(base); parser.feed(html.decode('utf-8','replace'))
         candidates=[url for _,url in sorted(parser.urls,reverse=True)]
     except Exception as error: problems.append(str(error))
     candidates += [urljoin(home,'apple-touch-icon.png'),urljoin(home,'favicon.ico')]
+    # Some official sites block automated clients. Fetch their cached favicon
+    # once during asset import; the desktop never calls this external service.
+    candidates.append('https://www.google.com/s2/favicons?domain='+urlparse(home).netloc+'&sz=128')
     for url in dict.fromkeys(candidates):
         try:
             if urlparse(url).scheme != 'https': continue
             content,final=fetch(url)
             if content.startswith(b'\x89PNG\r\n\x1a\n'): ext='png'
             elif content.startswith(b'\x00\x00\x01\x00'): ext='ico'
+            elif content.startswith(b'\xff\xd8\xff'): ext='jpg'
             elif b'<svg' in content[:2000] and b'<script' not in content.lower() and b'<foreignobject' not in content.lower(): ext='svg'
             elif content.startswith(b'RIFF') and content[8:12]==b'WEBP': ext='webp'
             else: raise ValueError('Response is not a supported image')

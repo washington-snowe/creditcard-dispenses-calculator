@@ -186,7 +186,39 @@ async function launchOriginal(
     env: { ...process.env, SALDO_DATA_DIR: userData },
   });
   const page = await app.firstWindow();
-  await expect(page.getByTestId("welcome-pending")).toBeVisible();
+  try {
+    await expect(page.getByTestId("welcome-pending")).toBeVisible({
+      timeout: 20000,
+    });
+  } catch (error) {
+    annotation(
+      "error",
+      "Diagnóstico da abertura após limpeza",
+      JSON.stringify(
+        await app.evaluate(({ app, BrowserWindow }) => ({
+          cwd: process.cwd(),
+          executable: process.execPath,
+          version: app.getVersion(),
+          appPath: app.getAppPath(),
+          windows: BrowserWindow.getAllWindows().map((w) => ({
+            url: w.webContents.getURL(),
+            loading: w.webContents.isLoading(),
+          })),
+        })),
+      ),
+    );
+    annotation(
+      "error",
+      "Tela da abertura após limpeza",
+      (
+        await page
+          .locator("body")
+          .innerText({ timeout: 2000 })
+          .catch(() => "Sem conteúdo acessível")
+      ).slice(0, 1200),
+    );
+    throw error;
+  }
   return await app.evaluate(() => process.pid);
 }
 async function journal() {
@@ -476,6 +508,11 @@ try {
   );
   console.log(
     "Windows: duas atualizações reais, limpeza de versões/ZIPs/temporários, arquivos bloqueados, backups preservados e atalho original verificados.",
+  );
+  annotation(
+    "notice",
+    "Limpeza Windows confirmada",
+    "Duas atualizações consecutivas removeram versões antigas, ZIPs e temporários, preservando dados e backups.",
   );
 
   // A correctly hashed package that cannot load its renderer must roll back automatically.

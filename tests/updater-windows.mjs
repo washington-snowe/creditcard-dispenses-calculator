@@ -198,22 +198,44 @@ async function journal() {
   }
 }
 async function assertClean(version) {
-  await waitFor(
-    async () => {
-      const versions = await readdir(join(updates, "versions"));
-      const files = await readdir(updates);
-      return (
-        versions.length === 1 &&
-        versions[0] === version &&
-        !files.some((file) =>
-          /\.zip(?:\.part)?$|\.ps1$|^(?:helper-|ready-)/.test(file),
+  try {
+    await waitFor(
+      async () => {
+        const versions = await readdir(join(updates, "versions"));
+        const files = await readdir(updates);
+        return (
+          versions.length === 1 &&
+          versions[0] === version &&
+          !files.some((file) =>
+            /\.zip(?:\.part)?$|\.ps1$|^(?:helper-|ready-)/.test(file),
+          )
+        );
+      },
+      "Versões antigas ou arquivos temporários permaneceram após a confirmação.",
+      20000,
+    );
+    assert.deepEqual(await readdir(join(updates, "staging")), []);
+  } catch (error) {
+    const remaining = await readdir(updates, { recursive: true });
+    annotation(
+      "error",
+      "Arquivos restantes na limpeza",
+      remaining
+        .filter(
+          (file) =>
+            !file.startsWith("versions/" + version + "/") &&
+            !file.startsWith("versions\\" + version + "\\"),
         )
-      );
-    },
-    "Versões antigas ou arquivos temporários permaneceram após a confirmação.",
-    20000,
-  );
-  assert.deepEqual(await readdir(join(updates, "staging")), []);
+        .join("\n"),
+    );
+    annotation(
+      "error",
+      "Processos restantes na limpeza",
+      await ps(`$prefix = ${quote(root + "\\")}
+Get-CimInstance Win32_Process | Where-Object { $_.ExecutablePath -and $_.ExecutablePath.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase) -and $_.CommandLine -notlike '*--type=*' } | Select-Object ProcessId, ParentProcessId, ExecutablePath, CommandLine | ConvertTo-Json -Compress`),
+    );
+    throw error;
+  }
 }
 try {
   await mkdir(userData, { recursive: true });

@@ -7,9 +7,11 @@ import {
   cardTiming,
   categoryComparison,
   pendingItems,
+  monthLedger,
   searchAll,
   simulatePurchase,
 } from "../src/insights";
+import { monthFlow } from "../src/finance";
 import { validateData, type Data, type Card } from "../src/domain";
 const card: Card = {
   id: "a",
@@ -217,5 +219,71 @@ test("preferências novas e chaves de importação sobrevivem a backup e rejeita
     );
   assert.throws(() =>
     validateData({ ...d, cards: [{ ...card, closingDay: 32 }] }),
+  );
+});
+
+test("calendário mostra recebimentos no mês real, preserva histórico e não duplica períodos", () => {
+  const d = base();
+  d.cashEntries = [];
+  d.expenses = [];
+  d.recurringIncomes = [
+    {
+      id: "r",
+      description: "Nome atualizado",
+      source: "Origem atualizada",
+      amountCents: 90000,
+      dueDay: 5,
+      frequency: "monthly",
+      startMonth: "2026-01",
+      endMonth: null,
+    },
+  ];
+  d.incomeReceipts = [
+    {
+      id: "r1",
+      recurringId: "r",
+      month: "2026-08",
+      date: "2026-10-02",
+      amountCents: 30000,
+      description: "Trabalho de agosto",
+      source: "Cliente antigo",
+    },
+    {
+      id: "r2",
+      recurringId: "r",
+      month: "2026-09",
+      date: "2026-10-03",
+      amountCents: 40000,
+      description: "Trabalho de setembro",
+      source: "Cliente antigo",
+    },
+  ];
+  const events = calendarEvents(validateData(d), "2026-10").filter(
+    (e) => e.kind === "recurring",
+  );
+  assert.equal(events.length, 3);
+  assert.equal(new Set(events.map((e) => e.key)).size, 3);
+  const actual = events.filter((e) => e.paid);
+  assert.deepEqual(
+    actual.map((e) => [e.label, e.detail, e.date, e.amount]),
+    [
+      ["Trabalho de agosto", "Cliente antigo", "2026-10-02", 30000],
+      ["Trabalho de setembro", "Cliente antigo", "2026-10-03", 40000],
+    ],
+  );
+  assert.equal(events.filter((e) => !e.paid)[0].amount, 90000);
+  assert.equal(
+    calendarEvents(d, "2026-08").filter((e) => e.kind === "recurring").length,
+    0,
+  );
+  assert.equal(
+    calendarEvents(d, "2026-09").filter((e) => e.kind === "recurring").length,
+    0,
+  );
+  assert.equal(monthFlow(d, "2026-10").income, 70000);
+  // A drilldown deliberately excludes recurring rules and must exclude receipts too.
+  assert.equal(
+    monthLedger({ ...d, recurringIncomes: [] }, "2026-10").length,
+    0,
   );
 });

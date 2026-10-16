@@ -16,7 +16,7 @@ test("banco contém exatamente 200 frases originais distintas e legíveis", () =
   assert.equal(new Set(phrases).size, 200);
   for (const phrase of phrases) {
     assert.equal(phrase, phrase.trim());
-    assert.ok(phrase.length >= 40 && phrase.length <= 180);
+    assert.ok(phrase.length >= 32 && phrase.length <= 88);
   }
 });
 

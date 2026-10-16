@@ -1,6 +1,70 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import {
+  Children,
+  cloneElement,
+  Fragment,
+  isValidElement,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type ComponentProps,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 import { Ellipsis } from "lucide-react";
+
+type Action = ReactElement<ComponentProps<"button">>;
+function flattenActions(children: ReactNode): Action[] {
+  return Children.toArray(children).flatMap((child) => {
+    if (!isValidElement(child)) return [];
+    if (child.type === Fragment)
+      return flattenActions((child.props as { children?: ReactNode }).children);
+    return child.type === "button" ? [child as Action] : [];
+  });
+}
 export function ActionMenu({
+  label,
+  disabled,
+  children,
+}: {
+  label: string;
+  disabled?: boolean;
+  children: ReactNode;
+}) {
+  const actions = flattenActions(children);
+  if (!actions.length) return null;
+  const direct = actions.length === 1;
+  const buttons = actions.map((action) => {
+    const content = Children.toArray(action.props.children);
+    const icons = content.filter((child) => isValidElement(child));
+    const text = content.filter((child) => !isValidElement(child));
+    return cloneElement(action, {
+      type: "button",
+      disabled: disabled || action.props.disabled,
+      className: [
+        action.props.className?.replace(/\bicon-button\b/g, ""),
+        direct ? "action-direct" : "action-item",
+      ]
+        .filter(Boolean)
+        .join(" "),
+      children: (
+        <>
+          {icons}
+          <span className="action-label">{text}</span>
+        </>
+      ),
+    });
+  });
+  return direct ? (
+    buttons[0]
+  ) : (
+    <ActionPopover label={label} disabled={disabled}>
+      {buttons}
+    </ActionPopover>
+  );
+}
+
+function ActionPopover({
   label,
   disabled,
   children,

@@ -38,16 +38,17 @@
   margin: 0;
 }
 .greeting-quote {
-  max-width: 760px;
+  max-width: 48ch;
   margin: 28px 0 0;
   padding: 3px 0 3px 18px;
   border-left: 3px solid var(--accent);
   color: var(--text);
-  font-size: clamp(1.0625rem, 1.8vw, 1.25rem);
+  font-size: clamp(1.0625rem, 1.5vw, 1.1875rem);
   line-height: 1.65;
   font-weight: 500;
   overflow-wrap: anywhere;
-  min-height: 3.3em;
+  min-block-size: calc(2lh + 6px);
+  text-wrap: balance;
 }
 .greeting-suggestions {
   margin-top: 32px;

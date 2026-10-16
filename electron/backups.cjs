@@ -30,15 +30,24 @@ function createBackups(directory) {
     return (
       await Promise.all(
         files.filter(valid).map(async (id) => {
-          const stat = await fs.stat(path.join(root, id));
-          return {
-            id,
-            createdAt: new Date(Number(id.slice(7, 20))).toISOString(),
-            bytes: stat.size,
-          };
+          try {
+            const stat = await fs.lstat(path.join(root, id));
+            if (!stat.isFile() || stat.isSymbolicLink()) return null;
+            return {
+              id,
+              createdAt: new Date(Number(id.slice(7, 20))).toISOString(),
+              bytes: stat.size,
+            };
+          } catch (error) {
+            // A concurrently removed entry must not block saving finances.
+            if (error.code === "ENOENT") return null;
+            throw error;
+          }
         }),
       )
-    ).sort((a, b) => b.id.localeCompare(a.id));
+    )
+      .filter(Boolean)
+      .sort((a, b) => b.id.localeCompare(a.id));
   }
   async function snapshot(text, force = false, now = Date.now()) {
     usable(text);

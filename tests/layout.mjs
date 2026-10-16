@@ -1,3 +1,4 @@
+import { verifyPhraseLayout } from "./audit.mjs";
 import { goTo } from "./navigation.mjs";
 import { verifyGoalDialog } from "./goals.mjs";
 import {
@@ -142,6 +143,7 @@ try {
       expect(mark.border).toBe("0px");
     }
     await verifyTypography(page);
+    await verifyPhraseLayout(page);
     await goTo(page, "Início");
     await page.screenshot({
       path: `.runtime/welcome-${theme.replaceAll(" ", "-")}.png`,
@@ -155,6 +157,7 @@ try {
   }
   for (const width of [1440, 1024, 768, 390, 320]) {
     await page.setViewportSize({ width, height: 1040 });
+    await verifyPhraseLayout(page);
     await verifyBrandLayout(page);
     if (width === 390) await verifySuggestionLayout(page, "Sugestão em 390 px");
     if (width === 390) {
@@ -197,6 +200,7 @@ try {
   await page.evaluate(() => {
     document.documentElement.style.fontSize = "175%";
   });
+  await verifyPhraseLayout(page);
   await verifySuggestionLayout(page, "Sugestão com texto a 200%");
   for (const tab of tabs) {
     await goTo(page, tab);

@@ -1,3 +1,4 @@
+import { verifyActionMenus } from "./audit.mjs";
 import { verifyGreeting } from "./greeting.mjs";
 import { verifyGoals, verifyGoalDialog } from "./goals.mjs";
 import { verifyFunctionSearch } from "./navigation-search.mjs";
@@ -79,6 +80,7 @@ try {
   await verifyHarmony(page);
   await verifyFunctionSearch(page, { resize: false });
   await verifyGoals(page, { capture: false });
+  await verifyActionMenus(page, { resize: false });
   const expanded = JSON.parse(
     await readFile(join(directory, "finances.json"), "utf8"),
   );

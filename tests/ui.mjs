@@ -1,3 +1,4 @@
+import { verifyActionMenus } from "./audit.mjs";
 import { verifyGreeting } from "./greeting.mjs";
 import { verifyGoals } from "./goals.mjs";
 import { verifyFunctionSearch } from "./navigation-search.mjs";
@@ -60,6 +61,7 @@ try {
   await verifyHarmony(page);
   await verifyFunctionSearch(page);
   await verifyGoals(page, { capture: true });
+  await verifyActionMenus(page);
   await mkdir(".runtime", { recursive: true });
   await page.screenshot({ path: ".runtime/income.png", fullPage: true });
   await goTo(page, "Assinaturas");

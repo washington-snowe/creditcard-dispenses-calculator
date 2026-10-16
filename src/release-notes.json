@@ -1,26 +1,26 @@
 {
-  "version": "4.10.0",
-  "title": "Um novo começo para os seus planos",
+  "version": "4.10.1",
+  "title": "Mais clareza em cada detalhe",
   "highlights": [
     {
-      "title": "Boas-vindas do seu jeito",
-      "description": "O ContaClara agora abre na tela de boas-vindas, dentro de Resumo, com uma saudação pelo nome da sua conta do computador.",
-      "kind": "new"
+      "title": "Ações legíveis e diretas",
+      "description": "Menus de compras, despesas, cartões e outros registros agora mantêm ícones e textos alinhados. Quando só há uma opção, a ação aparece diretamente, sem os três pontinhos.",
+      "kind": "fixed"
     },
     {
-      "title": "Uma inspiração a cada início",
-      "description": "São 200 frases para acompanhar seus planos, alternadas a cada inicialização sem repetir até completar a lista.",
-      "kind": "new"
-    },
-    {
-      "title": "Escolha seu próximo passo",
-      "description": "Atalhos com setas levam ao resumo, compras, entradas, metas, contas e planejamento, com opções úteis desde o primeiro uso.",
+      "title": "Inspiração que cabe na sua tela",
+      "description": "As 200 frases foram reescritas com mensagens mais motivadoras e curtas. O bloco se adapta à janela e ao texto ampliado, sem cortar o conteúdo.",
       "kind": "improved"
     },
     {
-      "title": "Seu resumo continua por perto",
-      "description": "O painel financeiro permanece em Início. A nova abertura mantém os temas, o zoom e a navegação por teclado.",
-      "kind": "improved"
+      "title": "Recebimentos no dia certo",
+      "description": "O calendário mostra rendas recorrentes na data em que foram recebidas, inclusive pagamentos de outros meses, preservando os nomes e valores do histórico.",
+      "kind": "fixed"
+    },
+    {
+      "title": "Cópias de segurança mais robustas",
+      "description": "Pastas e links com nomes semelhantes aos de backups são ignorados na listagem e não interferem nas cópias automáticas. Seus arquivos são preservados.",
+      "kind": "fixed"
     }
   ]
 }

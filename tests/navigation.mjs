@@ -39,9 +39,11 @@ export async function goTo(page, name) {
 
 export async function purchaseAction(page, name) {
   const description = name.replace(/^(Excluir|Antecipar) /, "");
-  await page
-    .getByRole("button", { name: `Mais opções de ${description}`, exact: true })
-    .click();
+  const menu = page.getByRole("button", {
+    name: `Mais opções de ${description}`,
+    exact: true,
+  });
+  if (await menu.isVisible()) await menu.click();
   await page.getByRole("button", { name, exact: true }).click();
 }
 

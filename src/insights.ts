@@ -109,18 +109,35 @@ export function monthLedger(data: Data, month: string): LedgerItem[] {
         income: e.kind === "income",
         category: e.kind === "deduction" ? "Outros" : undefined,
       });
+  // Forecasts belong to their reference month. Receipts belong to the date
+  // money actually arrived, even when several periods were received together.
   for (const e of incomeMonth(data, month))
-    rows.push({
-      kind: "recurring",
-      id: e.rule.id,
-      key: `r:${e.rule.id}`,
-      label: e.rule.description,
-      detail: e.rule.source,
-      amount: e.amount,
-      date: e.receipt?.date ?? e.date,
-      paid: !!e.receipt,
-      income: true,
-    });
+    if (!e.receipt)
+      rows.push({
+        kind: "recurring",
+        id: e.rule.id,
+        key: `r:${e.rule.id}:${month}`,
+        label: e.rule.description,
+        detail: e.rule.source,
+        amount: e.amount,
+        date: e.date,
+        paid: false,
+        income: true,
+      });
+  const recurringIds = new Set((data.recurringIncomes ?? []).map((r) => r.id));
+  for (const receipt of data.incomeReceipts ?? [])
+    if (recurringIds.has(receipt.recurringId) && receipt.date.startsWith(month))
+      rows.push({
+        kind: "recurring",
+        id: receipt.recurringId,
+        key: `r:${receipt.recurringId}:${receipt.month}`,
+        label: receipt.description,
+        detail: receipt.source,
+        amount: receipt.amountCents,
+        date: receipt.date,
+        paid: true,
+        income: true,
+      });
   return rows.sort(
     (a, b) => a.date.localeCompare(b.date) || a.label.localeCompare(b.label),
   );

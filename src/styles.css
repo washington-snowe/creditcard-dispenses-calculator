@@ -1254,7 +1254,7 @@ td strong {
   gap: 3px;
   align-items: center;
 }
-.row-actions .icon-button {
+.row-actions > .icon-button {
   height: 27px;
   width: 27px;
 }

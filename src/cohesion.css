@@ -523,7 +523,8 @@ td {
   inset: auto;
   margin: 0;
   width: max-content;
-  max-width: calc(100vw - 16px);
+  min-width: min(13rem, calc(100vw - 16px));
+  max-width: min(22rem, calc(100vw - 16px));
   padding: 6px;
   border: 1px solid var(--border);
   border-radius: var(--radius-panel);
@@ -535,13 +536,15 @@ td {
   display: grid;
   gap: 4px;
 }
-.action-popover > button {
+.action-popover > .action-item {
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 10px;
   width: 100%;
   height: auto;
+  min-height: 44px;
+  color: inherit;
   padding: 12px;
   background: transparent;
   border: 0;
@@ -550,7 +553,7 @@ td {
   white-space: normal;
   font-size: var(--text-body);
 }
-.action-popover > button:hover {
+.action-popover > .action-item:hover:not(:disabled) {
   background: var(--hover);
 }
 .home-widget .welcome-balance,
@@ -599,4 +602,46 @@ td {
 }
 :root[data-glow="on"] :is(.managed-card:hover, .mini-card:hover) .plastic-card {
   box-shadow: 0 2px 14px color-mix(in srgb, var(--card-color) 14%, transparent);
+}
+
+/* Menu actions must never inherit square table-icon sizing. */
+.action-popover .action-label,
+.action-direct .action-label {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+  text-align: left;
+}
+.action-popover .action-item > svg,
+.action-direct > svg {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+}
+.action-popover > .danger-text {
+  color: var(--danger);
+}
+.action-direct {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 7px;
+  flex: 0 0 auto;
+  max-width: 14rem;
+  min-height: 36px;
+  padding: 7px 10px;
+  color: var(--secondary);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  font-size: var(--text-caption);
+  cursor: pointer;
+}
+.action-direct:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--text);
+}
+.action-direct.danger-text {
+  color: var(--danger);
 }

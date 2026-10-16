@@ -4,11 +4,11 @@ Aplicativo desktop de finanças pessoais em **Node.js + Electron**, com interfac
 
 ## Baixar para Windows
 
-[**Baixar ContaClara 4.10.0 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.10.0/ContaClara-Windows-x64.zip)
+[**Baixar ContaClara 4.10.1 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.10.1/ContaClara-Windows-x64.zip)
 
 Extraia a pasta inteira e abra **saldo.exe**. Não é necessário instalar Node.js. A versão foi compilada e testada no Windows, incluindo os cálculos financeiros e a persistência dos dados após reiniciar o aplicativo.
 
-A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.10.0) também contém o checksum do ZIP.
+A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.10.1) também contém o checksum do ZIP.
 
 ## Executar no computador
 
@@ -32,7 +32,7 @@ A interface no navegador usa um armazenamento local separado do aplicativo deskt
 ## O que você pode fazer
 
 - Abrir **Início** para ver quanto falta pagar no mês e, quando houver pagamentos, o total já pago e o progresso. O resumo inclui parcelas de cartões, assinaturas e despesas, independentemente dos filtros das compras. Pagamentos seguem a data real do desembolso, incluindo antecipações.
-- Iniciar em **Resumo → Boas-vindas**, com o nome da conta do computador, 200 frases motivacionais alternadas a cada inicialização e atalhos com setas para resumo, compras/cartões, entradas, metas, contas e planejamento. A frase não muda ao navegar pela interface.
+- Iniciar em **Resumo → Boas-vindas**, com o nome da conta do computador, 200 frases motivacionais curtas alternadas a cada inicialização e atalhos com setas para resumo, compras/cartões, entradas, metas, contas e planejamento. A frase não muda ao navegar pela interface.
 - Usar **Buscar funções** no menu para encontrar telas pelo nome ou por termos como **pagar fatura**, **salário**, **parcelas caras**, **backup** e **tema escuro**. As sugestões abrem diretamente a função; use ↑/↓ e Enter. Com o menu recolhido, clique na lupa. **Ctrl+K** pesquisa funções e registros.
 - Navegar com transições suaves, entrada gradual dos cards e efeitos nas ações. As preferências de animação, glow e redução de movimento do dispositivo continuam sendo respeitadas.
 - Recolher ou expandir o menu lateral. A escolha fica salva em janelas maiores; em janelas pequenas, o menu pode ser aberto sobre o conteúdo e fechado com Esc. As funções estão agrupadas em Resumo, Movimentações, Planejamento e Configurações.

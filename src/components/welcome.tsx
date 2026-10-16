@@ -11,10 +11,18 @@ import {
   Repeat,
   ShoppingBag,
   Zap,
+  Target,
 } from "lucide-react";
 import { money, type Data, type Settings } from "../domain";
 import { monthFlow } from "../finance";
 export const destinations = [
+  {
+    id: "goals",
+    title: "Metas",
+    icon: Target,
+    description:
+      "Planeje uma compra, acompanhe suas economias e defina limites para gastar menos.",
+  },
   {
     id: "overview",
     title: "Visão geral",

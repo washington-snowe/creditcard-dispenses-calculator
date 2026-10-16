@@ -1,3 +1,4 @@
+import { verifyGoals, verifyGoalDialog } from "./goals.mjs";
 import { verifyFunctionSearch } from "./navigation-search.mjs";
 import { verifyHarmony } from "./harmony.mjs";
 import { verifyCohesion } from "./cohesion.mjs";
@@ -66,6 +67,7 @@ try {
   await verifyCohesion(page);
   await verifyHarmony(page);
   await verifyFunctionSearch(page, { resize: false });
+  await verifyGoals(page, { capture: false });
   const expanded = JSON.parse(
     await readFile(join(directory, "finances.json"), "utf8"),
   );
@@ -93,11 +95,13 @@ try {
       "Minhas compras",
       "Meus cartões",
       "Entradas do mês",
+      "Metas",
       "Aparência",
     ]) {
       await goTo(page, tab);
       await verifyPageLayout(page, `Electron / zoom ${factor * 100}% / ${tab}`);
     }
+    await verifyGoalDialog(page);
     await verifyChartTooltips(page);
   }
   await app.evaluate(({ BrowserWindow }) => {

@@ -14,6 +14,7 @@ import {
   DatabaseBackup,
   RefreshCw,
   Settings2,
+  Target,
   type LucideIcon,
 } from "lucide-react";
 
@@ -28,6 +29,7 @@ export type PageId =
   | "calendar"
   | "pending"
   | "planning"
+  | "goals"
   | "anticipation"
   | "simulator"
   | "appearance"
@@ -129,6 +131,14 @@ export const NAV_FUNCTIONS: NavigationFunction[] = [
     icon: Zap,
   },
   {
+    id: "goals",
+    title: "Metas",
+    description: "Planeje conquistas, acompanhe economias e reduza gastos.",
+    keywords:
+      "meta metas objetivo objetivos comprar algo juntar guardar dinheiro economizar economizei economia economias gastar menos reduzir gastos reserva viagem viajar sonho prioridade quanto falta poupar poupanca",
+    icon: Target,
+  },
+  {
     id: "simulator",
     title: "Simular compra",
     description: "Confira o impacto de uma compra antes de cadastrar.",
@@ -181,9 +191,9 @@ export const NAV_GROUPS: {
   },
   {
     title: "Planejamento",
-    description: "Previsões e antecipações",
+    description: "Previsões, metas e antecipações",
     icon: CalendarDays,
-    ids: ["planning", "anticipation", "simulator"],
+    ids: ["planning", "goals", "anticipation", "simulator"],
   },
   {
     title: "Configurações",
@@ -235,7 +245,9 @@ export function findFunctions(query: string): NavigationFunction[] {
           "os",
           "as",
           "meu",
+          "meus",
           "minha",
+          "minhas",
           "um",
           "uma",
           "no",

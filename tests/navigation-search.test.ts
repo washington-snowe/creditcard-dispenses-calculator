@@ -16,6 +16,11 @@ test("busca de funções entende intenções financeiras, acentos e nomes altern
     ["cópia segurança", "data"],
     ["aceleração hardware", "appearance"],
     ["atualizar", "updates"],
+    ["juntar dinheiro", "goals"],
+    ["gastar menos", "goals"],
+    ["minhas metas", "goals"],
+    ["guardar dinheiro", "goals"],
+    ["quanto economizei", "goals"],
     ["Netflix", "subscriptions"],
     ["boleto", "expenses"],
   ])

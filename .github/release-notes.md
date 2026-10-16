@@ -1,9 +1,11 @@
-**ContaClara 4.8.2 — correção do menu lateral recolhido.**
+**ContaClara 4.9.0 — metas para transformar seus planos em conquistas.**
 
 Baixe **ContaClara-Windows-x64.zip**, extraia a pasta inteira e abra **saldo.exe**.
 
-- **Ícones alinhados:** os textos ocultos deixam de aumentar a altura dos botões ao recolher o menu. As quatro áreas continuam visíveis e acessíveis.
-- **Animação estável:** os rótulos mantêm sua largura durante a transição, evitando quebras de texto que deslocavam os ícones.
-- **Janelas menores e acessibilidade:** o menu compacto continua funcionando com teclado, zoom e preferência de reduzir movimento.
+- **Metas de compra e economia:** registre seu objetivo, valor, início e prazo. Acompanhe progresso estimado, quanto falta e o valor mensal necessário para o prazo desejado.
+- **Gastar menos:** limite mensal para todos os gastos ou uma categoria, com comparação ao gasto de referência, economia parcial e alertas quando ultrapassar o limite.
+- **Atualização pelos registros financeiros:** entradas recebidas, pagamentos, compromissos pendentes, atrasos e reserva são considerados. Previsões de renda ficam de fora; déficits podem reduzir o progresso.
+- **Prioridades sem duplicar saldo:** as estimativas são distribuídas entre os objetivos na ordem escolhida. Nenhum depósito ou transferência bancária é realizado.
+- **Organização:** filtros, busca, edição, arquivo, exclusão com confirmação e evolução em gráfico e tabela. As metas estão no menu Planejamento, nos atalhos de início e na busca geral.
 
-Os recursos financeiros, dados, backups, preferências e atualização automática são preservados. Atualize em **Configurações → Atualizações**. **SHA256SUMS.txt** contém os checksums dos ZIPs.
+Os registros existentes, preferências e backups são preservados. As metas entram nas cópias de segurança e no histórico de desfazer. Atualize em **Configurações → Atualizações**. **SHA256SUMS.txt** contém os checksums dos ZIPs.

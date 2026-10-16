@@ -19,7 +19,13 @@ import {
 } from "./finance";
 export type Destination = {
   kind:
-    "purchase" | "card" | "subscription" | "expense" | "income" | "recurring";
+    | "purchase"
+    | "card"
+    | "subscription"
+    | "expense"
+    | "income"
+    | "recurring"
+    | "goal";
   id: string;
 };
 export type LedgerItem = Destination & {
@@ -320,6 +326,13 @@ export function searchAll(data: Data, query: string) {
     detail: string;
     amount?: number;
   })[] = [
+    ...(data.goals ?? []).map((g) => ({
+      kind: "goal" as const,
+      id: g.id,
+      label: g.title,
+      detail: `Meta · ${g.kind === "saving" ? "Juntar dinheiro" : "Gastar menos"}${g.archived ? " · Arquivada" : ""}`,
+      amount: g.targetCents,
+    })),
     ...data.cards.map((c) => ({
       kind: "card" as const,
       id: c.id,

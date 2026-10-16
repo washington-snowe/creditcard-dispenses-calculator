@@ -4,11 +4,11 @@ Aplicativo desktop de finanças pessoais em **Node.js + Electron**, com interfac
 
 ## Baixar para Windows
 
-[**Baixar ContaClara 4.8.2 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.8.2/ContaClara-Windows-x64.zip)
+[**Baixar ContaClara 4.9.0 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.9.0/ContaClara-Windows-x64.zip)
 
 Extraia a pasta inteira e abra **saldo.exe**. Não é necessário instalar Node.js. A versão foi compilada e testada no Windows, incluindo os cálculos financeiros e a persistência dos dados após reiniciar o aplicativo.
 
-A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.8.2) também contém o checksum do ZIP.
+A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.9.0) também contém o checksum do ZIP.
 
 ## Executar no computador
 
@@ -213,3 +213,13 @@ O script de instalação mantém verificação TLS e checksum dos artefatos do E
 ### Notas de atualização
 
 Antes de publicar uma versão, atualize `src/release-notes.json` com a mesma versão de `package.json` e destaques reais da entrega. Os testes validam a correspondência. Esse arquivo é incorporado ao aplicativo para consulta offline e publicado junto aos ZIPs para apresentar as novidades antes do download. Notas ausentes ou incompatíveis não impedem a atualização.
+
+## Metas
+
+Em **Planejamento → Metas**, cadastre objetivos de **juntar dinheiro/comprar algo** ou de **gastar menos**. Defina nome, valor, início e prazo opcional. Metas de gasto podem filtrar uma categoria e comparar a economia com um valor de referência, sugerido a partir do mês anterior.
+
+O saldo estimado para objetivos considera entradas recebidas e pagamentos desde o primeiro mês de acompanhamento, desconta uma vez os compromissos pendentes até o mês consultado e preserva a reserva financeira. Se o transporte de saldo estiver configurado, considera também o saldo inicial. Rendas previstas e meses futuros não viram dinheiro economizado. Déficits posteriores podem reduzir o progresso.
+
+As metas de juntar dinheiro recebem esse saldo na ordem de prioridade. Os mesmos recursos não são contados em dois objetivos; editar, priorizar ou arquivar metas pode redistribuir a estimativa. O programa não efetua depósitos nem separa dinheiro no banco.
+
+O limite de gastos usa parcelas e assinaturas do mês, despesas pelo vencimento e reduções de saldo sem duplicar pagamentos. A economia é a diferença para a referência; no mês atual o resultado é parcial. Há filtros, edição, arquivo, exclusão com confirmação, busca geral, evolução em gráfico/tabela, histórico de desfazer e preservação das metas em backups.

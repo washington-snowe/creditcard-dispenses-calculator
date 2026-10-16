@@ -40,6 +40,19 @@ export type Data = {
   cashEntries?: CashEntry[];
   subscriptions?: Subscription[];
   subscriptionPayments?: SubscriptionPayment[];
+  goals?: Goal[];
+};
+export type Goal = {
+  id: string;
+  title: string;
+  description: string;
+  kind: "saving" | "spending";
+  targetCents: number;
+  startMonth: string;
+  deadlineMonth: string | null;
+  category: string | null;
+  baselineCents: number | null;
+  archived: boolean;
 };
 export type Settings = {
   theme: "light" | "dark" | "ultra";
@@ -490,7 +503,7 @@ export function forecast(
 export function validateData(input: unknown): Data {
   const fail = () => {
     throw new Error(
-      "Arquivo inválido: confira os cartões, compras e valores do backup.",
+      "Arquivo inválido: confira os registros, metas e valores do backup.",
     );
   };
   if (!input || typeof input !== "object") return fail();
@@ -777,9 +790,56 @@ export function validateData(input: unknown): Data {
       expenseIds.add(e.id);
     }
   }
+  if (x.goals !== undefined) {
+    if (!Array.isArray(x.goals) || x.goals.length > 100) return fail();
+    const goalIds = new Set<string>();
+    for (const g of x.goals) {
+      if (
+        !g ||
+        !text(g.id) ||
+        goalIds.has(g.id) ||
+        !text(g.title, 80) ||
+        typeof g.description !== "string" ||
+        g.description.length > 300 ||
+        !["saving", "spending"].includes(g.kind) ||
+        !number(g.targetCents, 1, 100_000_000_000) ||
+        !month(g.startMonth) ||
+        !(
+          g.deadlineMonth === null ||
+          (month(g.deadlineMonth) && g.deadlineMonth >= g.startMonth)
+        ) ||
+        !(g.category === null || CATEGORIES.includes(g.category)) ||
+        !(
+          g.baselineCents === null ||
+          number(g.baselineCents, 0, 100_000_000_000)
+        ) ||
+        (g.kind === "saving" &&
+          (g.category !== null || g.baselineCents !== null)) ||
+        typeof g.archived !== "boolean"
+      )
+        return fail();
+      goalIds.add(g.id);
+    }
+  }
   // Keep only supported fields when importing untrusted backups.
   return {
     version: 1,
+    ...(x.goals
+      ? {
+          goals: x.goals.map((g) => ({
+            id: g.id,
+            title: g.title.trim(),
+            description: g.description.trim(),
+            kind: g.kind,
+            targetCents: g.targetCents,
+            startMonth: g.startMonth,
+            deadlineMonth: g.deadlineMonth,
+            category: g.category,
+            baselineCents: g.baselineCents,
+            archived: g.archived,
+          })),
+        }
+      : {}),
     cards: x.cards.map((c) => ({
       id: c.id,
       name: c.name,

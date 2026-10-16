@@ -28,3 +28,4 @@ import "./harmony.css";
 import "./navigation-effects.css";
 
 import "./updates.css";
+import "./goals.css";

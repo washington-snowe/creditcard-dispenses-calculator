@@ -1,15 +1,25 @@
 {
-  "version": "4.8.2",
-  "title": "Menu lateral mais estável",
+  "version": "4.9.0",
+  "title": "Seus planos agora têm um lugar",
   "highlights": [
     {
-      "title": "Ícones alinhados ao recolher",
-      "description": "Os textos ocultos deixam de ocupar espaço, mantendo os quatro ícones do menu visíveis, alinhados e fáceis de acessar.",
-      "kind": "fixed"
+      "title": "Uma seção só para suas metas",
+      "description": "Planeje uma compra, uma viagem ou uma reserva e acompanhe o valor estimado disponível, o progresso e quanto falta para chegar lá.",
+      "kind": "new"
     },
     {
-      "title": "Transição sem deformar os botões",
-      "description": "Os rótulos mantêm a largura durante a animação, evitando quebras excessivas de texto ao abrir ou recolher o menu.",
+      "title": "Gastar menos com clareza",
+      "description": "Defina limites mensais por categoria ou para todos os gastos. Compare com uma referência e acompanhe sua economia parcial ou o resultado do mês encerrado.",
+      "kind": "new"
+    },
+    {
+      "title": "Progresso com os seus registros",
+      "description": "Entradas recebidas, pagamentos, contas pendentes e reserva atualizam as estimativas automaticamente. As prioridades evitam usar o mesmo saldo em duas metas.",
+      "kind": "new"
+    },
+    {
+      "title": "Sua evolução ao longo dos meses",
+      "description": "Consulte o gráfico, altere prioridades, filtre, edite e arquive metas. Elas também aparecem na busca geral e são preservadas nos backups.",
       "kind": "improved"
     }
   ]

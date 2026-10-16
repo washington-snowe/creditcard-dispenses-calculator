@@ -140,7 +140,7 @@ export async function verifyNavigation(page) {
     page
       .getByRole("region", { name: "Conheça as funções" })
       .getByRole("button"),
-  ).toHaveCount(8);
+  ).toHaveCount(9);
   await expect(
     page.getByRole("region", { name: "Filtros globais" }),
   ).toHaveCount(0);

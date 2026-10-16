@@ -1,4 +1,5 @@
 import { NavigationSearch } from "./components/navigation-search";
+import { GoalForm, GoalsPage } from "./components/goals";
 import {
   NAV_FUNCTIONS as nav,
   NAV_GROUPS as navGroups,
@@ -83,6 +84,7 @@ import {
   type RecurringIncome,
   type Expense,
   type Settings,
+  type Goal,
 } from "./domain";
 import { loadData, saveData } from "./storage";
 import { CardForm, PurchaseForm } from "./components/forms";
@@ -146,6 +148,7 @@ type Modal =
   | { type: "subscription"; subscription?: Subscription }
   | { type: "recurring"; rule?: RecurringIncome }
   | { type: "expense"; expense?: Expense }
+  | { type: "goal"; goal?: Goal; kind?: Goal["kind"] }
   | {
       type: "settlement";
       title: string;
@@ -170,6 +173,7 @@ const titles: Record<Tab, [string, string]> = {
   expenses: ["Despesas", ""],
   subscriptions: ["Assinaturas", ""],
   planning: ["Previsão mensal", "Seus compromissos nos próximos meses."],
+  goals: ["Metas", "Seus objetivos, um passo de cada vez."],
   anticipation: [
     "Antecipações",
     "Compare o custo de quitar com o alívio mensal.",
@@ -519,6 +523,7 @@ export default function App() {
   };
   const hasPurchaseFilters = ![
     "home",
+    "goals",
     "calendar",
     "pending",
     "simulator",
@@ -748,7 +753,7 @@ export default function App() {
     anchor.download = `saldo-backup-${today}.json`;
     anchor.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    setToast("Backup exportado com seus cartões, pagamentos e tema.");
+    setToast("Backup exportado com seus registros, metas e preferências.");
   }
   async function importBackup(file?: File) {
     if (!file) return;
@@ -757,7 +762,7 @@ export default function App() {
       const imported = validateData(JSON.parse(await file.text()));
       confirm(
         "Restaurar backup?",
-        `Restaurar ${imported.cards.length} cartões, ${imported.purchases.length} compras, ${imported.cashEntries?.length ?? 0} movimentos de dinheiro e ${imported.subscriptions?.length ?? 0} assinaturas, ${imported.recurringIncomes?.length ?? 0} rendas recorrentes e ${imported.expenses?.length ?? 0} despesas? Isso substituirá os dados atuais. Exporte uma cópia antes para preservá-los.`,
+        `Restaurar ${imported.cards.length} cartões, ${imported.purchases.length} compras, ${imported.cashEntries?.length ?? 0} movimentos de dinheiro e ${imported.subscriptions?.length ?? 0} assinaturas, ${imported.recurringIncomes?.length ?? 0} rendas recorrentes e ${imported.expenses?.length ?? 0} despesas e ${imported.goals?.length ?? 0} metas? Isso substituirá os dados atuais. Exporte uma cópia antes para preservá-los.`,
         async () => {
           try {
             await createBackup(data);
@@ -798,6 +803,13 @@ export default function App() {
   }
   function openDestination(destination: Destination) {
     const { kind, id } = destination;
+    if (kind === "goal") {
+      const goal = data.goals?.find((g) => g.id === id);
+      if (goal) {
+        navigate("goals");
+        setModal({ type: "goal", goal });
+      }
+    }
     if (kind === "card") {
       const card = data.cards.find((c) => c.id === id);
       if (card) {
@@ -1426,27 +1438,31 @@ export default function App() {
                 className="button primary"
                 disabled={saving}
                 onClick={() =>
-                  tab === "expenses"
-                    ? setModal({ type: "expense" })
-                    : tab === "income"
-                      ? setModal({ type: "income" })
-                      : tab === "subscriptions"
-                        ? setModal({ type: "subscription" })
-                        : tab === "cards"
-                          ? setModal({ type: "card" })
-                          : addPurchase()
+                  tab === "goals"
+                    ? setModal({ type: "goal" })
+                    : tab === "expenses"
+                      ? setModal({ type: "expense" })
+                      : tab === "income"
+                        ? setModal({ type: "income" })
+                        : tab === "subscriptions"
+                          ? setModal({ type: "subscription" })
+                          : tab === "cards"
+                            ? setModal({ type: "card" })
+                            : addPurchase()
                 }
               >
                 <Plus size={17} />
-                {tab === "expenses"
-                  ? "Nova despesa"
-                  : tab === "income"
-                    ? "Nova entrada"
-                    : tab === "subscriptions"
-                      ? "Nova assinatura"
-                      : tab === "cards" || !data.cards.length
-                        ? "Novo cartão"
-                        : "Nova compra"}
+                {tab === "goals"
+                  ? "Nova meta"
+                  : tab === "expenses"
+                    ? "Nova despesa"
+                    : tab === "income"
+                      ? "Nova entrada"
+                      : tab === "subscriptions"
+                        ? "Nova assinatura"
+                        : tab === "cards" || !data.cards.length
+                          ? "Novo cartão"
+                          : "Nova compra"}
               </button>
             )}
           </div>
@@ -2764,6 +2780,16 @@ export default function App() {
             />
           )}
           {tab === "updates" && <UpdatesPage />}
+          {tab === "goals" && (
+            <GoalsPage
+              data={data}
+              month={month}
+              saving={saving}
+              onNew={(kind) => setModal({ type: "goal", kind })}
+              onEdit={(goal) => setModal({ type: "goal", goal })}
+              onChange={(goals, message) => commit({ ...data, goals }, message)}
+            />
+          )}
           <footer className="page-footer">
             <LocalNote />
             <span>ContaClara {__APP_VERSION__}</span>
@@ -2782,6 +2808,29 @@ export default function App() {
               document.querySelector<HTMLElement>("main h1")?.focus(),
             );
           }}
+        />
+      )}
+      {modal?.type === "goal" && (
+        <GoalForm
+          goal={modal.goal}
+          kind={modal.kind}
+          data={data}
+          month={month}
+          saving={saving}
+          onClose={() => setModal(null)}
+          onSave={(goal) =>
+            commit(
+              {
+                ...data,
+                goals: modal.goal
+                  ? (data.goals ?? []).map((g) => (g.id === goal.id ? goal : g))
+                  : [...(data.goals ?? []), goal],
+              },
+              modal.goal
+                ? "Meta atualizada."
+                : "Meta criada. Seu progresso já está sendo acompanhado.",
+            )
+          }
         />
       )}
       {modal?.type === "drill" && (

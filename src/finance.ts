@@ -234,7 +234,7 @@ export function expenseMonth(
       (month === today && !e.paidDate && e.dueDate.slice(0, 7) < month),
   );
 }
-function actualFlows(data: Data) {
+export function actualFlows(data: Data) {
   const flows = new Map<string, number>();
   const put = (m: string, amount: number) =>
     flows.set(m, (flows.get(m) ?? 0) + amount);

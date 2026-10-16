@@ -10,6 +10,7 @@ export const areas = {
   Despesas: "Movimentações",
   Assinaturas: "Movimentações",
   Planejamento: "Planejamento",
+  Metas: "Planejamento",
   Antecipações: "Planejamento",
   "Simular compra": "Planejamento",
   Aparência: "Configurações",

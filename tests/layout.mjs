@@ -1,4 +1,5 @@
 import { goTo } from "./navigation.mjs";
+import { verifyGoalDialog } from "./goals.mjs";
 import {
   verifyChartTooltips,
   verifyNavigation,
@@ -16,6 +17,7 @@ import {
 } from "./identity.mjs";
 
 const tabs = [
+  "Metas",
   "Calendário",
   "Pendências",
   "Simular compra",
@@ -83,6 +85,34 @@ try {
       font: "dm",
       motion: false,
     };
+    const month = new Date().toISOString().slice(0, 7);
+    data.goals = [
+      {
+        id: "layout-saving",
+        title: "Minha próxima conquista",
+        description:
+          "Um objetivo para acompanhar com os registros do programa.",
+        kind: "saving",
+        targetCents: 200000,
+        startMonth: month,
+        deadlineMonth: null,
+        category: null,
+        baselineCents: null,
+        archived: false,
+      },
+      {
+        id: "layout-spending",
+        title: "Reduzir os gastos com alimentação",
+        description: "Comparação com meu gasto de referência.",
+        kind: "spending",
+        targetCents: 30000,
+        startMonth: month,
+        deadlineMonth: null,
+        category: "Alimentação",
+        baselineCents: 40000,
+        archived: false,
+      },
+    ];
     localStorage.setItem("saldo-data-v1", JSON.stringify(data));
   });
   await page.reload();
@@ -156,6 +186,7 @@ try {
       path: `.runtime/identity-${width}.png`,
       fullPage: true,
     });
+    if (width <= 390) await verifyGoalDialog(page);
   }
   await page.setViewportSize({ width: 1440, height: 1040 });
   // Double the root text size without shrinking the viewport, exercising text
@@ -168,6 +199,7 @@ try {
     await goTo(page, tab);
     await verifyPageLayout(page, `texto 200% / ${tab}`);
   }
+  await verifyGoalDialog(page);
   // A high balance must reflow in dialogs when the user enlarges text.
   await page.evaluate(() => {
     const data = JSON.parse(localStorage.getItem("saldo-data-v1"));
@@ -214,7 +246,7 @@ try {
   });
   expect(errors).toEqual([]);
   console.log(
-    "Tipografia oficial, números tabulares, preferências antigas e quinze telas entre 320 e 1440 px, com aumento de texto a 200%, verificados.",
+    "Tipografia oficial, números tabulares, preferências antigas e dezesseis telas entre 320 e 1440 px, com aumento de texto a 200%, verificados.",
   );
 } catch (error) {
   if (browser) {

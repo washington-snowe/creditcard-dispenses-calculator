@@ -521,11 +521,18 @@ try {
   // version's directory. Both Electron and its children must release that path.
   const inherited = join(updates, "versions", "2.0.0", "Saldo-win32-x64");
   await mkdir(inherited, { recursive: true });
-  const oldPid = await launchOriginal(nextTarget, inherited);
+  await launchOriginal(nextTarget, inherited);
   assert.equal(
     (await app.evaluate(() => process.cwd())).toLowerCase(),
     dirname(nextTarget).toLowerCase(),
   );
+  // Chromium children can inherit CWD before application JavaScript executes.
+  // Windows releases those directory handles when they close. This is exactly
+  // the documented "retry locked files on next launch" path, not a reason to
+  // break an otherwise successful update or force-kill the current application.
+  await app.close();
+  app = undefined;
+  const oldPid = await launchOriginal(nextTarget);
   await waitFor(
     async () => !(await readdir(join(updates, "versions"))).includes("2.0.0"),
     "A pasta de trabalho herdada da versão antiga não foi liberada.",

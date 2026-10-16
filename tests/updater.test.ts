@@ -29,10 +29,10 @@ function response(body: string, url: string, headers = {}) {
   Object.defineProperty(value, "url", { value: url });
   return value;
 }
-function fetchFixture(badChecksum = false) {
+function fetchFixture(badChecksum = false, version = "3.1.0") {
   return async (url: string) => {
     if (url.endsWith("/latest"))
-      return response("", `${REPOSITORY}/releases/tag/v3.1.0`);
+      return response("", `${REPOSITORY}/releases/tag/v${version}`);
     if (url.endsWith("SHA256SUMS.txt"))
       return response(
         `${badChecksum ? "0".repeat(64) : hash}  Saldo-Windows-x64.zip\r\n`,
@@ -293,7 +293,7 @@ test("limpeza não segue links nem apaga diretórios que contêm dados ou backup
   }
 });
 
-test("confirmar leitura aguarda o commit do helper antes de excluir a versão de recuperação", async () => {
+test("confirmar leitura e iniciar outro download aguarda o commit sem excluir o ACK ou a versão de recuperação", async () => {
   const userData = await mkdtemp(join(tmpdir(), "saldo-cleanup-ack-"));
   const root = join(userData, "updates");
   const nonce = "22222222-2222-2222-2222-222222222222";
@@ -305,12 +305,19 @@ test("confirmar leitura aguarda o commit do helper antes de excluir a versão de
       join(root, "active.json"),
       JSON.stringify({ version: "3.0.0" }),
     );
+    let fetched = false;
+    const fixture = fetchFixture(false, "3.2.0");
     const updater = createUpdater({
       currentVersion: "3.1.0",
       userData,
       platform: "win32",
       arch: "x64",
       packaged: true,
+      fetch: (url: string) => {
+        fetched = true;
+        return fixture(url);
+      },
+      prepare: async () => {},
     });
     await updater.ready([`--saldo-update-ack=${nonce}`]);
     assert.equal(
@@ -318,7 +325,18 @@ test("confirmar leitura aguarda o commit do helper antes de excluir a versão de
         .version,
       "3.1.0",
     );
+    const download = updater.download();
     await new Promise((resolve) => setTimeout(resolve, 350));
+    assert.equal(
+      fetched,
+      false,
+      "Outro download só começa depois da confirmação.",
+    );
+    assert.equal(
+      JSON.parse(await readFile(join(root, `ready-${nonce}.json`), "utf8"))
+        .version,
+      "3.1.0",
+    );
     assert.equal(
       await readFile(join(oldVersion, "saldo.exe"), "utf8"),
       "rollback",
@@ -335,6 +353,7 @@ test("confirmar leitura aguarda o commit do helper antes de excluir a versão de
         processId: process.pid,
       }),
     );
+    assert.deepEqual(await download, { version: "3.2.0", ready: true });
     const until = Date.now() + 5000;
     while (
       (await readdir(join(root, "versions"))).includes("3.0.0") &&

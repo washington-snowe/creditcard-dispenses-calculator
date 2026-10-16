@@ -1,6 +1,11 @@
 // Only updater-owned paths may be removed. User records and every backup stay outside
 // this allowlist; even a misplaced data file or a directory link prevents removal.
-const fs = require("node:fs/promises");
+// Electron's normal fs treats app.asar as a virtual directory. A recursive rm
+// can open/cache the OLD archive and lock it on Windows. Use the real filesystem
+// here so archives remain ordinary files, without touching the running archive.
+const fs = process.versions.electron
+  ? require("original-fs").promises
+  : require("node:fs/promises");
 const path = require("node:path");
 const VERSION = /^\d+\.\d+\.\d+$/;
 const UUID = "[a-f\\d]{8}-[a-f\\d]{4}-[a-f\\d]{4}-[a-f\\d]{4}-[a-f\\d]{12}";

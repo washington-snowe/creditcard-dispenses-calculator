@@ -121,6 +121,7 @@ function createUpdater(options) {
   let controller,
     prepared,
     latest,
+    pendingCommit = false,
     readyHandled = false;
   let cleanupTask = Promise.resolve();
   function cleanup() {
@@ -129,12 +130,14 @@ function createUpdater(options) {
     cleanupTask = cleanupTask
       .catch(() => {})
       .then(() =>
-        cleanupUpdates({
-          userData,
-          currentVersion,
-          executable,
-          keepVersions: prepared ? [prepared.version] : [],
-        }),
+        pendingCommit
+          ? undefined
+          : cleanupUpdates({
+              userData,
+              currentVersion,
+              executable,
+              keepVersions: prepared ? [prepared.version] : [],
+            }),
       )
       .catch(() => {});
     return cleanupTask;
@@ -210,6 +213,15 @@ function createUpdater(options) {
     ]);
     let partial, readyProgress;
     try {
+      const commitDeadline = Date.now() + 60000;
+      while (pendingCommit) {
+        signal.throwIfAborted();
+        if (Date.now() >= commitDeadline)
+          throw new Error(
+            "Aguarde a conclusão da atualização atual antes de baixar outra.",
+          );
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
       await cleanup();
       const release = await check(signal);
       if (!release.available)
@@ -311,6 +323,8 @@ function createUpdater(options) {
     return { version: readyProgress.version, ready: true };
   }
   async function apply() {
+    if (pendingCommit)
+      throw new Error("Aguarde a conclusão da atualização atual.");
     if (controller)
       throw new Error("Aguarde a preparação da atualização terminar.");
     if (!canInstall || !prepared)
@@ -431,6 +445,7 @@ function createUpdater(options) {
       } catch {
         /* A fresh update has not been committed yet. */
       }
+      pendingCommit = true;
       const nonce = arg.split("=")[1];
       await fs.mkdir(root, { recursive: true });
       await fs.writeFile(
@@ -452,6 +467,7 @@ function createUpdater(options) {
             result.version === currentVersion &&
             result.processId === pid
           ) {
+            pendingCommit = false;
             if (!controller && !prepared) await cleanup();
             return;
           }

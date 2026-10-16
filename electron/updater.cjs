@@ -3,6 +3,7 @@ const path = require("node:path");
 const { createHash, randomUUID } = require("node:crypto");
 const { spawn } = require("node:child_process");
 const { prepareScript } = require("./update-scripts.cjs");
+const { readReleaseNotes } = require("./release-notes.cjs");
 const { cleanupUpdates } = require("./update-cleanup.cjs");
 const REPOSITORY =
   "https://github.com/washington-snowe/creditcard-dispenses-calculator";
@@ -152,7 +153,7 @@ function createUpdater(options) {
     if (response.url) trustedUrl(response.url);
     if (!response.ok)
       throw new Error(
-        `GitHub respondeu ${response.status}. Verifique sua conexão e tente novamente.`,
+        `O serviço de atualização respondeu ${response.status}. Verifique sua conexão e tente novamente.`,
       );
     return response;
   }
@@ -186,12 +187,32 @@ function createUpdater(options) {
     const prefix =
       "/washington-snowe/creditcard-dispenses-calculator/releases/tag/";
     if (final.hostname !== "github.com" || !final.pathname.startsWith(prefix))
-      throw new Error("A versão publicada não foi encontrada no GitHub.");
+      throw new Error("Não foi possível localizar a versão mais recente.");
     const tag = decodeURIComponent(final.pathname.slice(prefix.length));
     parseVersion(tag);
     const version = tag.replace(/^v/, "");
     const available = newer(version, currentVersion);
+    let notes = null;
+    if (available) {
+      try {
+        const notesSignal = signal
+          ? AbortSignal.any([signal, AbortSignal.timeout(8000)])
+          : AbortSignal.timeout(8000);
+        notes = await readReleaseNotes(
+          await request(
+            `${REPOSITORY}/releases/download/${tag}/release-notes.json`,
+            notesSignal,
+          ),
+          version,
+        );
+      } catch {
+        // Older releases may not publish notes. An optional description must
+        // never prevent a verified application update from being installed.
+        signal?.throwIfAborted();
+      }
+    }
     latest = {
+      notes,
       version,
       available,
       releaseUrl: `${REPOSITORY}/releases/tag/${tag}`,

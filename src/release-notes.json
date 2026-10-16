@@ -1,0 +1,21 @@
+{
+  "version": "4.8.1",
+  "title": "Novidades sempre à mão",
+  "highlights": [
+    {
+      "title": "Conheça cada atualização",
+      "description": "Veja os destaques da versão instalada e descubra o que muda antes de baixar uma nova versão.",
+      "kind": "new"
+    },
+    {
+      "title": "Uma tela mais simples",
+      "description": "Acompanhe a verificação, o download e a instalação em um só lugar, com mensagens claras em cada etapa.",
+      "kind": "improved"
+    },
+    {
+      "title": "Novidades disponíveis offline",
+      "description": "Consulte as notas da versão instalada mesmo quando estiver sem conexão com a internet.",
+      "kind": "new"
+    }
+  ]
+}

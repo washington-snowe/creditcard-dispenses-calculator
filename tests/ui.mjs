@@ -1,4 +1,5 @@
 import { verifyFunctionSearch } from "./navigation-search.mjs";
+import { verifyUpdateNews } from "./update-news.mjs";
 import { verifyHarmony } from "./harmony.mjs";
 import { verifyCohesion } from "./cohesion.mjs";
 import { goTo } from "./navigation.mjs";
@@ -117,6 +118,7 @@ try {
   ).toBeTruthy();
   await page.screenshot({ path: ".runtime/mobile.png", fullPage: true });
   expect(errors).toEqual([]);
+  await verifyUpdateNews(browser, "http://127.0.0.1:4173");
   console.log(
     "Backup, restauração, rejeição de arquivo inválido e layout responsivo verificados. Nenhum erro de JavaScript.",
   );

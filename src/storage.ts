@@ -28,7 +28,17 @@ export type PerformanceInfo = {
   accelerationEnabled: boolean;
   gpuCompositing: string;
 };
+export type ReleaseNotes = {
+  version: string;
+  title: string;
+  highlights: {
+    title: string;
+    description: string;
+    kind: "new" | "improved" | "fixed";
+  }[];
+};
 export type UpdateInfo = {
+  notes?: ReleaseNotes | null;
   currentVersion: string;
   canInstall: boolean;
   repository: string;

@@ -4,11 +4,11 @@ Aplicativo desktop de finanças pessoais em **Node.js + Electron**, com interfac
 
 ## Baixar para Windows
 
-[**Baixar ContaClara 4.8.0 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.8.0/ContaClara-Windows-x64.zip)
+[**Baixar ContaClara 4.8.1 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.8.1/ContaClara-Windows-x64.zip)
 
 Extraia a pasta inteira e abra **saldo.exe**. Não é necessário instalar Node.js. A versão foi compilada e testada no Windows, incluindo os cálculos financeiros e a persistência dos dados após reiniciar o aplicativo.
 
-A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.8.0) também contém o checksum do ZIP.
+A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.8.1) também contém o checksum do ZIP.
 
 ## Executar no computador
 
@@ -57,7 +57,7 @@ A interface no navegador usa um armazenamento local separado do aplicativo deskt
 - Cadastrar **despesas fora do cartão** por Pix, boleto, dinheiro, débito ou transferência, com categoria, favorecido, vencimento, filtros e registro de pagamento.
 - Ver quanto sobrará no mês depois das faturas, assinaturas e despesas, incluindo pagamentos já registrados e os ainda pendentes.
 - Cadastrar assinaturas mensais, trimestrais ou anuais, no cartão ou fora dele; definir início/fim e marcar cobranças como pagas.
-- Verificar, baixar e aplicar novas versões publicadas no GitHub pela aba **Atualizações** no Windows x64.
+- Consultar as novidades da versão instalada, conhecer os destaques das novas versões e verificar, baixar e aplicar atualizações pela aba **Atualizações** no Windows x64.
 
 A primeira execução começa vazia. O botão **Experimentar exemplo** carrega dados fictícios somente após confirmação.
 
@@ -209,3 +209,7 @@ Prefira gerar e testar o pacote no sistema de destino. Para selecionar explicita
 Use o checkout existente em `/workspace/creditcard-dispenses-calculator`; cada tarefa já é isolada e não precisa de worktree. Os scripts reutilizáveis são `scripts/cloud-install.sh` e `scripts/cloud-start.sh`. Caches e arquivos temporários ficam em caminhos graváveis sob `/workspace`.
 
 O script de instalação mantém verificação TLS e checksum dos artefatos do Electron. `NODE_USE_ENV_PROXY=1` permite que Node.js 24 use o proxy fornecido pela plataforma. Não é necessário cadastrar credenciais ou integrar um banco para desenvolver o aplicativo.
+
+### Notas de atualização
+
+Antes de publicar uma versão, atualize `src/release-notes.json` com a mesma versão de `package.json` e destaques reais da entrega. Os testes validam a correspondência. Esse arquivo é incorporado ao aplicativo para consulta offline e publicado junto aos ZIPs para apresentar as novidades antes do download. Notas ausentes ou incompatíveis não impedem a atualização.

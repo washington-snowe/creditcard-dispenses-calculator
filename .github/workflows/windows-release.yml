@@ -94,12 +94,12 @@ jobs:
             throw 'Falha ao publicar os arquivos após três tentativas; consulte as anotações acima.'
           }
 
-          # Keep the release in draft until both verified files have been uploaded.
+          # Keep the release in draft until all verified assets have been uploaded.
           $existing = & gh release view "$releaseTag" --repo "$env:RELEASE_REPO" --json tagName 2>&1
           if ($LASTEXITCODE -eq 0) {
             Invoke-ReleaseCommand -ReleaseArguments @('release', 'edit', $releaseTag, '--repo', $env:RELEASE_REPO, '--draft=true')
           } else {
             Invoke-ReleaseCommand -ReleaseArguments @('release', 'create', $releaseTag, '--repo', $env:RELEASE_REPO, '--verify-tag', '--draft', '--title', "ContaClara $releaseTag - Windows 64 bits", '--notes-file', '.github/release-notes.md')
           }
-          Invoke-ReleaseCommand -ReleaseArguments @('release', 'upload', $releaseTag, 'downloads/Saldo-Windows-x64.zip', 'downloads/ContaClara-Windows-x64.zip', 'downloads/SHA256SUMS.txt', '--repo', $env:RELEASE_REPO, '--clobber')
+          Invoke-ReleaseCommand -ReleaseArguments @('release', 'upload', $releaseTag, 'downloads/Saldo-Windows-x64.zip', 'downloads/ContaClara-Windows-x64.zip', 'downloads/SHA256SUMS.txt', 'src/release-notes.json', '--repo', $env:RELEASE_REPO, '--clobber')
           Invoke-ReleaseCommand -ReleaseArguments @('release', 'edit', $releaseTag, '--repo', $env:RELEASE_REPO, '--draft=false', '--latest', '--title', "ContaClara $releaseTag - Windows 64 bits", '--notes-file', '.github/release-notes.md')

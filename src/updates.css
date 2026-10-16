@@ -1,0 +1,137 @@
+.updates-layout {
+  align-items: start;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.release-body {
+  padding: 22px 24px 24px;
+}
+.release-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 11px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: var(--text-caption);
+  font-weight: 500;
+  margin-bottom: 22px;
+}
+.release-highlights {
+  display: grid;
+  gap: 22px;
+}
+.release-highlight {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  min-width: 0;
+}
+.release-highlight + .release-highlight {
+  border-top: 1px solid var(--border);
+  padding-top: 22px;
+}
+.release-highlight-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 11px;
+}
+.release-highlight > div {
+  min-width: 0;
+  flex: 1;
+}
+.release-kind {
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--accent);
+}
+.release-kind-improved {
+  color: var(--info);
+}
+.release-kind-fixed {
+  color: var(--success);
+}
+.release-highlight h3 {
+  font-family: var(--font-heading);
+  font-size: 1.07143rem;
+  font-weight: 600;
+  line-height: 1.5;
+  margin: 5px 0;
+  overflow-wrap: anywhere;
+}
+.release-highlight p,
+.release-unavailable {
+  color: var(--secondary);
+  line-height: 1.8;
+  font-size: var(--text-body);
+  overflow-wrap: anywhere;
+}
+.release-installed {
+  margin-top: 24px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+.release-installed summary {
+  cursor: pointer;
+  color: var(--secondary);
+  line-height: 1.6;
+  font-size: var(--text-body);
+}
+.release-installed .release-highlights {
+  margin-top: 22px;
+}
+.update-reassurance {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 18px 22px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.update-reassurance > svg {
+  color: var(--success);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.update-reassurance strong {
+  font-size: var(--text-body);
+}
+.update-reassurance p {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: var(--text-caption);
+  line-height: 1.8;
+}
+.update-manual {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+}
+@media (max-width: 1100px) {
+  .updates-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 580px) {
+  .release-body {
+    padding: 18px;
+  }
+  .release-highlight {
+    gap: 10px;
+  }
+  .release-highlight-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+  .update-reassurance {
+    padding: 16px;
+  }
+}

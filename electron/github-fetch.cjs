@@ -31,7 +31,9 @@ function createGitHubFetch(net) {
         try {
           current = trustedUrl(destination).href;
           if (++redirects > 8)
-            throw new Error("Redirecionamentos demais no GitHub.");
+            throw new Error(
+              "Não foi possível conectar ao serviço de atualização.",
+            );
           request.followRedirect();
         } catch (error) {
           request.abort();

@@ -9,6 +9,9 @@ import { readFile } from "node:fs/promises";
 const version = JSON.parse(
   await readFile(new URL("../package.json", import.meta.url), "utf8"),
 ).version;
+const releaseNotes = JSON.parse(
+  await readFile(new URL("../src/release-notes.json", import.meta.url), "utf8"),
+);
 export async function runMoney(page) {
   const month = await page.evaluate(() => {
     const d = new Date();
@@ -140,8 +143,23 @@ export async function runMoney(page) {
   await goTo(page, "Atualizações");
   await expect(page.getByTestId("app-version")).toHaveText(version);
   await expect(
-    page.getByText("Versões no GitHub", { exact: true }),
+    page.getByRole("heading", {
+      name: "Atualizações do ContaClara",
+      exact: true,
+    }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: `Novidades da versão ${version}`,
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(page.getByRole("article")).toHaveCount(
+    releaseNotes.highlights.length,
+  );
+  await expect(page.locator("main")).not.toContainText(
+    /GitHub|repositório|Node\.js|Git instalado/i,
+  );
   await goTo(page, "Entradas do mês");
   await expect(page.getByTestId("cash-remaining")).toHaveText(/4\.050,00/);
   await page.reload();

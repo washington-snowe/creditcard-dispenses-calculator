@@ -3,12 +3,45 @@ import {
   CheckCheck,
   Download,
   ExternalLink,
+  Sparkles,
+  Check,
   RefreshCw,
   ShieldCheck,
   Upload,
 } from "lucide-react";
-import type { UpdateInfo, UpdateProgress } from "../storage";
+import bundledNotes from "../release-notes.json";
+import type { ReleaseNotes, UpdateInfo, UpdateProgress } from "../storage";
 import { Dialog, Panel } from "./ui";
+function ReleaseHighlights({ notes }: { notes: ReleaseNotes }) {
+  return (
+    <div className="release-highlights">
+      {notes.highlights.map((item, index) => (
+        <article key={`${item.title}-${index}`} className="release-highlight">
+          <span className="release-highlight-icon" aria-hidden="true">
+            {item.kind === "fixed" ? (
+              <ShieldCheck size={20} />
+            ) : item.kind === "new" ? (
+              <Sparkles size={20} />
+            ) : (
+              <Check size={20} />
+            )}
+          </span>
+          <div>
+            <span className={`release-kind release-kind-${item.kind}`}>
+              {item.kind === "new"
+                ? "Novo"
+                : item.kind === "fixed"
+                  ? "Correção"
+                  : "Melhoria"}
+            </span>
+            <h3>{item.title}</h3>
+            <p>{item.description}</p>
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
 export function UpdatesPage() {
   const [info, setInfo] = useState<UpdateInfo>({
     currentVersion: __APP_VERSION__,
@@ -75,17 +108,28 @@ export function UpdatesPage() {
     setStatus("downloading");
     try {
       await window.saldo.downloadUpdate();
+      setInfo(await window.saldo.updateInfo());
       setStatus("ready");
     } catch (err) {
       setError((err as Error).message);
       setStatus("idle");
     }
   }
+  const availableVersion = info.available ? info.version : null;
+  const installedNotes =
+    bundledNotes.version === info.currentVersion
+      ? (bundledNotes as ReleaseNotes)
+      : null;
+  const notes = availableVersion
+    ? info.notes?.version === availableVersion
+      ? info.notes
+      : null
+    : installedNotes;
   return (
     <div className="updates-layout">
       <Panel
-        title="Atualizações pelo GitHub"
-        subtitle="Versões oficiais do seu repositório, sem instalar Node.js ou Git."
+        title="Atualizações do ContaClara"
+        subtitle="Conheça as novidades e mantenha seu aplicativo em dia."
       >
         <div className="update-body">
           <div className="update-version">
@@ -110,10 +154,7 @@ export function UpdatesPage() {
               <div>
                 <small>Uma nova versão está disponível</small>
                 <h3>ContaClara {info.version}</h3>
-                <p>
-                  Inclui o aplicativo completo com as alterações publicadas no
-                  GitHub.
-                </p>
+                <p>Confira as novidades desta versão antes de atualizar.</p>
               </div>
               <Download size={27} />
             </div>
@@ -123,7 +164,7 @@ export function UpdatesPage() {
               <div>
                 <span>
                   {progress?.phase === "verify"
-                    ? "Conferindo checksum e preparando os arquivos…"
+                    ? "Verificando a atualização e preparando os arquivos…"
                     : "Baixando a nova versão…"}
                 </span>
                 <strong>
@@ -143,7 +184,7 @@ export function UpdatesPage() {
               <small>
                 {progress
                   ? `${(progress.received / 1024 / 1024).toFixed(1)} MB recebidos`
-                  : "Conectando ao GitHub…"}
+                  : "Conectando ao serviço de atualização…"}
               </small>
             </div>
           )}
@@ -176,27 +217,6 @@ export function UpdatesPage() {
             </div>
           )}
           <div className="update-actions">
-            {window.saldo ? (
-              <button
-                className="button secondary"
-                onClick={() =>
-                  void window.saldo
-                    ?.openReleases()
-                    .catch((err) => setError(err.message))
-                }
-              >
-                <ExternalLink size={15} /> Versões no GitHub
-              </button>
-            ) : (
-              <a
-                className="button secondary"
-                href={`${info.repository}/releases/latest`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <ExternalLink size={15} /> Versões no GitHub
-              </a>
-            )}
             <button
               className="button secondary"
               disabled={!window.saldo || status !== "idle"}
@@ -232,51 +252,85 @@ export function UpdatesPage() {
             )}
           </div>
           {!info.canInstall && (
-            <p className="field-hint">
-              A instalação automática funciona no aplicativo empacotado para
-              Windows de 64 bits. No navegador ou em outro sistema, use a página
-              de versões do GitHub.
-            </p>
+            <div className="update-manual">
+              <p className="field-hint">
+                A atualização automática está disponível no aplicativo para
+                Windows de 64 bits.
+              </p>
+              {window.saldo ? (
+                <button
+                  className="button secondary"
+                  onClick={() =>
+                    void window.saldo
+                      ?.openReleases()
+                      .catch((err) => setError(err.message))
+                  }
+                >
+                  <ExternalLink size={15} /> Baixar para Windows
+                </button>
+              ) : (
+                <a
+                  className="button secondary"
+                  href={`${info.repository}/releases/latest`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <ExternalLink size={15} /> Baixar para Windows
+                </a>
+              )}
+            </div>
           )}
           <p className="field-hint update-note">
-            Alterações no código do repositório entram no aplicativo quando uma
-            nova versão é publicada. O atualizador baixa o pacote dessa versão;
-            não altera suas entradas, cartões ou assinaturas. ZIPs e arquivos
-            temporários são removidos automaticamente após a preparação.
+            Seus registros e preferências são preservados durante a atualização.
           </p>
         </div>
       </Panel>
       <Panel
-        title="Seus dados continuam com você"
-        subtitle="Um processo com verificação e retorno à versão anterior."
+        title={`Novidades da versão ${availableVersion ?? info.currentVersion}`}
+        subtitle={
+          notes?.title ??
+          (availableVersion
+            ? "Uma nova versão do ContaClara está disponível."
+            : "Confira o que há de novo no seu aplicativo.")
+        }
       >
-        <div className="update-steps">
-          <div>
-            <span>01</span>
-            <p>Consulta a versão mais recente publicada no GitHub.</p>
-          </div>
-          <div>
-            <span>02</span>
-            <p>
-              Baixa o ZIP por HTTPS e confere o checksum e a versão do
-              aplicativo.
+        <div className="release-body">
+          <span className="release-status">
+            <Sparkles size={16} aria-hidden="true" />
+            {availableVersion
+              ? "Disponível para atualizar"
+              : "Sua versão instalada"}
+          </span>
+          {notes ? (
+            <ReleaseHighlights notes={notes} />
+          ) : (
+            <p className="release-unavailable">
+              Os destaques desta versão não estão disponíveis no momento. Você
+              pode verificar novamente mais tarde.
             </p>
-          </div>
-          <div>
-            <span>03</span>
-            <p>Preserva os dados e cria uma cópia antes de reiniciar.</p>
-          </div>
-          <div>
-            <span>04</span>
-            <p>
-              Ativa a nova versão somente após ela abrir e ler os dados. Se isso
-              falhar, volta à versão anterior. Após a confirmação, remove as
-              versões antigas gerenciadas pelo atualizador e preserva os
-              backups.
-            </p>
-          </div>
+          )}
+          {availableVersion && installedNotes && (
+            <details className="release-installed">
+              <summary>
+                Novidades da sua versão atual ({info.currentVersion})
+              </summary>
+              <ReleaseHighlights notes={installedNotes} />
+            </details>
+          )}
         </div>
       </Panel>
+      <div className="update-reassurance">
+        <ShieldCheck size={21} aria-hidden="true" />
+        <div>
+          <strong>Atualize com tranquilidade</strong>
+          <p>
+            Uma cópia de segurança é criada antes da troca. Se a nova versão não
+            conseguir abrir seus dados, a anterior é recuperada. Após a
+            confirmação, os arquivos antigos da atualização são removidos e seus
+            backups são mantidos.
+          </p>
+        </div>
+      </div>
       {confirm && (
         <Dialog
           title="Reiniciar e aplicar atualização?"

@@ -8,6 +8,7 @@ import {
   rm,
   writeFile,
   cp,
+  stat,
 } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { tmpdir } from "node:os";
@@ -32,7 +33,8 @@ const currentVersion = JSON.parse(
 ).version;
 const [major, minor, patch] = currentVersion.split(".").map(Number);
 const goodVersion = `${major}.${minor}.${patch + 1}`,
-  badVersion = `${major}.${minor}.${patch + 2}`;
+  nextVersion = `${major}.${minor}.${patch + 2}`,
+  badVersion = `${major}.${minor}.${patch + 3}`;
 const oldEnv = process.env.SALDO_DATA_DIR;
 process.env.SALDO_DATA_DIR = userData;
 let app,
@@ -155,21 +157,27 @@ async function candidate(version, broken = false) {
   );
   return await readFile(zip);
 }
-async function controller(version, bytes, pid) {
+async function controller(
+  version,
+  bytes,
+  pid,
+  installedExecutable = original,
+  installedVersion = currentVersion,
+) {
   return createUpdater({
-    currentVersion,
+    currentVersion: installedVersion,
     userData,
     platform: "win32",
     arch: "x64",
     packaged: true,
-    executable: original,
+    executable: installedExecutable,
     pid,
     fetch: fixtureFetch(version, bytes),
   });
 }
-async function launchOriginal() {
+async function launchOriginal(executablePath = original) {
   app = await electron.launch({
-    executablePath: original,
+    executablePath,
     args: [],
     env: { ...process.env, SALDO_DATA_DIR: userData },
   });
@@ -188,6 +196,24 @@ async function journal() {
   } catch {
     return null;
   }
+}
+async function assertClean(version) {
+  await waitFor(
+    async () => {
+      const versions = await readdir(join(updates, "versions"));
+      const files = await readdir(updates);
+      return (
+        versions.length === 1 &&
+        versions[0] === version &&
+        !files.some((file) =>
+          /\.zip(?:\.part)?$|\.ps1$|^(?:helper-|ready-)/.test(file),
+        )
+      );
+    },
+    "Versões antigas ou arquivos temporários permaneceram após a confirmação.",
+    20000,
+  );
+  assert.deepEqual(await readdir(join(updates, "staging")), []);
 }
 try {
   await mkdir(userData, { recursive: true });
@@ -267,6 +293,10 @@ try {
     ],
   });
   await writeFile(join(userData, "finances.json"), finances);
+  await mkdir(join(userData, "backups"), { recursive: true });
+  await writeFile(join(userData, "backups", "manual.json"), finances);
+  await mkdir(updates, { recursive: true });
+  await writeFile(join(updates, "finances-before-legacy-123.json"), finances);
   const good = await candidate(goodVersion);
   annotation(
     "notice",
@@ -294,7 +324,16 @@ try {
     "Download, checksum e extração concluídos; aplicando a atualização.",
   );
   assert.equal((await updater.info()).readyVersion, goodVersion);
+  // Simulate accumulation left by older releases. It must remain until commit.
+  const legacy = join(updates, "versions", "1.0.0");
+  await mkdir(legacy, { recursive: true });
+  await writeFile(join(legacy, "obsolete.exe"), "old runtime");
+  await writeFile(join(updates, "1.0.0.zip"), "old downloaded ZIP");
   await updater.apply();
+  assert.equal(
+    await readFile(join(legacy, "obsolete.exe"), "utf8"),
+    "old runtime",
+  );
   await app.close();
   app = undefined;
   const success = await waitFor(async () => {
@@ -302,6 +341,7 @@ try {
     return value?.version === goodVersion ? value : null;
   }, "A atualização nativa não concluiu.");
   assert.equal(success.success, true, success.message);
+  await assertClean(goodVersion);
   annotation(
     "notice",
     "Atualizador Windows",
@@ -317,6 +357,14 @@ try {
   );
   assert.ok(backup);
   assert.equal(await readFile(join(updates, backup), "utf8"), finances);
+  assert.equal(
+    await readFile(join(userData, "backups", "manual.json"), "utf8"),
+    finances,
+  );
+  assert.equal(
+    await readFile(join(updates, "finances-before-legacy-123.json"), "utf8"),
+    finances,
+  );
   const target = join(
     updates,
     "versions",
@@ -347,21 +395,73 @@ try {
     "O atalho original não abriu a versão nova.",
     20000,
   );
+  // Upgrade again from a managed version. Its executable is also hosting the
+  // updater helper, so cleanup must tolerate Windows locking it until helper exit.
+  const next = await candidate(nextVersion);
+  const [managedPid] = await runningAt(target);
+  assert.ok(managedPid > 0);
+  const second = await controller(
+    nextVersion,
+    next,
+    managedPid,
+    target,
+    goodVersion,
+  );
+  await second.download();
+  await second.apply();
+  assert.equal(
+    (await stat(target)).isFile(),
+    true,
+    "A versão de recuperação deve existir até a confirmação.",
+  );
+  await ps(`& taskkill.exe /PID ${managedPid} /T /F | Out-Null`);
+  const secondResult = await waitFor(async () => {
+    const value = await journal();
+    return value?.version === nextVersion ? value : null;
+  }, "A segunda atualização nativa não concluiu.");
+  assert.equal(secondResult.success, true, secondResult.message);
+  await assertClean(nextVersion);
+  const nextTarget = join(
+    updates,
+    "versions",
+    nextVersion,
+    "Saldo-win32-x64",
+    "saldo.exe",
+  );
+  assert.equal(await updater.activeLaunch(), nextTarget);
+  assert.equal(
+    await readFile(join(userData, "finances.json"), "utf8"),
+    finances,
+  );
+  assert.equal(
+    await readFile(join(userData, "backups", "manual.json"), "utf8"),
+    finances,
+  );
+  assert.equal(await readFile(join(updates, backup), "utf8"), finances);
+  assert.equal(
+    await readFile(join(updates, "finances-before-legacy-123.json"), "utf8"),
+    finances,
+  );
   await stopOwnedProcesses();
   await waitFor(
-    async () => !(await runningAt(target)).length,
+    async () => !(await runningAt(nextTarget)).length,
     "A versão redirecionada não fechou.",
     15000,
   );
   console.log(
-    "Windows: download com checksum, extração, versão, abertura com dados, backup e atalho original verificados.",
+    "Windows: duas atualizações reais, limpeza de versões/ZIPs/temporários, arquivos bloqueados, backups preservados e atalho original verificados.",
   );
 
   // A correctly hashed package that cannot load its renderer must roll back automatically.
   const broken = await candidate(badVersion, true);
-  await rm(join(updates, "active.json"));
-  const oldPid = await launchOriginal();
-  const rollback = await controller(badVersion, broken, oldPid);
+  const oldPid = await launchOriginal(nextTarget);
+  const rollback = await controller(
+    badVersion,
+    broken,
+    oldPid,
+    nextTarget,
+    nextVersion,
+  );
   await rollback.download();
   await rollback.apply();
   await app.close();
@@ -371,16 +471,22 @@ try {
     return value?.version === badVersion ? value : null;
   }, "A atualização com falha não foi revertida.");
   assert.equal(failure.success, false);
-  await assert.rejects(readFile(join(updates, "active.json")), {
-    code: "ENOENT",
-  });
+  assert.equal(
+    JSON.parse(await readFile(join(updates, "active.json"), "utf8")).version,
+    nextVersion,
+  );
   await waitFor(
-    async () => (await runningAt(original)).length,
+    async () => (await runningAt(nextTarget)).length,
     "A versão anterior não reabriu.",
     20000,
   );
   assert.equal(
     await readFile(join(userData, "finances.json"), "utf8"),
+    finances,
+  );
+  await assertClean(nextVersion);
+  assert.equal(
+    await readFile(join(userData, "backups", "manual.json"), "utf8"),
     finances,
   );
   await stopOwnedProcesses();

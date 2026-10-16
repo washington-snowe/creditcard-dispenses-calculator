@@ -3,6 +3,7 @@ const path = require("node:path");
 const { createHash, randomUUID } = require("node:crypto");
 const { spawn } = require("node:child_process");
 const { prepareScript } = require("./update-scripts.cjs");
+const { cleanupUpdates } = require("./update-cleanup.cjs");
 const REPOSITORY =
   "https://github.com/washington-snowe/creditcard-dispenses-calculator";
 const ASSET = "Saldo-Windows-x64.zip";
@@ -117,7 +118,27 @@ function createUpdater(options) {
   const active = path.join(root, "active.json");
   const log = path.join(root, "last-update.json");
   const canInstall = platform === "win32" && arch === "x64" && packaged;
-  let controller, prepared, latest;
+  let controller,
+    prepared,
+    latest,
+    readyHandled = false;
+  let cleanupTask = Promise.resolve();
+  function cleanup() {
+    // Serialize with download preparation so a delayed startup cleanup cannot
+    // remove a ZIP/staging directory that is currently being written.
+    cleanupTask = cleanupTask
+      .catch(() => {})
+      .then(() =>
+        cleanupUpdates({
+          userData,
+          currentVersion,
+          executable,
+          keepVersions: prepared ? [prepared.version] : [],
+        }),
+      )
+      .catch(() => {});
+    return cleanupTask;
+  }
   async function request(url, signal) {
     trustedUrl(url);
     const response = await fetcher(url, {
@@ -187,8 +208,9 @@ function createUpdater(options) {
       controller.signal,
       AbortSignal.timeout(600000),
     ]);
-    let partial;
+    let partial, readyProgress;
     try {
+      await cleanup();
       const release = await check(signal);
       if (!release.available)
         throw new Error("Você já está usando a versão mais recente.");
@@ -259,14 +281,13 @@ function createUpdater(options) {
       await prepare(script);
       if (signal.aborted) throw new Error("Download cancelado.");
       prepared = { version: release.version, destination, nonce };
-      onProgress({
+      readyProgress = {
         phase: "ready",
         version: release.version,
         percent: 100,
         received,
         total,
-      });
-      return { version: release.version, ready: true };
+      };
     } catch (error) {
       const message = signal.aborted
         ? "Download cancelado ou tempo de espera excedido. Tente novamente."
@@ -281,10 +302,17 @@ function createUpdater(options) {
       throw new Error(message);
     } finally {
       if (partial) await fs.rm(partial, { force: true }).catch(() => {});
+      // The extracted candidate is enough to install; never retain its ZIP,
+      // extraction leftovers, or a failed candidate between attempts.
+      await cleanup();
       controller = null;
     }
+    onProgress(readyProgress);
+    return { version: readyProgress.version, ready: true };
   }
   async function apply() {
+    if (controller)
+      throw new Error("Aguarde a preparação da atualização terminar.");
     if (!canInstall || !prepared)
       throw new Error("Baixe e verifique a atualização antes de instalar.");
     const { version, destination, nonce } = prepared;
@@ -379,10 +407,29 @@ function createUpdater(options) {
     }
   }
   async function ready(args = process.argv) {
+    if (!canInstall || readyHandled) return;
+    readyHandled = true;
     const arg = args.find((arg) =>
       /^--saldo-update-ack=[a-f\d-]{36}$/.test(arg),
     );
     if (arg) {
+      try {
+        const pointer = JSON.parse(await fs.readFile(active, "utf8"));
+        const result = JSON.parse(await fs.readFile(log, "utf8"));
+        if (
+          pointer.version === currentVersion &&
+          result.success === true &&
+          result.version === currentVersion &&
+          result.processId !== pid
+        ) {
+          // Electron relaunches may retain the previous update's command line.
+          // That committed handshake is stale; this is a normal startup.
+          await cleanup();
+          return;
+        }
+      } catch {
+        /* A fresh update has not been committed yet. */
+      }
       const nonce = arg.split("=")[1];
       await fs.mkdir(root, { recursive: true });
       await fs.writeFile(
@@ -390,6 +437,31 @@ function createUpdater(options) {
         JSON.stringify({ version: currentVersion }),
         { mode: 0o600 },
       );
+      // Older updater helpers also write these two commit records. Waiting for
+      // them makes the first upgrade to this release clean up legacy versions,
+      // without deleting the rollback copy before data loading is confirmed.
+      const deadline = Date.now() + 60000;
+      async function afterCommit() {
+        try {
+          const pointer = JSON.parse(await fs.readFile(active, "utf8"));
+          const result = JSON.parse(await fs.readFile(log, "utf8"));
+          if (
+            pointer.version === currentVersion &&
+            result.success === true &&
+            result.version === currentVersion &&
+            result.processId === pid
+          ) {
+            if (!controller && !prepared) await cleanup();
+            return;
+          }
+        } catch {
+          /* The helper has not committed the update yet. */
+        }
+        if (Date.now() < deadline) setTimeout(afterCommit, 250).unref();
+      }
+      setTimeout(afterCommit, 250).unref();
+    } else {
+      await cleanup();
     }
   }
   return {

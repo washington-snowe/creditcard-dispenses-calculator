@@ -241,7 +241,8 @@ export function UpdatesPage() {
           <p className="field-hint update-note">
             Alterações no código do repositório entram no aplicativo quando uma
             nova versão é publicada. O atualizador baixa o pacote dessa versão;
-            não altera suas entradas, cartões ou assinaturas.
+            não altera suas entradas, cartões ou assinaturas. ZIPs e arquivos
+            temporários são removidos automaticamente após a preparação.
           </p>
         </div>
       </Panel>
@@ -269,7 +270,9 @@ export function UpdatesPage() {
             <span>04</span>
             <p>
               Ativa a nova versão somente após ela abrir e ler os dados. Se isso
-              falhar, volta à versão anterior.
+              falhar, volta à versão anterior. Após a confirmação, remove as
+              versões antigas gerenciadas pelo atualizador e preserva os
+              backups.
             </p>
           </div>
         </div>

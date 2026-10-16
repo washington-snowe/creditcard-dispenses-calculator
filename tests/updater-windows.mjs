@@ -187,7 +187,7 @@ async function launchOriginal(
   });
   const page = await app.firstWindow();
   try {
-    await expect(page.getByTestId("welcome-pending")).toBeVisible({
+    await expect(page.getByTestId("launch-welcome")).toBeVisible({
       timeout: 20000,
     });
   } catch (error) {

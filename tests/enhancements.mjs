@@ -150,6 +150,7 @@ export async function runEnhancements(page) {
   await page.getByRole("button", { name: "Continuar", exact: true }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible();
   await page.reload();
+  await goTo(page, "Início");
   await expect(page.getByTestId("welcome-paid")).toContainText("600,00");
   await expect(page.getByTestId("welcome-pending")).toHaveText(/0,00/);
   await goTo(page, "Visão geral");

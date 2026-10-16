@@ -8,6 +8,8 @@ import {
 import { expect } from "playwright/test";
 
 export async function runFlow(page) {
+  await expect(page.getByTestId("launch-welcome")).toBeVisible();
+  await page.getByRole("button", { name: /^Ver meu resumo/ }).click();
   await expect(
     page.getByRole("heading", { name: "Resumo do mês" }),
   ).toBeVisible();
@@ -148,6 +150,18 @@ export async function runFlow(page) {
   await expect(
     page.getByRole("heading", { name: "Um mês livre de parcelas" }),
   ).toBeVisible();
+  await goTo(page, "Boas-vindas");
+  await expect(
+    page.getByRole("button", { name: /^Cadastrar meu primeiro cartão/ }),
+  ).toHaveCount(0);
+  await page.getByRole("button", { name: /^Anotar uma compra/ }).click();
+  await expect(
+    page.getByRole("dialog", { name: "Adicionar uma compra", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Cartão", { exact: true })).toContainText(
+    "Principal",
+  );
+  await page.getByRole("dialog").press("Escape");
   console.log(
     "Fluxos verificados: cartões, seleção de banco, compras, centavos, pagamentos, edição, filtros, resumo global, previsão individual, persistência, exclusão e quitação.",
   );

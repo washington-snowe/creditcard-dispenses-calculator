@@ -17,6 +17,7 @@ import {
 } from "./identity.mjs";
 
 const tabs = [
+  "Boas-vindas",
   "Metas",
   "Calendário",
   "Pendências",
@@ -68,6 +69,7 @@ try {
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("http://127.0.0.1:4174");
+  await goTo(page, "Início");
   await page
     .getByRole("button", { name: "Experimentar exemplo", exact: true })
     .click();
@@ -116,6 +118,7 @@ try {
     localStorage.setItem("saldo-data-v1", JSON.stringify(data));
   });
   await page.reload();
+  await goTo(page, "Início");
   await verifyTypography(page);
   await verifyNavigation(page);
   await verifyChartTooltips(page);
@@ -211,9 +214,7 @@ try {
     localStorage.setItem("saldo-data-v1", JSON.stringify(data));
   });
   await page.reload();
-  await expect(
-    page.getByRole("heading", { name: "Resumo do mês", exact: true }),
-  ).toBeVisible();
+  await expect(page.getByTestId("launch-welcome")).toBeVisible();
   await page.evaluate(() => {
     document.documentElement.style.fontSize = "175%";
   });
@@ -246,7 +247,7 @@ try {
   });
   expect(errors).toEqual([]);
   console.log(
-    "Tipografia oficial, números tabulares, preferências antigas e dezesseis telas entre 320 e 1440 px, com aumento de texto a 200%, verificados.",
+    "Tipografia oficial, números tabulares, preferências antigas e dezessete telas entre 320 e 1440 px, com aumento de texto a 200%, verificados.",
   );
 } catch (error) {
   if (browser) {

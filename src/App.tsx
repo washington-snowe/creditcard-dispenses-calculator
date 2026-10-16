@@ -1,3 +1,4 @@
+import { GreetingPage } from "./components/greeting";
 import { NavigationSearch } from "./components/navigation-search";
 import { GoalForm, GoalsPage } from "./components/goals";
 import {
@@ -163,6 +164,7 @@ const CLEAR: Filters = {
   status: "all",
 };
 const titles: Record<Tab, [string, string]> = {
+  welcome: ["Boas-vindas", ""],
   home: ["Resumo do mês", ""],
   overview: ["Visão geral", "Parcelas, assinaturas e saldos por cartão."],
   calendar: ["Calendário", "Recebimentos, vencimentos e fechamentos."],
@@ -344,7 +346,7 @@ export default function App() {
     [loadError, setLoadError] = useState("");
   const [saving, setSaving] = useState(false),
     savingLock = useRef(false);
-  const [tab, setTab] = useState<Tab>("home");
+  const [tab, setTab] = useState<Tab>("welcome");
   const activeGroup = navGroups.find((group) => group.ids.includes(tab))!;
   const lastVisited = useRef<Record<string, Tab>>({});
   const [filters, setFilters] = useState<Filters>(CLEAR);
@@ -522,6 +524,7 @@ export default function App() {
       recurring.filter((i) => i.paid).reduce((s, i) => s + i.amount, 0),
   };
   const hasPurchaseFilters = ![
+    "welcome",
     "home",
     "goals",
     "calendar",
@@ -1372,100 +1375,113 @@ export default function App() {
               );
             })}
           </nav>
-          <div className="page-heading">
-            <div>
-              <h1 tabIndex={-1}>{titles[tab][0]}</h1>
-              {titles[tab][1] && <p>{titles[tab][1]}</p>}
-            </div>
-            {!["updates", "appearance", "data", "simulator"].includes(tab) && (
-              <div className="month-toolbar">
-                <div className="month-navigation">
-                  <button
-                    className="icon-button"
-                    aria-label="Mês anterior"
-                    disabled={month <= "2000-01"}
-                    onClick={() => setMonth(addMonths(month, -1))}
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
-                  <label className="month-label">
-                    <CalendarDays size={17} />
-                    <span>{monthLabel(month)}</span>
-                    <input
-                      aria-label="Escolher mês"
-                      type="month"
-                      min="2000-01"
-                      max="2199-12"
-                      value={month}
-                      onChange={(e) => {
-                        if (e.target.value) setMonth(e.target.value);
-                      }}
-                    />
-                  </label>
-                  <button
-                    className="icon-button"
-                    aria-label="Próximo mês"
-                    disabled={month >= "2199-12"}
-                    onClick={() => setMonth(addMonths(month, 1))}
-                  >
-                    <ChevronRight size={18} />
-                  </button>
-                </div>
-                <div className="period-hint">
-                  {month === today ? (
-                    <span className="badge accent-badge">Mês atual</span>
-                  ) : (
-                    <button
-                      className="text-button"
-                      onClick={() => setMonth(today)}
-                    >
-                      Voltar ao mês atual <ArrowRight size={13} />
-                    </button>
-                  )}
-                </div>
+          {tab !== "welcome" && (
+            <div className="page-heading">
+              <div>
+                <h1 tabIndex={-1}>{titles[tab][0]}</h1>
+                {titles[tab][1] && <p>{titles[tab][1]}</p>}
               </div>
-            )}
-            {![
-              "home",
-              "updates",
-              "appearance",
-              "data",
-              "simulator",
-              "pending",
-              "calendar",
-            ].includes(tab) && (
-              <button
-                className="button primary"
-                disabled={saving}
-                onClick={() =>
-                  tab === "goals"
-                    ? setModal({ type: "goal" })
+              {!["updates", "appearance", "data", "simulator"].includes(
+                tab,
+              ) && (
+                <div className="month-toolbar">
+                  <div className="month-navigation">
+                    <button
+                      className="icon-button"
+                      aria-label="Mês anterior"
+                      disabled={month <= "2000-01"}
+                      onClick={() => setMonth(addMonths(month, -1))}
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+                    <label className="month-label">
+                      <CalendarDays size={17} />
+                      <span>{monthLabel(month)}</span>
+                      <input
+                        aria-label="Escolher mês"
+                        type="month"
+                        min="2000-01"
+                        max="2199-12"
+                        value={month}
+                        onChange={(e) => {
+                          if (e.target.value) setMonth(e.target.value);
+                        }}
+                      />
+                    </label>
+                    <button
+                      className="icon-button"
+                      aria-label="Próximo mês"
+                      disabled={month >= "2199-12"}
+                      onClick={() => setMonth(addMonths(month, 1))}
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </div>
+                  <div className="period-hint">
+                    {month === today ? (
+                      <span className="badge accent-badge">Mês atual</span>
+                    ) : (
+                      <button
+                        className="text-button"
+                        onClick={() => setMonth(today)}
+                      >
+                        Voltar ao mês atual <ArrowRight size={13} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+              {![
+                "home",
+                "updates",
+                "appearance",
+                "data",
+                "simulator",
+                "pending",
+                "calendar",
+              ].includes(tab) && (
+                <button
+                  className="button primary"
+                  disabled={saving}
+                  onClick={() =>
+                    tab === "goals"
+                      ? setModal({ type: "goal" })
+                      : tab === "expenses"
+                        ? setModal({ type: "expense" })
+                        : tab === "income"
+                          ? setModal({ type: "income" })
+                          : tab === "subscriptions"
+                            ? setModal({ type: "subscription" })
+                            : tab === "cards"
+                              ? setModal({ type: "card" })
+                              : addPurchase()
+                  }
+                >
+                  <Plus size={17} />
+                  {tab === "goals"
+                    ? "Nova meta"
                     : tab === "expenses"
-                      ? setModal({ type: "expense" })
+                      ? "Nova despesa"
                       : tab === "income"
-                        ? setModal({ type: "income" })
+                        ? "Nova entrada"
                         : tab === "subscriptions"
-                          ? setModal({ type: "subscription" })
-                          : tab === "cards"
-                            ? setModal({ type: "card" })
-                            : addPurchase()
-                }
-              >
-                <Plus size={17} />
-                {tab === "goals"
-                  ? "Nova meta"
-                  : tab === "expenses"
-                    ? "Nova despesa"
-                    : tab === "income"
-                      ? "Nova entrada"
-                      : tab === "subscriptions"
-                        ? "Nova assinatura"
-                        : tab === "cards" || !data.cards.length
-                          ? "Novo cartão"
-                          : "Nova compra"}
-              </button>
-            )}
-          </div>
+                          ? "Nova assinatura"
+                          : tab === "cards" || !data.cards.length
+                            ? "Novo cartão"
+                            : "Nova compra"}
+                </button>
+              )}
+            </div>
+          )}
+          {tab === "welcome" && (
+            <GreetingPage
+              hasCards={data.cards.length > 0}
+              onNavigate={navigate}
+              onPurchase={() => addPurchase()}
+              onCard={() => setModal({ type: "card" })}
+              onIncome={() => setModal({ type: "income" })}
+            />
+          )}
           {hasPurchaseFilters && (
             <section className="global-filters" aria-label="Filtros globais">
               <label className="search">

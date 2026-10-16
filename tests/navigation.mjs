@@ -1,5 +1,6 @@
 import { expect } from "playwright/test";
 export const areas = {
+  "Boas-vindas": "Resumo",
   Início: "Resumo",
   "Visão geral": "Resumo",
   Calendário: "Resumo",

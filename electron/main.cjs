@@ -1,4 +1,5 @@
 const { app, BrowserWindow, ipcMain, Menu, net, shell } = require("electron");
+const { createWelcomeSession } = require("./welcome-session.cjs");
 const { spawn } = require("node:child_process");
 const { createUpdater, REPOSITORY } = require("./updater.cjs");
 const { createGitHubFetch } = require("./github-fetch.cjs");
@@ -120,6 +121,11 @@ app.whenReady().then(async () => {
       },
     ]),
   );
+  const welcomeInfo = createWelcomeSession(app.getPath("userData"));
+  ipcMain.handle("saldo:welcome:info", (event) => {
+    checkSender(event);
+    return welcomeInfo();
+  });
   ipcMain.handle("saldo:performance:info", (event) => {
     checkSender(event);
     return {

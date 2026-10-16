@@ -29,3 +29,5 @@ import "./navigation-effects.css";
 
 import "./updates.css";
 import "./goals.css";
+
+import "./greeting.css";

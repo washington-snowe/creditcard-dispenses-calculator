@@ -1,3 +1,4 @@
+import { verifyGreeting } from "./greeting.mjs";
 import { verifyGoals } from "./goals.mjs";
 import { verifyFunctionSearch } from "./navigation-search.mjs";
 import { verifyUpdateNews } from "./update-news.mjs";
@@ -48,6 +49,7 @@ try {
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("http://127.0.0.1:4173");
+  await verifyGreeting(page);
   await runFlow(page);
   await runEnhancements(page);
   await runMoney(page);
@@ -101,6 +103,7 @@ try {
   await goTo(page, "Visão geral");
   await page.evaluate(() => localStorage.clear());
   await page.reload();
+  await goTo(page, "Início");
   await page.getByRole("button", { name: "Experimentar exemplo" }).click();
   await page.getByRole("button", { name: "Continuar", exact: true }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible();

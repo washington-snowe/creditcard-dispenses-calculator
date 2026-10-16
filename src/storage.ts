@@ -1,7 +1,9 @@
+import type { WelcomeInfo } from "./welcome-session";
 import { EMPTY, validateData, type Data } from "./domain";
 declare global {
   interface Window {
     saldo?: {
+      welcomeInfo?: () => Promise<WelcomeInfo>;
       performanceInfo?: () => Promise<PerformanceInfo>;
       restart?: () => Promise<{ restarting: boolean }>;
       listBackups?: () => Promise<BackupInfo[]>;

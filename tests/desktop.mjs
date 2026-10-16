@@ -1,3 +1,4 @@
+import { verifyGreeting } from "./greeting.mjs";
 import { verifyGoals, verifyGoalDialog } from "./goals.mjs";
 import { verifyFunctionSearch } from "./navigation-search.mjs";
 import { verifyHarmony } from "./harmony.mjs";
@@ -8,7 +9,7 @@ import { runFormAssistance } from "./form-assistance.mjs";
 import { verifyChartTooltips, verifyNavigation } from "./design.mjs";
 import { _electron as electron, expect } from "playwright/test";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { tmpdir, userInfo } from "node:os";
 import { join } from "node:path";
 import { runFlow } from "./flow.mjs";
 import { runEnhancements } from "./enhancements.mjs";
@@ -44,6 +45,16 @@ try {
       BrowserWindow.getAllWindows()[0].getBackgroundColor().toLowerCase(),
     ),
   ).toBe("#040409");
+  await verifyGreeting(page);
+  const firstWelcome = await page.evaluate(() => window.saldo.welcomeInfo());
+  const accountName = userInfo()
+    .username.replace(/[\u0000-\u001f\u007f]/g, "")
+    .trim()
+    .slice(0, 80);
+  expect(firstWelcome.name).toBe(accountName || null);
+  await expect(page.locator("main h1")).toHaveText(
+    accountName ? `Boas-vindas, ${accountName}!` : "Boas-vindas!",
+  );
   await runFlow(page);
   await runEnhancements(page);
   const saved = JSON.parse(
@@ -90,6 +101,7 @@ try {
       BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(zoom);
     }, factor);
     for (const tab of [
+      "Boas-vindas",
       "Início",
       "Visão geral",
       "Minhas compras",
@@ -177,9 +189,12 @@ try {
     env: { ...process.env, SALDO_DATA_DIR: directory },
   });
   const restarted = await app.firstWindow();
-  await expect(
-    restarted.getByRole("heading", { name: "Resumo do mês" }),
-  ).toBeVisible();
+  await expect(restarted.getByTestId("launch-welcome")).toBeVisible();
+  const nextWelcome = await restarted.evaluate(() =>
+    window.saldo.welcomeInfo(),
+  );
+  expect(nextWelcome.phraseId).not.toBe(firstWelcome.phraseId);
+  expect(nextWelcome.name).toBe(firstWelcome.name);
   expect(
     await app.evaluate(({ app }) => app.isHardwareAccelerationEnabled()),
   ).toBe(false);

@@ -1,5 +1,6 @@
 import {
   House,
+  Sparkles,
   LayoutDashboard,
   CreditCard,
   ShoppingBag,
@@ -19,6 +20,7 @@ import {
 } from "lucide-react";
 
 export type PageId =
+  | "welcome"
   | "home"
   | "overview"
   | "cards"
@@ -43,6 +45,14 @@ export type NavigationFunction = {
   icon: LucideIcon;
 };
 export const NAV_FUNCTIONS: NavigationFunction[] = [
+  {
+    id: "welcome",
+    title: "Boas-vindas",
+    description: "Inspiração e sugestões para começar.",
+    keywords:
+      "boas vindas bem vindo saudacao motivacao frase atalhos começar abertura",
+    icon: Sparkles,
+  },
   {
     id: "home",
     title: "Início",
@@ -181,7 +191,7 @@ export const NAV_GROUPS: {
     title: "Resumo",
     description: "Início, calendário e pendências",
     icon: House,
-    ids: ["home", "overview", "calendar", "pending"],
+    ids: ["welcome", "home", "overview", "calendar", "pending"],
   },
   {
     title: "Movimentações",

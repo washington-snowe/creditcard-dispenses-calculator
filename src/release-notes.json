@@ -1,25 +1,25 @@
 {
-  "version": "4.9.0",
-  "title": "Seus planos agora têm um lugar",
+  "version": "4.10.0",
+  "title": "Um novo começo para os seus planos",
   "highlights": [
     {
-      "title": "Uma seção só para suas metas",
-      "description": "Planeje uma compra, uma viagem ou uma reserva e acompanhe o valor estimado disponível, o progresso e quanto falta para chegar lá.",
+      "title": "Boas-vindas do seu jeito",
+      "description": "O ContaClara agora abre na tela de boas-vindas, dentro de Resumo, com uma saudação pelo nome da sua conta do computador.",
       "kind": "new"
     },
     {
-      "title": "Gastar menos com clareza",
-      "description": "Defina limites mensais por categoria ou para todos os gastos. Compare com uma referência e acompanhe sua economia parcial ou o resultado do mês encerrado.",
+      "title": "Uma inspiração a cada início",
+      "description": "São 200 frases para acompanhar seus planos, alternadas a cada inicialização sem repetir até completar a lista.",
       "kind": "new"
     },
     {
-      "title": "Progresso com os seus registros",
-      "description": "Entradas recebidas, pagamentos, contas pendentes e reserva atualizam as estimativas automaticamente. As prioridades evitam usar o mesmo saldo em duas metas.",
-      "kind": "new"
+      "title": "Escolha seu próximo passo",
+      "description": "Atalhos com setas levam ao resumo, compras, entradas, metas, contas e planejamento, com opções úteis desde o primeiro uso.",
+      "kind": "improved"
     },
     {
-      "title": "Sua evolução ao longo dos meses",
-      "description": "Consulte o gráfico, altere prioridades, filtre, edite e arquive metas. Elas também aparecem na busca geral e são preservadas nos backups.",
+      "title": "Seu resumo continua por perto",
+      "description": "O painel financeiro permanece em Início. A nova abertura mantém os temas, o zoom e a navegação por teclado.",
       "kind": "improved"
     }
   ]

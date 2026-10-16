@@ -1,11 +1,10 @@
-**ContaClara 4.9.0 — metas para transformar seus planos em conquistas.**
+**ContaClara 4.10.0 — um novo começo para os seus planos.**
 
 Baixe **ContaClara-Windows-x64.zip**, extraia a pasta inteira e abra **saldo.exe**.
 
-- **Metas de compra e economia:** registre seu objetivo, valor, início e prazo. Acompanhe progresso estimado, quanto falta e o valor mensal necessário para o prazo desejado.
-- **Gastar menos:** limite mensal para todos os gastos ou uma categoria, com comparação ao gasto de referência, economia parcial e alertas quando ultrapassar o limite.
-- **Atualização pelos registros financeiros:** entradas recebidas, pagamentos, compromissos pendentes, atrasos e reserva são considerados. Previsões de renda ficam de fora; déficits podem reduzir o progresso.
-- **Prioridades sem duplicar saldo:** as estimativas são distribuídas entre os objetivos na ordem escolhida. Nenhum depósito ou transferência bancária é realizado.
-- **Organização:** filtros, busca, edição, arquivo, exclusão com confirmação e evolução em gráfico e tabela. As metas estão no menu Planejamento, nos atalhos de início e na busca geral.
+- **Boas-vindas na abertura:** o programa inicia em Resumo → Boas-vindas, com uma saudação pelo nome da conta do computador.
+- **200 frases motivacionais:** inspiração diferente a cada inicialização, sem repetição até completar a lista. A frase permanece ao navegar entre telas ou recarregar a interface.
+- **Atalhos com setas:** acesse seu resumo, registre uma compra ou um cartão, anote entradas, acompanhe metas, revise contas e planeje os próximos meses.
+- **Visual organizado:** cards responsivos, transições suaves, tipografia oficial, temas existentes e suporte a teclado, redução de movimento e zoom.
 
-Os registros existentes, preferências e backups são preservados. As metas entram nas cópias de segurança e no histórico de desfazer. Atualize em **Configurações → Atualizações**. **SHA256SUMS.txt** contém os checksums dos ZIPs.
+O painel financeiro continua disponível em **Resumo → Início**. Registros, metas, preferências e backups são preservados. Atualize em **Configurações → Atualizações**. **SHA256SUMS.txt** contém os checksums dos ZIPs.

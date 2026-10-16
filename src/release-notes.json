@@ -1,26 +1,16 @@
 {
-  "version": "4.10.1",
-  "title": "Mais clareza em cada detalhe",
+  "version": "4.10.2",
+  "title": "Boas-vindas com mais espaço",
   "highlights": [
     {
-      "title": "Ações legíveis e diretas",
-      "description": "Menus de compras, despesas, cartões e outros registros agora mantêm ícones e textos alinhados. Quando só há uma opção, a ação aparece diretamente, sem os três pontinhos.",
-      "kind": "fixed"
-    },
-    {
-      "title": "Inspiração que cabe na sua tela",
-      "description": "As 200 frases foram reescritas com mensagens mais motivadoras e curtas. O bloco se adapta à janela e ao texto ampliado, sem cortar o conteúdo.",
+      "title": "Uma saudação em destaque",
+      "description": "A mensagem de boas-vindas está maior e aparece diretamente sobre o fundo da tela, com espaçamento adaptado à janela.",
       "kind": "improved"
     },
     {
-      "title": "Recebimentos no dia certo",
-      "description": "O calendário mostra rendas recorrentes na data em que foram recebidas, inclusive pagamentos de outros meses, preservando os nomes e valores do histórico.",
-      "kind": "fixed"
-    },
-    {
-      "title": "Cópias de segurança mais robustas",
-      "description": "Pastas e links com nomes semelhantes aos de backups são ignorados na listagem e não interferem nas cópias automáticas. Seus arquivos são preservados.",
-      "kind": "fixed"
+      "title": "Inspiração sem divisórias",
+      "description": "A frase motivacional fica logo abaixo da saudação, sem card, bordas ou divisória lateral, com leitura confortável em telas menores e com zoom.",
+      "kind": "improved"
     }
   ]
 }

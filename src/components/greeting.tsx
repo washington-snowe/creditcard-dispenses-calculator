@@ -95,9 +95,6 @@ export function GreetingPage({
         <h1 tabIndex={-1}>
           {info?.name ? `Boas-vindas, ${info.name}!` : "Boas-vindas!"}
         </h1>
-        <p className="greeting-intro">
-          Um momento de clareza para cuidar do que importa para você.
-        </p>
         <blockquote
           className="greeting-quote"
           data-testid="welcome-phrase"

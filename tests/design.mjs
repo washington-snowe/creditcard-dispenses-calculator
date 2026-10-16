@@ -82,6 +82,50 @@ export async function verifyChartTooltips(page) {
   await assertFloating(page);
   await page.mouse.move(0, 0);
 }
+export async function verifySidebarIcons(page) {
+  await expect
+    .poll(() =>
+      page
+        .locator(".sidebar .nav-item > span")
+        .evaluateAll((elements) =>
+          elements.every(
+            (element) => element.getBoundingClientRect().height < 0.5,
+          ),
+        ),
+    )
+    .toBeTruthy();
+  const icons = await page
+    .locator(".sidebar .nav-item")
+    .evaluateAll((buttons) =>
+      buttons.map((button) => {
+        const box = button.getBoundingClientRect();
+        const icon = button.querySelector("svg").getBoundingClientRect();
+        const front = document.elementFromPoint(
+          icon.x + icon.width / 2,
+          icon.y + icon.height / 2,
+        );
+        return {
+          height: box.height,
+          centered: Math.abs(icon.y + icon.height / 2 - box.y - box.height / 2),
+          x: icon.x + icon.width / 2,
+          reachable: button.contains(front),
+        };
+      }),
+    );
+  expect(icons).toHaveLength(4);
+  for (const icon of icons) {
+    expect(
+      icon.height,
+      "o texto oculto não pode aumentar o botão",
+    ).toBeLessThanOrEqual(44);
+    expect(icon.centered).toBeLessThan(1);
+    expect(
+      icon.reachable,
+      "todos os ícones recolhidos precisam continuar visíveis e clicáveis",
+    ).toBeTruthy();
+    expect(Math.abs(icon.x - icons[0].x)).toBeLessThan(1);
+  }
+}
 export async function verifyNavigation(page) {
   await goTo(page, "Início");
   await expect(
@@ -143,6 +187,7 @@ export async function verifyNavigation(page) {
       )
       .toBeGreaterThan(before.width);
     await expect(page.locator(".sidebar .brand-symbol")).toBeVisible();
+    await verifySidebarIcons(page);
     await page.reload();
     await expect(
       page.getByRole("button", { name: "Expandir menu lateral", exact: true }),
@@ -160,6 +205,7 @@ export async function verifyNavigation(page) {
     await expect(page.locator(".app-shell")).not.toHaveClass(
       /mobile-menu-open/,
     );
+    await verifySidebarIcons(page);
     await expect(
       page.getByRole("button", { name: "Expandir menu lateral", exact: true }),
     ).toBeFocused();
@@ -190,6 +236,10 @@ export async function verifyMotion(page) {
     const sidebar = document.querySelector(".sidebar");
     const main = document.querySelector(".main-wrapper");
     const start = sidebar.getBoundingClientRect().width;
+    const buttons = [...sidebar.querySelectorAll(".nav-item")];
+    const initialHeights = buttons.map(
+      (button) => button.getBoundingClientRect().height,
+    );
     document.querySelector(".sidebar-toggle").click();
     const samples = [];
     for (let n = 0; n < 35; n++) {
@@ -197,9 +247,10 @@ export async function verifyMotion(page) {
       samples.push({
         width: sidebar.getBoundingClientRect().width,
         left: main.getBoundingClientRect().left,
+        heights: buttons.map((button) => button.getBoundingClientRect().height),
       });
     }
-    return { start, samples };
+    return { start, samples, initialHeights };
   });
   const end = frames.samples.at(-1).width;
   expect(
@@ -208,8 +259,15 @@ export async function verifyMotion(page) {
     ),
     "o menu deve passar por larguras intermediárias",
   ).toBeTruthy();
-  for (const item of frames.samples)
+  for (const item of frames.samples) {
     expect(Math.abs(item.left - item.width)).toBeLessThan(1);
+    item.heights.forEach((height, index) =>
+      expect(height, "recolher não deve esticar os botões").toBeLessThanOrEqual(
+        frames.initialHeights[index] + 1,
+      ),
+    );
+  }
+  await verifySidebarIcons(page);
   await page
     .getByRole("button", { name: "Expandir menu lateral", exact: true })
     .click();

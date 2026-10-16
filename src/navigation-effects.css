@@ -372,6 +372,27 @@
 }
 .app-shell .sidebar .nav-item > span {
   white-space: normal;
+  max-height: 12rem;
+  transition:
+    opacity 180ms ease 90ms,
+    max-width var(--menu-duration) var(--menu-ease),
+    max-height var(--menu-duration) var(--menu-ease),
+    transform 220ms var(--menu-ease),
+    visibility 0s;
+}
+/* Keep text at its expanded width while its wrapper closes. Otherwise hidden
+   words wrap into a tall column and displace the icons during the transition. */
+.app-shell .sidebar .nav-item > span > :is(strong, small) {
+  width: calc(var(--sidebar-expanded-size) - 92px);
+}
+.app-shell.sidebar-collapsed .sidebar .nav-item > span {
+  max-height: 0;
+  transition:
+    opacity 90ms ease,
+    max-width var(--menu-duration) var(--menu-ease),
+    max-height var(--menu-duration) var(--menu-ease),
+    transform 180ms ease,
+    visibility 0s 90ms;
 }
 .sidebar .nav-item small {
   max-height: 5rem;
@@ -389,7 +410,13 @@
 }
 /* Suggestions float over the menu rather than pushing its areas off screen. */
 .app-shell {
-  --sidebar-size: max(248px, 18rem);
+  --sidebar-expanded-size: max(248px, 18rem);
+  --sidebar-size: var(--sidebar-expanded-size);
+}
+@media (max-width: 1020px) {
+  .app-shell {
+    --sidebar-expanded-size: min(280px, calc(100vw - 40px));
+  }
 }
 .function-search {
   position: relative;

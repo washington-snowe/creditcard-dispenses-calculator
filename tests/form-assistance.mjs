@@ -47,15 +47,28 @@ export async function runFormAssistance(page) {
   );
   await page.getByLabel("Categoria", { exact: true }).selectOption("Lazer");
   await name.fill("Notebook");
+  await expect(name).toHaveValue("Notebook");
   await expect(page.getByLabel("Categoria", { exact: true })).toHaveValue(
     "Lazer",
   );
   await page
     .getByRole("button", { name: "Detectar pelo nome", exact: true })
     .click();
-  await expect(page.getByLabel("Categoria", { exact: true })).toHaveValue(
-    "Tecnologia",
-  );
+  try {
+    await expect(page.getByLabel("Categoria", { exact: true })).toHaveValue(
+      "Tecnologia",
+    );
+  } catch (error) {
+    const state = await name.evaluate((input) => ({
+      value: input.value,
+      rendered: input.getAttribute("value"),
+      focused: document.activeElement?.getAttribute("aria-label"),
+      hint: document.querySelector(".category-hint")?.textContent,
+    }));
+    throw new Error(
+      `${error.message}\nPurchase category diagnostic: ${JSON.stringify(state)}`,
+    );
+  }
   await name.fill("No");
   await name.press("ArrowLeft");
   await expect(page.locator(".ghost-suffix")).toHaveCount(0);

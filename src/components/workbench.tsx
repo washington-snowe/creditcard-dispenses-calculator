@@ -1,3 +1,4 @@
+import { findFunctions, type PageId } from "../navigation";
 import { useMemo, useState } from "react";
 import {
   ArrowDown,
@@ -681,14 +682,15 @@ export function GlobalSearch({
   data: Data;
   onOpen: (r: Destination) => void;
   onClose: () => void;
-  onNavigate: (tab: "calendar" | "pending" | "simulator" | "data") => void;
+  onNavigate: (tab: PageId) => void;
 }) {
   const [query, setQuery] = useState(""),
     rows = useMemo(() => searchAll(data, query), [data, query]);
+  const functions = findFunctions(query);
   return (
     <Dialog
       title="Buscar no ContaClara"
-      subtitle="Compras, cartões, assinaturas, despesas e entradas."
+      subtitle="Funções do aplicativo e seus registros, em um só lugar."
       onClose={onClose}
     >
       <div
@@ -715,11 +717,35 @@ export function GlobalSearch({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && rows[0]) onOpen(rows[0]);
+              if (e.key === "Enter") {
+                if (rows[0]) onOpen(rows[0]);
+                else if (functions[0]) onNavigate(functions[0].id);
+              }
             }}
           />
         </label>
         <div className="search-results">
+          {!!functions.length && (
+            <small className="function-search-caption">
+              Funções do aplicativo
+            </small>
+          )}
+          {functions.map((item) => (
+            <button
+              key={item.id}
+              className="global-function-result"
+              onClick={() => onNavigate(item.id)}
+            >
+              <item.icon size={19} aria-hidden="true" />
+              <span>
+                <strong>{item.title}</strong>
+                <small>{item.description}</small>
+              </span>
+            </button>
+          ))}
+          {!!rows.length && (
+            <small className="function-search-caption">Seus registros</small>
+          )}
           {rows.map((r) => (
             <button key={`${r.kind}:${r.id}`} onClick={() => onOpen(r)}>
               <span>
@@ -729,20 +755,12 @@ export function GlobalSearch({
               {r.amount !== undefined && <strong>{money(r.amount)}</strong>}
             </button>
           ))}
-          {query && !rows.length && <p>Nenhum resultado encontrado.</p>}
-          {!query &&
-            (
-              [
-                ["calendar", "Calendário financeiro"],
-                ["pending", "Central de pendências"],
-                ["simulator", "Simular compra"],
-                ["data", "Importar e gerenciar backups"],
-              ] as const
-            ).map(([tab, label]) => (
-              <button key={tab} onClick={() => onNavigate(tab)}>
-                {label}
-              </button>
-            ))}
+          {query && !rows.length && !functions.length && (
+            <p>
+              Nenhum resultado encontrado. Tente “fatura”, “salário” ou
+              “backup”.
+            </p>
+          )}
         </div>
         <small className="field-hint">
           ↑ ↓ para navegar · Enter para abrir · Esc para fechar

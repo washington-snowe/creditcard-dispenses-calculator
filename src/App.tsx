@@ -1,3 +1,9 @@
+import { NavigationSearch } from "./components/navigation-search";
+import {
+  NAV_FUNCTIONS as nav,
+  NAV_GROUPS as navGroups,
+  type PageId,
+} from "./navigation";
 import { ManagedCard } from "./components/managed-card";
 import { FilterChips } from "./components/filter-chips";
 import { resetViewFilters } from "./view-state";
@@ -16,42 +22,25 @@ import {
 import { DataCenter, type ChangeRecord } from "./components/data-center";
 import { monthLedger, type Destination, type LedgerItem } from "./insights";
 import { createBackup } from "./storage";
-import {
-  Settings2,
-  Eye,
-  EyeOff,
-  DatabaseBackup,
-  Bell,
-  Calculator,
-} from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { WelcomePage } from "./components/welcome";
 import { BrandLogo } from "./components/brand";
 import {
   TriangleAlert,
   CircleAlert,
-  House,
   PanelLeftClose,
   PanelLeftOpen,
-  Ellipsis,
   ArrowDownRight,
   ArrowRight,
   ArrowUpRight,
-  Banknote,
-  ReceiptText,
-  Palette,
   Repeat,
-  RefreshCw,
   CalendarDays,
   Check,
   CheckCheck,
   ChevronLeft,
   ChevronRight,
   CircleHelp,
-  CreditCard,
-  Download,
-  FileUp,
   Filter,
-  LayoutDashboard,
   Moon,
   Pencil,
   Plus,
@@ -126,22 +115,7 @@ import {
   subscriptionMonth,
 } from "./finance";
 
-type Tab =
-  | "calendar"
-  | "pending"
-  | "simulator"
-  | "data"
-  | "home"
-  | "overview"
-  | "purchases"
-  | "cards"
-  | "planning"
-  | "anticipation"
-  | "income"
-  | "subscriptions"
-  | "updates"
-  | "expenses"
-  | "appearance";
+type Tab = PageId;
 type Filters = {
   search: string;
   bank: string;
@@ -185,45 +159,6 @@ const CLEAR: Filters = {
   category: "all",
   status: "all",
 };
-const nav = [
-  { id: "calendar" as const, title: "Calendário", icon: CalendarDays },
-  { id: "pending" as const, title: "Pendências", icon: Bell },
-  { id: "simulator" as const, title: "Simular compra", icon: Calculator },
-  { id: "data" as const, title: "Dados e segurança", icon: DatabaseBackup },
-  { id: "home" as const, title: "Início", icon: House },
-  { id: "overview" as const, title: "Visão geral", icon: LayoutDashboard },
-  { id: "purchases" as const, title: "Minhas compras", icon: ShoppingBag },
-  { id: "cards" as const, title: "Meus cartões", icon: CreditCard },
-  { id: "planning" as const, title: "Planejamento", icon: CalendarDays },
-  { id: "anticipation" as const, title: "Antecipações", icon: Zap },
-  { id: "income" as const, title: "Entradas do mês", icon: Banknote },
-  { id: "subscriptions" as const, title: "Assinaturas", icon: Repeat },
-  { id: "expenses" as const, title: "Despesas", icon: ReceiptText },
-  { id: "appearance" as const, title: "Aparência", icon: Palette },
-  { id: "updates" as const, title: "Atualizações", icon: RefreshCw },
-];
-const navGroups = [
-  {
-    title: "Resumo",
-    icon: House,
-    ids: ["home", "overview", "calendar", "pending"],
-  },
-  {
-    title: "Movimentações",
-    icon: ReceiptText,
-    ids: ["purchases", "cards", "income", "expenses", "subscriptions"],
-  },
-  {
-    title: "Planejamento",
-    icon: CalendarDays,
-    ids: ["planning", "anticipation", "simulator"],
-  },
-  {
-    title: "Configurações",
-    icon: Settings2,
-    ids: ["appearance", "data", "updates"],
-  },
-];
 const titles: Record<Tab, [string, string]> = {
   home: ["Resumo do mês", ""],
   overview: ["Visão geral", "Parcelas, assinaturas e saldos por cartão."],
@@ -1274,6 +1209,7 @@ export default function App() {
           )}
           <span>Recolher menu</span>
         </button>
+        <NavigationSearch collapsed={collapsed} onNavigate={navigate} />
         <nav id="main-navigation" aria-label="Navegação principal">
           {navGroups.map((group) => (
             <button
@@ -1291,7 +1227,10 @@ export default function App() {
               }
             >
               <group.icon size={20} />
-              <span>{group.title}</span>
+              <span>
+                <strong>{group.title}</strong>
+                <small>{group.description}</small>
+              </span>
             </button>
           ))}
         </nav>
@@ -2839,6 +2778,9 @@ export default function App() {
           onNavigate={(tab) => {
             setModal(null);
             navigate(tab);
+            requestAnimationFrame(() =>
+              document.querySelector<HTMLElement>("main h1")?.focus(),
+            );
           }}
         />
       )}

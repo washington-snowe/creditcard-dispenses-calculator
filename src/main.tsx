@@ -24,3 +24,5 @@ import "./workbench.css";
 import "./cohesion.css";
 
 import "./harmony.css";
+
+import "./navigation-effects.css";

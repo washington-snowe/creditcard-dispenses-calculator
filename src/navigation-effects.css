@@ -1,0 +1,415 @@
+/* The menu remains useful in a narrow rail, on a small display and at large text sizes. */
+.app-shell .sidebar {
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.app-shell .sidebar > * {
+  flex-shrink: 0;
+}
+.app-shell .sidebar nav {
+  flex: 1 0 auto;
+}
+.app-shell .sidebar .nav-item {
+  align-items: center;
+}
+.sidebar .nav-item > span {
+  min-width: 0;
+  white-space: normal;
+}
+.sidebar .nav-item strong {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.sidebar .nav-item small {
+  display: block;
+  font-size: var(--text-caption);
+  font-weight: 400;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-top: 3px;
+}
+.function-search {
+  min-width: 0;
+  margin-bottom: 16px;
+}
+.function-search-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface);
+  color: var(--muted);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+.function-search-field:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  color: var(--accent);
+}
+.function-search-field > svg {
+  flex-shrink: 0;
+}
+.function-search-field input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  height: auto;
+  border: 0;
+  padding: 12px 0;
+  outline: 0;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--text);
+  font-size: var(--text-body);
+}
+.function-search-field input:focus {
+  outline: none;
+  box-shadow: none;
+}
+.function-search-field input::-webkit-search-cancel-button {
+  display: none;
+}
+.function-search-clear {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 6px;
+  width: 28px;
+  height: 32px;
+  color: var(--secondary);
+  background: var(--hover);
+}
+.function-search-launch {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  min-height: 43px;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--secondary);
+  background: var(--surface);
+  margin-bottom: 16px;
+  transition:
+    background 180ms,
+    color 180ms;
+}
+.function-search-launch:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.function-search-panel {
+  margin-top: 9px;
+  padding: 10px 0 0;
+  border-bottom: 1px solid var(--border);
+  animation: function-reveal 200ms var(--menu-ease);
+}
+.function-search-caption {
+  display: block;
+  color: var(--muted);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  margin: 0 4px 8px;
+}
+.function-search-examples {
+  display: grid;
+  gap: 8px;
+  margin: 0 2px 16px;
+}
+.function-search-examples > small {
+  color: var(--muted);
+  font-size: var(--text-caption);
+}
+.function-search-examples > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.function-search-examples button {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--secondary);
+  font-size: var(--text-caption);
+  text-align: left;
+  line-height: 1.5;
+  transition:
+    background 160ms,
+    border-color 160ms;
+}
+.function-search-examples button:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.function-search-results {
+  display: grid;
+  gap: 4px;
+  max-height: min(35vh, 26rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scroll-padding-block: 4px;
+}
+.function-search-results button {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  width: 100%;
+  min-width: 0;
+  padding: 11px 8px;
+  border: 0;
+  border-radius: 9px;
+  text-align: left;
+  background: transparent;
+  color: var(--secondary);
+  transition:
+    background 160ms,
+    color 160ms;
+}
+.function-search-results button:hover,
+.function-search-results button[aria-selected="true"] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.function-search-results button > svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.function-search-results button > span {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.function-search-results strong {
+  display: block;
+  font-size: var(--text-body);
+  line-height: 1.5;
+  font-weight: 600;
+}
+.function-search-results small {
+  display: block;
+  font-size: var(--text-caption);
+  color: var(--secondary);
+  line-height: 1.6;
+  margin-top: 4px;
+}
+.function-search-results em {
+  display: block;
+  font-size: var(--text-caption);
+  color: var(--muted);
+  font-style: normal;
+  margin-top: 5px;
+}
+.function-search-help {
+  display: block;
+  padding: 10px 3px 12px;
+  color: var(--muted);
+  font-size: var(--text-caption);
+  line-height: 1.6;
+}
+.function-search-empty {
+  margin: 10px 4px;
+  font-size: var(--text-body);
+  line-height: 1.7;
+  color: var(--secondary);
+}
+.function-search-modal {
+  padding: 20px 24px 24px;
+  margin: 0;
+}
+.function-search-modal .function-search-results {
+  max-height: min(45vh, 30rem);
+}
+.function-search-modal .function-search-panel {
+  border: 0;
+}
+.global-search-dialog .global-function-result {
+  justify-content: flex-start;
+  gap: 12px;
+}
+.global-function-result > svg {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+.global-function-result > span {
+  flex: 1;
+}
+/* Brief, finite animations keep attention on the task instead of running at idle. */
+.page-content {
+  animation: page-arrive 320ms var(--menu-ease);
+}
+.page-content .welcome-card {
+  animation: card-arrive 420ms var(--menu-ease) backwards;
+}
+.page-content .welcome-card:nth-child(2) {
+  animation-delay: 35ms;
+}
+.page-content .welcome-card:nth-child(3) {
+  animation-delay: 70ms;
+}
+.page-content .welcome-card:nth-child(4) {
+  animation-delay: 105ms;
+}
+.page-content .welcome-card:nth-child(n + 5) {
+  animation-delay: 140ms;
+}
+.sidebar .nav-item.active > svg {
+  animation: navigation-confirm 360ms var(--menu-ease);
+}
+.section-tabs button {
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease;
+}
+.section-tabs button[aria-current="page"] {
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+.welcome-symbol > svg,
+.welcome-card-link > svg {
+  transition: transform 220ms var(--menu-ease);
+}
+.welcome-card:hover .welcome-symbol > svg {
+  transform: translateY(-2px) rotate(-5deg);
+}
+.welcome-card:hover .welcome-card-link > svg {
+  transform: translateX(4px);
+}
+.welcome-progress i,
+.card-limit-progress i {
+  transition: width 450ms var(--menu-ease);
+}
+.button {
+  transition:
+    background 180ms,
+    border-color 180ms,
+    color 180ms,
+    box-shadow 180ms,
+    transform 160ms;
+}
+@media (hover: hover) {
+  :root:not([data-glow="off"]) .button.primary:hover {
+    box-shadow: 0 4px 18px color-mix(in srgb, var(--accent) 24%, transparent);
+  }
+  :root:not([data-glow="off"]) .function-search-launch:hover {
+    box-shadow: 0 0 16px var(--accent-soft);
+  }
+  .button:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+}
+@keyframes function-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes page-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes card-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes navigation-confirm {
+  from {
+    opacity: 0.5;
+    transform: scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@media (max-width: 580px) {
+  .function-search-modal {
+    padding: 16px;
+  }
+}
+:root[data-motion="off"] *,
+:root[data-motion="off"] *::before,
+:root[data-motion="off"] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+.app-shell .sidebar .nav-item > span {
+  white-space: normal;
+}
+.sidebar .nav-item small {
+  max-height: 5rem;
+  overflow: hidden;
+  opacity: 1;
+  transition:
+    max-height var(--menu-duration) var(--menu-ease),
+    opacity 150ms ease,
+    margin 180ms ease;
+}
+.app-shell.sidebar-collapsed .sidebar .nav-item small {
+  max-height: 0;
+  margin-top: 0;
+  opacity: 0;
+}
+/* Suggestions float over the menu rather than pushing its areas off screen. */
+.app-shell {
+  --sidebar-size: max(248px, 18rem);
+}
+.function-search {
+  position: relative;
+}
+.function-search:not(.function-search-modal) > .function-search-panel {
+  position: absolute;
+  z-index: 3;
+  inset: 100% 0 auto;
+  max-height: calc(100dvh - 210px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 12px 8px 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 12px 28px #0003;
+}
+.function-search-results small {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

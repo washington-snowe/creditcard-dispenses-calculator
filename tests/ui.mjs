@@ -1,3 +1,4 @@
+import { verifyFunctionSearch } from "./navigation-search.mjs";
 import { verifyHarmony } from "./harmony.mjs";
 import { verifyCohesion } from "./cohesion.mjs";
 import { goTo } from "./navigation.mjs";
@@ -53,6 +54,7 @@ try {
   await runWorkbench(page);
   await verifyCohesion(page);
   await verifyHarmony(page);
+  await verifyFunctionSearch(page);
   await mkdir(".runtime", { recursive: true });
   await page.screenshot({ path: ".runtime/income.png", fullPage: true });
   await goTo(page, "Assinaturas");

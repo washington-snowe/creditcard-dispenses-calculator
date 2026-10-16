@@ -1,5 +1,6 @@
 // Runs using the application's bundled Node runtime, independently of its window.
 const fs = require("node:fs/promises");
+const path = require("node:path");
 const { spawn } = require("node:child_process");
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const json = async (file) =>
@@ -16,6 +17,7 @@ function alive(pid) {
 async function launch(executable, args, env) {
   return new Promise((resolve, reject) => {
     const child = spawn(executable, args, {
+      cwd: path.dirname(executable),
       detached: true,
       windowsHide: false,
       stdio: "ignore",

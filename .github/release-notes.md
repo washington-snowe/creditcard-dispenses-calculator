@@ -1,4 +1,4 @@
-**ContaClara 4.7.2 — atualizações com limpeza automática de armazenamento.**
+**ContaClara 4.7.3 — atualizações com limpeza automática de armazenamento.**
 
 Baixe **ContaClara-Windows-x64.zip**, extraia a pasta inteira e abra **saldo.exe**.
 

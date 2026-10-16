@@ -175,9 +175,13 @@ async function controller(
     fetch: fixtureFetch(version, bytes),
   });
 }
-async function launchOriginal(executablePath = original) {
+async function launchOriginal(
+  executablePath = original,
+  cwd = dirname(executablePath),
+) {
   app = await electron.launch({
     executablePath,
+    cwd,
     args: [],
     env: { ...process.env, SALDO_DATA_DIR: userData },
   });
@@ -476,7 +480,20 @@ try {
 
   // A correctly hashed package that cannot load its renderer must roll back automatically.
   const broken = await candidate(badVersion, true);
-  const oldPid = await launchOriginal(nextTarget);
+  // Reproduce an old helper launching the new executable from an obsolete
+  // version's directory. Both Electron and its children must release that path.
+  const inherited = join(updates, "versions", "2.0.0", "Saldo-win32-x64");
+  await mkdir(inherited, { recursive: true });
+  const oldPid = await launchOriginal(nextTarget, inherited);
+  assert.equal(
+    (await app.evaluate(() => process.cwd())).toLowerCase(),
+    dirname(nextTarget).toLowerCase(),
+  );
+  await waitFor(
+    async () => !(await readdir(join(updates, "versions"))).includes("2.0.0"),
+    "A pasta de trabalho herdada da versão antiga não foi liberada.",
+    20000,
+  );
   const rollback = await controller(
     badVersion,
     broken,

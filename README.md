@@ -4,11 +4,11 @@ Aplicativo desktop de finanças pessoais em **Node.js + Electron**, com interfac
 
 ## Baixar para Windows
 
-[**Baixar ContaClara 4.7.2 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.7.2/ContaClara-Windows-x64.zip)
+[**Baixar ContaClara 4.7.3 para Windows de 64 bits (ZIP)**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/v4.7.3/ContaClara-Windows-x64.zip)
 
 Extraia a pasta inteira e abra **saldo.exe**. Não é necessário instalar Node.js. A versão foi compilada e testada no Windows, incluindo os cálculos financeiros e a persistência dos dados após reiniciar o aplicativo.
 
-A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.7.2) também contém o checksum do ZIP.
+A [página da versão](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/tag/v4.7.3) também contém o checksum do ZIP.
 
 ## Executar no computador
 
@@ -67,7 +67,7 @@ A partir da versão 3, abra **Atualizações → Verificar atualizações → Ba
 
 A nova versão é preparada em `%APPDATA%/saldo-desktop/updates/versions/`, preservando a versão em uso até a confirmação. Antes da troca, o aplicativo espera as gravações terminarem e cria uma cópia de `finances.json` em `updates/finances-before-...json`. A troca é confirmada após a nova versão abrir e validar os dados. Se isso falhar, o processo retorna à versão anterior.
 
-A partir da versão 4.7.2, a limpeza automática remove os ZIPs, downloads parciais e pastas temporárias após cada tentativa. Depois de confirmar a atualização, remove também as versões antigas em `updates/versions/`, mantendo somente a atual. O mesmo processo elimina os arquivos acumulados pelas versões anteriores. Uma versão já baixada e pronta para instalar permanece disponível até a troca ou até fechar o aplicativo. Arquivos bloqueados pelo Windows são tratados novamente na próxima abertura ou atualização. Os registros financeiros, backups automáticos, cópias `finances-before-...json` e arquivos não reconhecidos como pertencentes ao atualizador são preservados. Diretórios com links ou arquivos de dados/backups também são preservados por segurança.
+A partir da versão 4.7.3, a limpeza automática remove os ZIPs, downloads parciais e pastas temporárias após cada tentativa. Depois de confirmar a atualização, remove também as versões antigas em `updates/versions/`, mantendo somente a atual. O mesmo processo elimina os arquivos acumulados pelas versões anteriores. Uma versão já baixada e pronta para instalar permanece disponível até a troca ou até fechar o aplicativo. Arquivos bloqueados pelo Windows são tratados novamente na próxima abertura ou atualização. Os registros financeiros, backups automáticos, cópias `finances-before-...json` e arquivos não reconhecidos como pertencentes ao atualizador são preservados. Diretórios com links ou arquivos de dados/backups também são preservados por segurança.
 
 A pasta portátil originalmente extraída pelo usuário não é apagada: seu executável continua funcionando como entrada para a versão atualizada; mantenha sua pasta e os demais arquivos. A limpeza automática fica restrita à pasta gerenciada pelo atualizador, sem remover outras pastas de instalação ou downloads manuais. No navegador e em outros sistemas, a aba permite abrir a página de versões para download manual.
 

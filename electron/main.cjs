@@ -6,6 +6,9 @@ const fs = require("node:fs/promises");
 const fsSync = require("node:fs");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
+// Legacy update helpers inherited the previous version's working directory.
+// Windows keeps that directory locked until every inheriting process releases it.
+if (app.isPackaged) process.chdir(path.dirname(process.execPath));
 let window;
 let writes = Promise.resolve();
 // A separate data path is useful for automated tests; normal runs use Electron userData.

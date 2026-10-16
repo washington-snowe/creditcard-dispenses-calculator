@@ -357,6 +357,7 @@ function createUpdater(options) {
     );
     env.ELECTRON_RUN_AS_NODE = "1";
     const child = spawn(executable, [helper, config], {
+      cwd: root,
       detached: true,
       windowsHide: true,
       stdio: "ignore",

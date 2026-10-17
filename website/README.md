@@ -2,7 +2,7 @@
 
 Site público independente do Electron. Usa React, TypeScript e Vite, com cópias exatas dos arquivos oficiais de marca em `public/brand` e fontes Manrope/Inter incluídas no build. A pasta é autossuficiente e pode ser extraída ou copiada sem o projeto desktop.
 
-[Baixar o site v0.1.0 — código e build em ZIP](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/website-v0.1.0/ContaClara-Site-v0.1.0.zip)
+[Baixar o site v0.2.0 — código e build em ZIP](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/website-v0.2.0/ContaClara-Site-v0.2.0.zip)
 
 Extraia o ZIP e abra a pasta `ContaClara-Site`. Ela inclui o código, a configuração Firebase, as instruções e `dist/` pronto para hospedagem estática. Para desenvolver, instale Node.js 22.12 ou superior e execute os comandos abaixo. O HTML compilado deve ser servido por HTTP, com `npm run preview` ou uma hospedagem; abrir `index.html` diretamente pelo explorador de arquivos não inicia o site.
 
@@ -26,6 +26,8 @@ npm run preview
 O preview fica em `http://localhost:4174`. `npm test` exige o build e Chromium (`CHROMIUM_PATH` ou `/usr/bin/chromium`). As capturas ficam em `website/.runtime/`. Não é necessário configurar Firebase para revisar o site.
 
 ## O que está pronto
+
+A copy de conversão e o guia de espaçamento/centralização estão em [docs/copy-e-layout.md](docs/copy-e-layout.md). As alterações de layout têm comentários **ALTERAÇÃO** em `src/layout.css`, que concentra a escala de margens, grids, CTAs e adaptações responsivas. `src/styles.css` mantém a base, as ilustrações, a demonstração e os formulários; as regras antigas de layout correspondentes foram removidas.
 
 - Landing page responsiva, navegação móvel, atalhos de download do ZIP Windows e FAQ.
 - Demonstração com três abas e três meses usando somente dados fictícios; não acessa o armazenamento financeiro do desktop.
@@ -70,8 +72,8 @@ O site pode ser hospedado estaticamente em outros provedores usando `dist/`. Iss
 
 ## Gerar e publicar o ZIP
 
-`npm run package` compila e gera `downloads/ContaClara-Site-v0.1.0.zip`, com checksum SHA-256. O script usa `zip` e `unzip` (Linux/macOS ou ambiente equivalente). O pacote usa uma lista explícita de arquivos; dependências, `.env.local` e arquivos de testes temporários não entram nele.
+`npm run package` compila e gera `downloads/ContaClara-Site-v0.2.0.zip`, com checksum SHA-256. O script usa `zip` e `unzip` (Linux/macOS ou ambiente equivalente). O pacote usa uma lista explícita de arquivos; dependências, `.env.local` e arquivos de testes temporários não entram nele.
 
-O workflow `.github/workflows/website.yml` valida o site. Uma tag `website-v0.1.0`, correspondente à versão deste `package.json`, publica o ZIP após os testes. Essa release é separada das versões Windows e não altera a versão mais recente do aplicativo desktop. Publicar o ZIP no GitHub não hospeda o site na internet.
+O workflow `.github/workflows/website.yml` valida o site. Uma tag `website-v0.2.0`, correspondente à versão deste `package.json`, publica o ZIP após os testes. Essa release é separada das versões Windows e não altera a versão mais recente do aplicativo desktop. Publicar o ZIP no GitHub não hospeda o site na internet.
 
 Ao atualizar a identidade visual, mantenha `public/brand` sincronizado com os PNG/ICO oficiais do aplicativo, sem modificar as imagens.

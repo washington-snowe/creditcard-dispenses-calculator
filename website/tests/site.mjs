@@ -56,10 +56,10 @@ try {
   await page.goto("http://127.0.0.1:4174");
   await page.evaluate(() => document.fonts.ready);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    "Seu dinheiro.Mais claro.",
+    "Pare de pagarcontas no escuro.",
   );
   await expect(
-    page.getByRole("link", { name: /Começar no Windows/ }),
+    page.getByRole("link", { name: /Quero assumir o controle/ }),
   ).toHaveAttribute(
     "href",
     /releases\/latest\/download\/ContaClara-Windows-x64.zip$/,

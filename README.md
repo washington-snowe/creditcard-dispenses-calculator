@@ -4,7 +4,7 @@ Aplicativo desktop de finanças pessoais em **Node.js + Electron**, com interfac
 
 O novo **site público** fica em [`website/`](website/README.md), com apresentação, demonstração interativa, planos em definição e área de conta preparada para Firebase. É independente do desktop; a cobrança e a licença comercial aguardam a escolha do provedor. Para revisar: `cd website`, `npm ci` e `npm run dev` (porta 5174).
 
-[**Baixar o site do ContaClara — ZIP com código e build**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/website-v0.1.0/ContaClara-Site-v0.1.0.zip)
+[**Baixar o site do ContaClara — ZIP com código e build**](https://github.com/washington-snowe/creditcard-dispenses-calculator/releases/download/website-v0.2.0/ContaClara-Site-v0.2.0.zip)
 
 ## Baixar para Windows
 

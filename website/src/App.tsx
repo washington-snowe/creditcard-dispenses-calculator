@@ -36,48 +36,52 @@ type Modal = "account" | "terms" | "privacy" | "support" | "plans" | null;
 const features = [
   {
     icon: CreditCard,
-    title: "Cada cartão, no seu lugar.",
-    text: "Reúna cartões e compras parceladas. Saiba quanto falta pagar em cada um e no total.",
+    title: "Encare o total, não só a parcela.",
+    text: "Uma parcela pequena pode esconder meses de compromisso. Veja o saldo devedor dos cartões cadastrados e o que falta quitar.",
     tag: "CARTÕES E PARCELAS",
     className: "feature-cards",
   },
   {
     icon: CalendarDays,
-    title: "Enxergue além deste mês.",
-    text: "Navegue pelas próximas faturas e veja quando suas parcelas terminam.",
+    title: "Não comprometa o futuro sem perceber.",
+    text: "A compra é de hoje. A cobrança pode durar meses. Confira as parcelas futuras antes de assumir outro compromisso.",
     tag: "PLANEJAMENTO",
     className: "feature-calendar",
   },
   {
     icon: Wallet,
-    title: "Saiba o que vai sobrar.",
-    text: "Registre entradas e despesas. Entenda o que está disponível depois dos compromissos.",
+    title: "Descubra o que sobra antes de gastar.",
+    text: "Saldo na conta não conta a história inteira. Compare entradas, despesas e faturas para enxergar o que ainda cabe no mês.",
     tag: "ENTRADAS E DESPESAS",
     className: "feature-balance",
   },
   {
     icon: Target,
-    title: "Dê um destino aos seus planos.",
-    text: "Defina metas de economia ou de compra e acompanhe seu progresso com os dados cadastrados.",
+    title: "Dê um destino ao dinheiro que quer guardar.",
+    text: "Transforme o desejo de economizar em uma meta com valor e prazo. Acompanhe o progresso com base nos seus registros.",
     tag: "METAS",
     className: "feature-target",
   },
   {
     icon: CheckCheck,
-    title: "Nenhuma conta esquecida.",
-    text: "Acompanhe assinaturas, vencimentos e pagamentos em um só lugar.",
+    title: "Tire cobranças do ponto cego.",
+    text: "Assinaturas e vencimentos não param porque você esqueceu deles. Reúna seus compromissos e confira o que já foi pago.",
     tag: "ROTINA MAIS LEVE",
     className: "feature-subscriptions",
   },
   {
     icon: ChartNoAxesCombined,
-    title: "Os números fazem sentido.",
-    text: "Explore gráficos, filtros e comparações para entender para onde seu dinheiro está indo.",
+    title: "Encontre o peso de cada gasto.",
+    text: "Chega de tentar adivinhar para onde foi o dinheiro. Use gráficos e filtros para decidir o que revisar primeiro.",
     tag: "VISÃO CLARA",
     className: "feature-charts",
   },
 ];
 const questions = [
+  [
+    "Mais uma ferramenta para dar trabalho?",
+    "Comece por um cartão e pelas contas deste mês. Você não precisa cadastrar sua vida inteira de uma vez. Amplie o controle aos poucos, com sugestões de preenchimento e importação de arquivos compatíveis.",
+  ],
   [
     "O que é o ContaClara?",
     "É um aplicativo de finanças pessoais para Windows. Você cadastra cartões, compras, parcelas, entradas, despesas, assinaturas e metas para entender o mês e planejar os próximos passos.",
@@ -249,37 +253,40 @@ export default function App() {
           <div className="hero-orbit" aria-hidden="true" />
           <div className="hero-copy">
             <a className="eyebrow hero-badge" href="#recursos">
-              <span className="live-dot" /> UM NOVO OLHAR PARA SUAS FINANÇAS{" "}
+              <span className="live-dot" /> A PRÓXIMA FATURA NÃO ESPERA{" "}
               <ArrowRight size={13} />
             </a>
             <h1>
-              Seu dinheiro.
+              Pare de pagar
               <br />
-              <span>Mais claro.</span>
+              <span>contas no escuro.</span>
             </h1>
             <p className="hero-description">
-              Menos contas na cabeça. Mais planos na vida.
-              <br className="desktop-break" /> Organize suas finanças e descubra
-              o que vem pela frente.
+              Parcelas se acumulam. Assinaturas passam despercebidas. E o mês
+              seguinte começa comprometido. Veja o que você deve, quanto ainda
+              cabe no orçamento e o impacto da próxima compra antes de decidir.
             </p>
             <div className="hero-actions">
-              <a className="button primary" href={site.downloadUrl}>
-                <Download size={18} /> Começar no Windows{" "}
+              <a className="button primary cta" href={site.downloadUrl}>
+                <Download size={18} /> Quero assumir o controle{" "}
                 <ArrowUpRight size={16} />
               </a>
               <a className="button text-cta" href="#demonstracao">
-                Conhecer o ContaClara <ArrowDown size={16} />
+                Ver como funciona <ArrowDown size={16} />
               </a>
             </div>
+            <p className="cta-caption">
+              Download para Windows 64 bits · Comece pelos registros deste mês
+            </p>
             <div className="hero-benefits">
               <span>
-                <Monitor size={14} /> Feito para seu computador
+                <Monitor size={14} /> Sem conectar seu banco
               </span>
               <span>
-                <ShieldCheck size={14} /> Dados salvos localmente
+                <ShieldCheck size={14} /> Seus registros sob seu controle
               </span>
               <span>
-                <Moon size={14} /> No seu ritmo
+                <Moon size={14} /> Gestão financeira offline
               </span>
             </div>
           </div>
@@ -287,9 +294,9 @@ export default function App() {
         </section>
         <div className="clarity-strip container">
           <p>
-            O seu mês tem muitas partes.
+            O cartão mostra uma fatura.
             <br />
-            <strong>Agora, elas fazem sentido juntas.</strong>
+            <strong>Você precisa enxergar o mês inteiro.</strong>
           </p>
           <div>
             <span>
@@ -310,18 +317,17 @@ export default function App() {
           <div className="section-heading">
             <div>
               <span className="eyebrow">
-                <span /> TUDO SE CONECTA
+                <span /> O CONTROLE COMEÇA COM O QUE VOCÊ VÊ
               </span>
               <h2>
-                Uma visão completa.
+                Seu dinheiro tem destino.
                 <br />
-                <span>Uma rotina mais leve.</span>
+                <span>Você precisa decidir qual.</span>
               </h2>
             </div>
             <p>
-              Do cafezinho parcelado ao próximo grande sonho.
-              <br />
-              Cada detalhe no lugar certo, sem complicar.
+              Uma parcela aqui, uma assinatura ali. Sem uma visão completa,
+              pequenos compromissos ocupam o espaço dos seus planos.
             </p>
           </div>
           <div className="feature-grid">
@@ -330,7 +336,7 @@ export default function App() {
                 <article className={`feature ${className}`} key={title}>
                   <div className="feature-top">
                     <span className="feature-icon">
-                      <Icon size={22} />
+                      <Icon size={22} strokeWidth={1.75} />
                     </span>
                     <span className="feature-number">0{index + 1}</span>
                   </div>
@@ -431,16 +437,16 @@ export default function App() {
                 <span /> SIMPLES DESDE O COMEÇO
               </span>
               <h2>
-                Clareza não precisa
+                Comece pelo mês atual.
                 <br />
-                ser complicada.
+                Pare de adiar o controle.
               </h2>
               <p>
-                Um espaço para organizar o presente
-                <br className="desktop-break" /> e construir o que vem depois.
+                Você não precisa organizar a vida inteira hoje. Um cartão e as
+                contas deste mês já dão um ponto de partida.
               </p>
               <a href={site.downloadUrl} className="text-link">
-                Seu próximo passo começa aqui <ArrowUpRight size={18} />
+                Organizar meu primeiro mês <ArrowUpRight size={18} />
               </a>
               <div className="how-decoration" aria-hidden="true">
                 <span className="symbol" />
@@ -452,20 +458,20 @@ export default function App() {
               {[
                 [
                   "01",
-                  "Um lugar para chamar de seu.",
-                  "Baixe o ContaClara para Windows, extraia o arquivo e abra o aplicativo. Tudo pronto para começar.",
+                  "Abra espaço para a mudança.",
+                  "Baixe o ContaClara para Windows, extraia a pasta e abra o aplicativo. A versão atual não exige cadastro.",
                   Download,
                 ],
                 [
                   "02",
-                  "Coloque seus números em ordem.",
-                  "Cadastre cartões, compras e entradas. Acrescente despesas, assinaturas e aquilo que você quer conquistar.",
+                  "Tire as contas da cabeça.",
+                  "Cadastre um cartão, suas compras e as entradas do mês. Inclua despesas e assinaturas para completar o planejamento.",
                   Plus,
                 ],
                 [
                   "03",
-                  "Faça escolhas com mais clareza.",
-                  "Veja quanto falta pagar, o que vai sobrar e o impacto das parcelas nos próximos meses.",
+                  "Decida antes de comprometer.",
+                  "Confira o que falta pagar e a projeção dos próximos meses. Consulte o impacto de uma nova compra antes de registrá-la.",
                   Sparkles,
                 ],
               ].map(([number, title, text, Icon]) => {
@@ -475,7 +481,7 @@ export default function App() {
                     <span className="step-number">{String(number)}</span>
                     <div>
                       <span className="step-icon">
-                        <StepIcon size={19} />
+                        <StepIcon size={22} strokeWidth={1.75} />
                       </span>
                       <h3>{String(title)}</h3>
                       <p>{String(text)}</p>
@@ -525,16 +531,17 @@ export default function App() {
           </div>
           <div className="personal-copy">
             <span className="eyebrow">
-              <span /> UM ESPAÇO QUE É SEU
+              <span /> MENOS ATRITO PARA MANTER O CONTROLE
             </span>
             <h2>
-              Feito para caber
+              Seu planejamento precisa
               <br />
-              na sua vida.
+              acompanhar você.
             </h2>
             <p>
-              Uma interface tranquila para lidar com um assunto importante. Com
-              aparência personalizável e seus registros sempre por perto.
+              Não dependa da memória para saber o que já comprometeu. Mantenha
+              os registros por perto, personalize a aparência e volte ao seu
+              planejamento sempre que precisar decidir.
             </p>
             <ul className="check-list">
               <li>
@@ -551,24 +558,23 @@ export default function App() {
               </li>
             </ul>
             <a className="text-link" href="#planos">
-              Conheça os próximos passos <ArrowRight size={17} />
+              Conhecer os planos <ArrowRight size={17} />
             </a>
           </div>
         </section>
         <section className="section plans-section container" id="planos">
           <div className="section-heading centered">
             <span className="eyebrow">
-              <span /> MAIS CLAREZA PARA SEUS PLANOS
+              <span /> DÊ VALOR AO SEU CONTROLE
             </span>
             <h2>
-              O próximo capítulo
+              Seu orçamento merece
               <br />
-              <span>começa com você.</span>
+              <span>mais que um palpite.</span>
             </h2>
             <p>
-              Estamos preparando os planos do ContaClara.
-              <br />
-              Escolha como prefere acompanhar essa nova fase.
+              Conheça os períodos mensal e anual. Os valores e as condições
+              estarão disponíveis antes da abertura das contratações.
             </p>
           </div>
           <div
@@ -601,9 +607,9 @@ export default function App() {
                 </span>
               </div>
               <p>
-                Mais organização para o presente.
+                Saiba o que já comprometeu.
                 <br />
-                Mais espaço para o futuro.
+                Decida o que vem depois.
               </p>
               <div className="plan-price" aria-live="polite">
                 {(plan === "annual" ? site.annualCents : site.monthlyCents) ===
@@ -625,7 +631,7 @@ export default function App() {
                   </>
                 )}
               </div>
-              <button className="button primary full" onClick={choosePlan}>
+              <button className="button primary cta full" onClick={choosePlan}>
                 {site.checkoutEnabled
                   ? "Escolher este plano"
                   : "Conhecer os planos"}
@@ -660,15 +666,23 @@ export default function App() {
                 <FolderHeart size={24} />
               </span>
               <h3>
-                Comece conhecendo.
+                O pequeno gasto
                 <br />
-                Continue no seu ritmo.
+                também pesa no ano.
               </h3>
               <p>
-                A versão atual para Windows já está disponível. Organize suas
-                finanças localmente e descubra como o ContaClara pode ajudar no
-                dia a dia.
+                Uma assinatura que você deixou de usar pode continuar ocupando
+                seu orçamento. Coloque os compromissos à vista antes de somar
+                mais uma cobrança.
               </p>
+              <div className="cost-anchor">
+                <span>EXEMPLO DE GASTO RECORRENTE</span>
+                <p>
+                  <strong>R$ 29,90 por mês</strong> representam{" "}
+                  <strong>R$ 358,80 em um ano.</strong>
+                </p>
+                <small>Custo ilustrativo de uma assinatura para revisar.</small>
+              </div>
               <a className="button secondary" href={site.downloadUrl}>
                 <Download size={17} /> Baixar versão para Windows
               </a>
@@ -688,16 +702,16 @@ export default function App() {
         <section className="section container faq-section" id="duvidas">
           <div className="faq-intro">
             <span className="eyebrow">
-              <span /> SEM PONTAS SOLTAS
+              <span /> TIRE A DÚVIDA. DÊ O PRIMEIRO PASSO.
             </span>
             <h2>
-              Um pouco mais
+              O que ainda impede
               <br />
-              de clareza.
+              você de começar?
             </h2>
             <p>
-              Respostas para você começar
-              <br className="desktop-break" /> com tranquilidade.
+              Entenda como começar, onde ficam seus dados e o que esperar dos
+              planos.
             </p>
             <button className="text-link" onClick={() => open("support")}>
               Ainda preciso de ajuda <ArrowUpRight size={17} />
@@ -720,19 +734,19 @@ export default function App() {
           <div className="final-cta">
             <div>
               <span className="eyebrow">
-                <span /> SEU PRÓXIMO PASSO
+                <span /> CUIDE DO MÊS QUE JÁ ESTÁ ACONTECENDO
               </span>
               <h2>
-                Menos preocupação.
+                A próxima fatura não espera
                 <br />
-                <span>Mais possibilidades.</span>
+                <span>você se organizar.</span>
               </h2>
               <p>
-                Você cuida dos seus planos. O ContaClara ajuda a enxergar o
-                caminho.
+                Comece pelas contas deste mês. Enxergue os compromissos que já
+                assumiu e escolha o próximo passo com mais clareza.
               </p>
-              <a className="button primary" href={site.downloadUrl}>
-                <Download size={18} /> Começar com mais clareza{" "}
+              <a className="button primary cta" href={site.downloadUrl}>
+                <Download size={18} /> Começar agora no Windows{" "}
                 <ArrowUpRight size={16} />
               </a>
               <small>Disponível para Windows 64 bits</small>

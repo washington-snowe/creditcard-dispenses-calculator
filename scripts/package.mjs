@@ -21,6 +21,7 @@ const outputs = await packager({
     FileDescription: "ContaClara — Finanças pessoais",
   },
   ignore: [
+    /^\/website($|\/)/,
     /^\/release($|\/)/,
     /^\/downloads($|\/)/,
     /^\/tests($|\/)/,

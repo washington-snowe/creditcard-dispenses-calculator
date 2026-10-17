@@ -1,0 +1,73 @@
+name: Site do ContaClara
+
+on:
+  push:
+    branches: [main]
+    tags: ["website-v*"]
+    paths: ["website/**", ".github/workflows/website.yml"]
+  pull_request:
+    paths: ["website/**", ".github/workflows/website.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: website-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  website:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: website
+    steps:
+      - name: Obter o código
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Preparar Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+      - name: Instalar dependências
+        run: npm ci
+      - name: Compilar o site
+        run: npm run build
+      - name: Preparar navegador de teste
+        run: npx playwright install --with-deps chromium
+      - name: Validar site e conta
+        run: npm test
+        env:
+          CHROMIUM_PATH: bundled
+      - name: Preparar ZIP e checksum
+        if: startsWith(github.ref, 'refs/tags/website-v')
+        run: node scripts/package.mjs
+      - name: Publicar ZIP do site
+        if: startsWith(github.ref, 'refs/tags/website-v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          version=$(node -p "JSON.parse(require('fs').readFileSync('package.json','utf8')).version")
+          if [ "$RELEASE_TAG" != "website-v$version" ]; then
+            echo 'A tag não corresponde à versão do site.' >&2
+            exit 1
+          fi
+          gh release create "$RELEASE_TAG" --repo "$RELEASE_REPO" --verify-tag --draft --latest=false --title "ContaClara — Site v$version" --notes-file ../.github/website-release-notes.md
+          gh release upload "$RELEASE_TAG" "downloads/ContaClara-Site-v$version.zip" downloads/ContaClara-Site-SHA256SUMS.txt --repo "$RELEASE_REPO"
+          gh release edit "$RELEASE_TAG" --repo "$RELEASE_REPO" --draft=false --latest=false
+      - name: Salvar prévia para revisão
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: website-preview
+          path: |
+            website/dist
+            website/.runtime/*.png
+          retention-days: 14
